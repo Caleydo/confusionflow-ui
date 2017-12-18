@@ -1,0 +1,31 @@
+{
+  "generator-phovea": {
+    "type": "app",
+    "app": "Malevo",
+    "clientOnly": false,
+    "entries": {
+      "app": "./src/index.ts"
+    },
+    "libraries": [
+      "d3"
+    ],
+    "modules": [
+      "phovea_core",
+      "phovea_ui"
+    ],
+    "libraryAliases": {
+      "d3": "d3/d3"
+    },
+    "libraryExternals": [
+      "d3",
+      "jquery",
+      "font-awesome"
+    ],
+    "ignores": [],
+    "extensions": [],
+    "name": "malevo",
+    "author": "Martin Ennemoser",
+    "today": "Mon, 18 Dec 2017 13:54:13 GMT",
+    "githubAccount": "phovea"
+  }
+}
