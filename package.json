@@ -6,7 +6,7 @@
     "docker": "docker build -t malevo -f deploy/Dockerfile .",
     "compile": "tsc",
     "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
-    "docs": "sphinx-apidoc -o docs -f ./malevo_slib && sphinx-build ./docs build/docs",
+    "docs": "sphinx-apidoc -o docs -f ./malevo_server && sphinx-build ./docs build/docs",
     "prebuild": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test",
     "pretest": "npm run check",
     "test": "test ! -d tests || python setup.py test",
@@ -20,11 +20,11 @@
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
-    "dist": "python setup.py bdist_egg && cd build && tar cvzf ../dist/malevo_slib.tar.gz *",
+    "dist": "python setup.py bdist_egg && cd build && tar cvzf ../dist/malevo_server.tar.gz *",
     "check": "flake8"
   },
   "files": [
-    "malevo_slib",
+    "malevo_server",
     "__init__.py",
     "__main__.py",
     "build",
@@ -42,7 +42,7 @@
     "@types/d3": "3.5.36",
     "d3": "3.5.17"
   },
-  "name": "malevo_slib",
+  "name": "malevo_server",
   "description": "",
   "homepage": "https://phovea.caleydo.org",
   "version": "1.0.0-SNAPSHOT",
@@ -53,7 +53,7 @@
   },
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/phovea/malevo_slib/issues"
+    "url": "https://github.com/phovea/malevo_server/issues"
   },
   "repository": {
     "type": "git",

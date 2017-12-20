@@ -20,17 +20,17 @@
     ],
     "ignores": [],
     "extensions": [],
-    "name": "malevo_slib",
+    "name": "malevo_server",
     "author": "Martin Ennemoser",
     "today": "Mon, 18 Dec 2017 13:54:13 GMT",
     "githubAccount": "phovea",
     "sextensions": [
       {
         "type": "namespace",
-        "id": "hello_world",
-        "module": "hello_world",
+        "id": "malevo_api",
+        "module": "malevo_api",
         "extras": {
-          "namespace": "/api/hello_world"
+          "namespace": "/api/malevo_api"
         }
       }
     ],
