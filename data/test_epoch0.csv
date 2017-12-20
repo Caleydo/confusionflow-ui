@@ -1,4 +1,4 @@
-a, b, c, d
+item_id,ground_truth,predicted,epoch_id
 000001,3,3,test_epoch0
 000002,8,1,test_epoch0
 000003,8,8,test_epoch0

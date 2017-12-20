@@ -33,7 +33,7 @@
     "idtype": "Epochs",
     "columns": [
       {
-        "name": "actual",
+        "name": "ground_truth",
         "value": {
           "type": "int",
           "range": [0, 9]
@@ -47,7 +47,7 @@
         }
       },
       {
-        "name": "epoch",
+        "name": "epoch_id",
         "value": {
           "type": "string"
         }
