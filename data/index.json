@@ -1,0 +1,57 @@
+[
+  {
+    "name": "Test",
+    "description": "Some user attributes",
+    "path": "test.csv",
+    "separator": ",",
+    "type": "table",
+    "size": [12, 3],
+    "idtype": "Users",
+    "columns": [
+      {
+        "name": "username",
+        "value": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "age",
+        "value": {
+          "type": "int",
+          "range": [0, 100]
+        }
+      }
+    ]
+  },
+  {
+    "name": "QuickDraw",
+    "description": "DNN dataset that learned QuickDraw images",
+    "path": "test_epoch0.csv",
+    "separator": ",",
+    "type": "table",
+    "size": [100000, 4],
+    "idtype": "Epochs",
+    "columns": [
+      {
+        "name": "actual",
+        "value": {
+          "type": "int",
+          "range": [0, 9]
+        }
+      },
+      {
+        "name": "predicted",
+        "value": {
+          "type": "int",
+          "range": [0, 9]
+        }
+      },
+      {
+        "name": "epoch",
+        "value": {
+          "type": "string"
+        }
+      }
+    ]
+  }
+]

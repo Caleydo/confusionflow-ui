@@ -3,4 +3,4 @@
  */
 
 export const APP_NAME = 'Malevo';
-export const HELLO_WORLD = 'Hello Phovea World';
+export const HELLO_WORLD = 'Hello Phovea World from Martin';

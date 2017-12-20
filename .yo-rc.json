@@ -6,12 +6,9 @@
     "entries": {
       "app": "./src/index.ts"
     },
-    "libraries": [
-      "d3"
-    ],
+    "libraries": [],
     "modules": [
-      "phovea_core",
-      "phovea_ui"
+      "phovea_server"
     ],
     "libraryAliases": {
       "d3": "d3/d3"
@@ -23,9 +20,23 @@
     ],
     "ignores": [],
     "extensions": [],
-    "name": "malevo",
+    "name": "malevo_slib",
     "author": "Martin Ennemoser",
     "today": "Mon, 18 Dec 2017 13:54:13 GMT",
-    "githubAccount": "phovea"
+    "githubAccount": "phovea",
+    "sextensions": [
+      {
+        "type": "namespace",
+        "id": "hello_world",
+        "module": "hello_world",
+        "extras": {
+          "namespace": "/api/hello_world"
+        }
+      }
+    ],
+    "unknown": {
+      "requirements": [],
+      "dockerPackages": []
+    }
   }
 }

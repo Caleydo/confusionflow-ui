@@ -1,4 +1,4 @@
-malevo [![Phovea][phovea-image]][phovea-url] [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
+malevo_slib [![Phovea][phovea-image]][phovea-url] [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
 =====================
 
 
@@ -7,8 +7,8 @@ Installation
 ------------
 
 ```
-git clone https://github.com/Caleydo/malevo.git
-cd malevo
+git clone https://github.com/caleydo/malevo.git
+cd malevo_slib
 npm install
 ```
 
@@ -26,12 +26,6 @@ Building
 npm run build
 ```
 
-Launching
----------
-
-```
-npm start
-```
 
 
 ***
@@ -42,9 +36,9 @@ This repository is part of **[Phovea](http://phovea.caleydo.org/)**, a platform 
 
 [phovea-image]: https://img.shields.io/badge/Phovea-Application-1BA64E.svg
 [phovea-url]: https://phovea.caleydo.org
-[npm-image]: https://badge.fury.io/js/malevo.svg
-[npm-url]: https://npmjs.org/package/malevo
-[travis-image]: https://travis-ci.org/phovea/malevo.svg?branch=master
-[travis-url]: https://travis-ci.org/phovea/malevo
-[daviddm-image]: https://david-dm.org/phovea/malevo/status.svg
-[daviddm-url]: https://david-dm.org/phovea/malevo
+[npm-image]: https://badge.fury.io/js/malevo_slib.svg
+[npm-url]: https://npmjs.org/package/malevo_slib
+[travis-image]: https://travis-ci.org/phovea/malevo_slib.svg?branch=master
+[travis-url]: https://travis-ci.org/phovea/malevo_slib
+[daviddm-image]: https://david-dm.org/phovea/malevo_slib/status.svg
+[daviddm-url]: https://david-dm.org/phovea/malevo_slib
