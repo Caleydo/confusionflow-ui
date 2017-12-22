@@ -1,5 +1,5 @@
-from malevo import hello_world
+from malevo import malevo_api
 
 
-def test_hello_world():
-  assert hello_world is not None
+def test_malevo_api():
+  assert malevo_api is not None

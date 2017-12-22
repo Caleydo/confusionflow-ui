@@ -28,10 +28,10 @@
     "sextensions": [
       {
         "type": "namespace",
-        "id": "hello_world",
-        "module": "hello_world",
+        "id": "malevo_api",
+        "module": "malevo_api",
         "extras": {
-          "namespace": "/api/hello_world"
+          "namespace": "/api/malevo_api"
         }
       }
     ],
