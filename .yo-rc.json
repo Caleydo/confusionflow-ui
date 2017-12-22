@@ -8,15 +8,13 @@
     },
     "libraries": [],
     "modules": [
-      "phovea_server"
+      "phovea_vis"
     ],
     "libraryAliases": {
       "d3": "d3/d3"
     },
     "libraryExternals": [
-      "d3",
-      "jquery",
-      "font-awesome"
+      "d3"
     ],
     "ignores": [],
     "extensions": [],

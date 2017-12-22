@@ -7,7 +7,7 @@ Installation
 ------------
 
 ```
-git clone https://github.com/caleydo/malevo.git
+git clone https://github.com/phovea/malevo_server.git
 cd malevo_server
 npm install
 ```

@@ -3,7 +3,9 @@
  */
 
 import * as d3 from 'd3';
+import DatasetSelector from './DatasetSelector';
 import {HELLO_WORLD} from './language';
+import ConfusionMatrix from './ConfusionMatrix';
 
 /**
  * The main class for the App app
@@ -21,7 +23,7 @@ export class App {
    * that is resolved as soon the view is completely initialized.
    * @returns {Promise<App>}
    */
-  init() {
+  async init() {
     return this.build();
   }
 
@@ -29,9 +31,12 @@ export class App {
    * Load and initialize all necessary views
    * @returns {Promise<App>}
    */
-  private build() {
-    this.$node.html(HELLO_WORLD);
-    return Promise.resolve(null);
+  private async  build() {
+    const ds = new DatasetSelector();
+    const confusionMatrix = new ConfusionMatrix(this.$node);
+    const epochs = await ds.load();
+    confusionMatrix.render(epochs);
+
   }
 
   /**
