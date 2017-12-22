@@ -1,6 +1,6 @@
 /**
- * Created by Martin Ennemoser on Mon, 18 Dec 2017 13:54:13 GMT.
+ * Created by Martin Ennemoser on Fri, 22 Dec 2017 14:45:05 GMT.
  */
 
-export const APP_NAME = 'Malevo';
+export const APP_NAME = 'malevo';
 export const HELLO_WORLD = 'Hello Phovea World';

@@ -1,33 +1,72 @@
 {
+  "name": "malevo",
+  "description": "",
+  "homepage": "https://phovea.caleydo.org",
+  "version": "1.0.0-SNAPSHOT",
+  "author": {
+    "name": "Martin Ennemoser",
+    "email": "martin.ennemoser@jku.at",
+    "url": ""
+  },
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/phovea/malevo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/caleydo/malevo.git"
+  },
   "private": true,
   "scripts": {
-    "predist": "npm run build && npm run docs",
+    "predist": "echo hybrid",
     "predocker": "npm run build",
     "docker": "docker build -t malevo -f deploy/Dockerfile .",
+    "check": "flake8",
+    "pretest": "echo hybrid",
+    "test": "npm run test:web && npm run test:python",
+    "docs": "npm run docs:web && npm run docs:python",
+    "prebuild": "echo hybrid",
+    "build": "npm run build:web && npm run build:python",
+    "dist": "npm run dist:web && npm run dist:python",
     "compile": "tsc",
     "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
-    "docs": "typedoc --options typedoc.json src/**.ts",
-    "prebuild": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test",
-    "pretest": "npm run compile",
-    "test": "test ! -d tests || karma start",
-    "posttest": "npm run lint",
+    "posttest": "echo hybrid",
     "test:watch": "karma start --autoWatch=true --singleRun=false",
     "build:dev": "webpack",
-    "build": "webpack --env prod",
     "start": "webpack-dev-server --inline",
     "start:hot": "webpack-dev-server --inline --hot",
     "watch": "webpack --watch",
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
-    "dist": "mkdirp dist && cd build && tar cvzf ../dist/malevo.tar.gz *"
+    "docs:web": "typedoc --options typedoc.json src/**.ts",
+    "docs:python": "sphinx-apidoc -o docs -f ./malevo && sphinx-build ./docs build/docs",
+    "pretest:web": "npm run compile",
+    "pretest:python": "npm run check",
+    "posttest:web": "npm run lint",
+    "test:web": "test ! -d tests || karma start",
+    "test:python": "test ! -d tests || python setup.py test",
+    "prebuild:python": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test:python",
+    "prebuild:web": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test:web",
+    "build:python": "python build.py",
+    "build:web": "webpack --env prod",
+    "predist:web": "npm run build:web && npm run docs:web",
+    "predist:python": "npm run build:python && npm run docs:python",
+    "dist:web": "mkdirp dist && cd build && tar cvzf ../dist/malevo.tar.gz *",
+    "dist:python": "python setup.py bdist_egg"
   },
   "files": [
     "src",
     "index.js",
     "phovea.js",
     "phovea_registry.js",
-    "build"
+    "build",
+    "malevo",
+    "__init__.py",
+    "__main__.py",
+    "requirements.txt",
+    "requirements_dev.txt",
+    "docker_packages.txt"
   ],
   "engines": {
     "npm": ">= 3",
@@ -67,25 +106,13 @@
   },
   "dependencies": {
     "phovea_core": "github:phovea/phovea_core#develop",
+    "phovea_vis": "github:phovea/phovea_vis#develop",
     "phovea_ui": "github:phovea/phovea_ui#develop",
     "@types/d3": "3.5.36",
-    "d3": "3.5.17"
-  },
-  "name": "malevo",
-  "description": "",
-  "homepage": "https://phovea.caleydo.org",
-  "version": "1.0.0-SNAPSHOT",
-  "author": {
-    "name": "Martin Ennemoser",
-    "email": "martin.ennemoser@jku.at",
-    "url": ""
-  },
-  "license": "BSD-3-Clause",
-  "bugs": {
-    "url": "https://github.com/phovea/malevo/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Caleydo/malevo.git"
+    "d3": "3.5.17",
+    "@types/jquery": "2.0.33",
+    "jquery": "3.1.1",
+    "@types/select2": "4.0.30",
+    "select2": "4.0.3"
   }
 }

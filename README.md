@@ -7,7 +7,7 @@ Installation
 ------------
 
 ```
-git clone https://github.com/Caleydo/malevo.git
+git clone https://github.com/caleydo/malevo.git
 cd malevo
 npm install
 ```
@@ -26,12 +26,6 @@ Building
 npm run build
 ```
 
-Launching
----------
-
-```
-npm start
-```
 
 
 ***
@@ -40,7 +34,7 @@ npm start
 This repository is part of **[Phovea](http://phovea.caleydo.org/)**, a platform for developing web-based visualization applications. For tutorials, API docs, and more information about the build and deployment process, see the [documentation page](http://phovea.caleydo.org).
 
 
-[phovea-image]: https://img.shields.io/badge/Phovea-Application-1BA64E.svg
+[phovea-image]: https://img.shields.io/badge/Phovea-Client%20Plugin-F47D20.svg
 [phovea-url]: https://phovea.caleydo.org
 [npm-image]: https://badge.fury.io/js/malevo.svg
 [npm-url]: https://npmjs.org/package/malevo
