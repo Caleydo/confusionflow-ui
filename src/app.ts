@@ -6,6 +6,7 @@ import * as plugins from 'phovea_core/src/plugin';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './app_constants';
+import Timeline from './timeline';
 
 /**
  * Interface for all Views
@@ -119,6 +120,8 @@ export class App implements IAppView {
         this.setBusy(false);
         return this;
       });
+
+    new Timeline(this.$node);
 
     return buildPromise;
   }

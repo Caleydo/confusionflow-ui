@@ -13,10 +13,7 @@ import {hash} from 'phovea_core/src';
 import {ProductIDType} from 'phovea_core/src/idtype';
 import {parse} from 'phovea_core/src/range';
 import Format = d3.time.Format;
-
-export interface IMalevoDataset {
-  name: string;
-}
+import {IMalevoDataset} from './imalevo_dataset';
 
 /**
  * Shows a list of available datasets and lets the user choose one.
@@ -68,14 +65,8 @@ class DataSetSelector implements IAppView {
             .filter((d, i) => i === this.$select.property('selectedIndex'))
             .data();
 
-        hash.setProp(AppConstants.HASH_PROPS.DATASET, selectedData[0].key);
-        hash.removeProp(AppConstants.HASH_PROPS.TIME_POINTS);
-        hash.removeProp(AppConstants.HASH_PROPS.DETAIL_VIEW);
-        hash.removeProp(AppConstants.HASH_PROPS.SELECTION);
-
         if(selectedData.length > 0) {
-          events.fire(AppConstants.EVENT_DATA_COLLECTION_SELECTED, selectedData[0].values);
-          this.trackSelections(selectedData[0].values[0].item);
+          events.fire(AppConstants.EVENT_DATA_COLLECTION_SELECTED, selectedData[0]);
         }
       });
   }
@@ -104,20 +95,7 @@ class DataSetSelector implements IAppView {
     hash.setProp(AppConstants.HASH_PROPS.SELECTION, value);
   }
 
-  /**
-   * Restore the selections based on the URL hash
-   */
-  private restoreSelections() {
-    if (!this.trackedSelections) {
-      return;
-    }
-    const value = hash.getProp(AppConstants.HASH_PROPS.SELECTION, '');
-    if (value === '') {
-      return;
-    }
-    const ranges = value.split(';').map((s) => parse(s));
-    this.trackedSelections.select(ranges);
-  }
+
 
   /**
    * Update the list of datasets and returns a promise
@@ -166,7 +144,7 @@ class DataProvider {
   }
 
   prepareData(data: ITable[]) {
-    return data.map((x) => ({name: x.desc.name}));
+    return data.map((x) => ({id: 'epoch0', name: x.desc.name}));
   }
 }
 
