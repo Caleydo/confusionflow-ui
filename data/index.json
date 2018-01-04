@@ -24,7 +24,7 @@
     ]
   },
   {
-    "name": "QuickDraw",
+    "name": "CIFAR-10 - Epoch 0",
     "description": "DNN dataset that learned QuickDraw images",
     "path": "test_epoch0.csv",
     "separator": ",",

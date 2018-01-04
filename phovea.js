@@ -8,6 +8,13 @@
 module.exports = function(registry) {
   //registry.push('extension-type', 'extension-id', function() { return System.import('./src/extension_impl'); }, {});
   // generator-phovea:begin
+  registry.push('malevoView', 'HeatMap', function() { return System.import('./src/heat_map'); }, {
+    'name': 'Heat Map'
+  });
+
+  registry.push('malevoView', 'DataSetSelector', function() { return System.import('./src/data_set_selector'); }, {
+    'name': 'Data Set Selector'
+  });
 
   // generator-phovea:end
 };

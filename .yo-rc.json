@@ -45,6 +45,25 @@
       "dockerPackages": []
     },
     "ignores": [],
-    "extensions": []
+    "extensions": [
+       {
+        "type": "malevoView",
+        "id": "HeatMap",
+        "module": "heat_map",
+        "extras": {
+          "name": "Heat Map",
+          "factory": "create"
+        }
+      },
+      {
+        "type": "malevoView",
+        "id": "DataSetSelector",
+        "module": "data_set_selector",
+        "extras": {
+          "name": "Data Set Selector",
+          "factory": "create"
+        }
+      }
+    ]
   }
 }

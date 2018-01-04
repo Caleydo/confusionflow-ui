@@ -9,11 +9,11 @@ import 'phovea_ui/src/_bootstrap';
 import './style.scss';
 import {create as createApp} from './app';
 import {create as createHeader, AppHeaderLink} from 'phovea_ui/src/header';
-import {APP_NAME} from './language';
+import {Language} from './language';
 
 createHeader(
   <HTMLElement>document.querySelector('#caleydoHeader'),
-  { appLink: new AppHeaderLink(APP_NAME) }
+  { appLink: new AppHeaderLink(Language.APP_NAME) }
 );
 
 const parent = document.querySelector('#app');
