@@ -1,0 +1,3 @@
+id,dataset_name,epoch_count
+0,CIFAR-10,10
+1,CIFAR-100, 13

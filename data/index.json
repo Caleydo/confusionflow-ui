@@ -1,32 +1,101 @@
 [
   {
-    "name": "Test",
-    "description": "Some user attributes",
-    "path": "test.csv",
+    "name": "CIFAR-10-Epoch0",
+    "description": "DNN dataset that learned QuickDraw images",
+    "path": "cifar10_epoch0.csv",
     "separator": ",",
     "type": "table",
-    "size": [12, 3],
-    "idtype": "Users",
+    "size": [100000, 4],
+    "idtype": "Epochs",
     "columns": [
       {
-        "name": "username",
+        "name": "ground_truth",
         "value": {
-          "type": "string"
+          "type": "int",
+          "range": [0, 9]
         }
       },
       {
-        "name": "age",
+        "name": "predicted",
         "value": {
           "type": "int",
-          "range": [0, 100]
+          "range": [0, 9]
+        }
+      },
+      {
+        "name": "epoch_id",
+        "value": {
+          "type": "string"
         }
       }
     ]
   },
   {
-    "name": "CIFAR-10 - Epoch 0",
+    "name": "CIFAR-10-Epoch1",
     "description": "DNN dataset that learned QuickDraw images",
-    "path": "test_epoch0.csv",
+    "path": "cifar10_epoch1.csv",
+    "separator": ",",
+    "type": "table",
+    "size": [100000, 4],
+    "idtype": "Epochs",
+    "columns": [
+      {
+        "name": "ground_truth",
+        "value": {
+          "type": "int",
+          "range": [0, 9]
+        }
+      },
+      {
+        "name": "predicted",
+        "value": {
+          "type": "int",
+          "range": [0, 9]
+        }
+      },
+      {
+        "name": "epoch_id",
+        "value": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "CIFAR-100-Epoch0",
+    "description": "DNN dataset that learned QuickDraw images",
+    "path": "cifar100_epoch0.csv",
+    "separator": ",",
+    "type": "table",
+    "size": [100000, 4],
+    "idtype": "Epochs",
+    "columns": [
+      {
+        "name": "ground_truth",
+        "value": {
+          "type": "int",
+          "range": [0, 9]
+        }
+      },
+      {
+        "name": "predicted",
+        "value": {
+          "type": "int",
+          "range": [0, 9]
+        }
+      },
+      {
+        "name": "epoch_id",
+        "value": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "CIFAR-100-Epoch1",
+    "description": "DNN dataset that learned QuickDraw images",
+    "path": "cifar100_epoch1.csv",
     "separator": ",",
     "type": "table",
     "size": [100000, 4],

@@ -2,10 +2,11 @@
  * Created by Martin on 04.01.2018.
  */
 
-import {IMalevoDataset} from './imalevo_dataset';
+import {IMalevoDataset, MalevoDatasetCollection} from './malevo_dataset';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './app_constants';
+import * as ajax from 'phovea_core/src/ajax';
 
 export default class Timeline {
   private readonly $node:d3.Selection<any>;
@@ -16,44 +17,55 @@ export default class Timeline {
   }
 
   private attachListener() {
-    events.on(AppConstants.EVENT_DATA_COLLECTION_SELECTED, (evt, items:IMalevoDataset[]) => {
+    events.on(AppConstants.EVENT_DATA_COLLECTION_SELECTED, (evt, items:MalevoDatasetCollection) => {
      this.updateItems(items);
     });
   }
 
-  updateItems(malevoData: IMalevoDataset[]) {
-    //malevoData.forEach((x) => new Ratiobar(this.$node, x));
+  private getJSONEpochMetadata(data: MalevoDatasetCollection) {
+    return ajax.getAPIJSON(`/malevo/epoch/${data}`);
+  }
 
-    const data = [[{type: 'tp', value: 4}, {type: 'fp', value: 6}], [{type: 'tp', value: 3}, {type: 'fp', value: 7}]];
-    const $bars = this.$node.selectAll('div.bars')
-      .data(data);
+  private loadData(malevoData: MalevoDatasetCollection) {
+    //this.getJSONEpochMetadata()
+  }
 
-    $bars.enter().append('div')
-      .classed('bars', true)
-      .classed('loading', true)
-      .style('width', 16 + 'px')
-      .style('height', 100 + 'px');
+  updateItems(malevoData: MalevoDatasetCollection) {
+  //malevoData.forEach((x) => new Ratiobar(this.$node, x));
 
-    $bars.style('left', (d, i) => i * 10 + 'px');
+  const data = [[{type: 'tp', value: 4}, {type: 'fp', value: 6}], [{type: 'tp', value: 3}, {type: 'fp', value: 7}]];
 
-    $bars.exit().remove();
+  //this.loadData(malevoData);
 
-    const $divs = $bars.selectAll('div')
-      .data((x) => x);
-    $divs.enter().append('div');
+  const $bars = this.$node.selectAll('div.bars')
+    .data(data);
 
-    const y = d3.scale.linear()
-      .domain([0, 7]).range([0, 100]);
+  $bars.enter().append('div')
+    .classed('bars', true)
+    .classed('loading', true)
+    .style('width', 16 + 'px')
+    .style('height', 100 + 'px');
 
-    $divs
-      .attr('class', (d) => `bar ${d.type}-color`)
-      .style('height', (d) => y(d.value) + 'px')
-      .style('width', 12 + 'px');
+  $bars.style('left', (d, i) => i * 10 + 'px');
 
-    $divs.exit().remove();
+  $bars.exit().remove();
+
+  const $divs = $bars.selectAll('div')
+    .data((x) => x);
+  $divs.enter().append('div');
+
+  const y = d3.scale.linear()
+    .domain([0, 7]).range([0, 100]);
+
+  $divs
+    .attr('class', (d) => `bar ${d.type}-color`)
+    .style('height', (d) => y(d.value) + 'px')
+    .style('width', 12 + 'px');
+
+  $divs.exit().remove();
 
 
 
-    $bars.classed('loading', false);
+  $bars.classed('loading', false);
   }
 }
