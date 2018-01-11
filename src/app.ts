@@ -53,7 +53,7 @@ export class App implements IAppView {
   private views:IAppViewDesc[] = [
      {
       view: 'DataSetSelector',
-      parent: 'selector-dataset',
+      parent: 'selector',
       options: {}
     },
     {
@@ -68,6 +68,8 @@ export class App implements IAppView {
 
   constructor(parent:Element) {
     this.$node = d3.select(parent);
+
+    this.$node.append('div').classed('comparison', true);
   }
 
   /**

@@ -8,7 +8,7 @@
 module.exports = function(registry) {
   //registry.push('extension-type', 'extension-id', function() { return System.import('./src/extension_impl'); }, {});
   // generator-phovea:begin
-  registry.push('malevoView', 'HeatMap', function() { return System.import('./src/heat_map'); }, {
+  registry.push('malevoView', 'HeatMap', function() { return System.import('./src/heatmap_adapter'); }, {
     'name': 'Heat Map'
   });
 

@@ -49,7 +49,7 @@
        {
         "type": "malevoView",
         "id": "HeatMap",
-        "module": "heat_map",
+        "module": "heatmap_adapter",
         "extras": {
           "name": "Heat Map",
           "factory": "create"

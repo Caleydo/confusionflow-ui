@@ -24,7 +24,7 @@ export class AppConstants {
    */
   static EVENT_DATA_COLLECTION_SELECTED = 'eventDataCollectionSelected';
 
-  static EVENT_TIME_POINTS_SELECTED = 'eventTimePointsSelected';
+  static EVENT_EPOCH_SELECTED = 'eventEpochSelected';
 
   static EVENT_DIFF_HEATMAP_LOADED = 'eventDiffHeatmapLoaded';
 

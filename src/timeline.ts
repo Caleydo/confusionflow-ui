@@ -2,7 +2,7 @@
  * Created by Martin on 04.01.2018.
  */
 
-import {IMalevoDataset, MalevoDatasetCollection} from './malevo_dataset';
+import {IMalevoDataset, IMalevoDatasetCollection} from './malevo_dataset';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './app_constants';
@@ -31,11 +31,12 @@ export default class Timeline {
     return this.getJSONEpochMetadata(malevoData);
   }
 
+  private foo(x:any) {
+    console.log(x);
+  }
+
   updateItems(malevoData: IMalevoDataset) {
     const that = this;
-    //malevoData.forEach((x) => new Ratiobar(this.$node, x));
-    const data = [[{type: 'tp', value: 4}, {type: 'fp', value: 6}], [{type: 'tp', value: 3}, {type: 'fp', value: 7}]];
-    //this.loadData(malevoData);
     const $bars = this.$node.selectAll('div.bars')
       .data(malevoData.epochInfos);
     $bars.enter().append('div')
@@ -49,6 +50,9 @@ export default class Timeline {
             const $bar = d3.select(this);
             that.drawBar($bar, json);
             $bar.classed('loading', false);
+            $bar.on('click', (d) => {
+              events.fire(AppConstants.EVENT_EPOCH_SELECTED, json);
+            });
           });
       });
     $bars.style('left', (d, i) => i * 10 + 'px');
@@ -63,7 +67,7 @@ export default class Timeline {
     $divs.enter().append('div')
       .attr('class', (d) => `bar ${d.type}-color`)
       .style('height', (d) => y(d.value) + 'px')
-      .style('width', 12 + 'px');;
+      .style('width', 12 + 'px');
     $divs.exit().remove();
   }
 }

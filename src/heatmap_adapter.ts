@@ -14,7 +14,7 @@ import {mixin} from 'phovea_core/src';
 /**
  * Shows a simple heat map for a given data set.
  */
-class HeatMap implements IAppView {
+class HeatMapAdapter implements IAppView {
 
   private $node:d3.Selection<any>;
 
@@ -54,8 +54,9 @@ class HeatMap implements IAppView {
       this.clearContent();
     });
 
-    events.on(AppConstants.EVENT_TIME_POINTS_SELECTED, () => {
+    events.on(AppConstants.EVENT_EPOCH_SELECTED, (evt, dataset) => {
       this.clearContent();
+      this.drawHeatmap(dataset, this.scaleFactor);
     });
 
     events.on(this.options.eventName, (evt, dataset:IAnyMatrix) => {
@@ -67,6 +68,44 @@ class HeatMap implements IAppView {
       this.scaleFactor = scaleFactor;
       this.checkAndUpdate();
     });
+  }
+
+  private drawHeatmap(dataset, scaleFactor: {x: number, y: number}) {
+    const plugins = vis.list(dataset).filter((d) => /.*heatmap.*/.test(d.id));
+    if (plugins.length === 0) {
+      console.warn(`Heat map visualization plugin not found`);
+      return;
+    }
+    const scale = [this.heatMapOptions.initialScale * scaleFactor.x, this.heatMapOptions.initialScale * scaleFactor.y];
+
+    const maxRangeValue = Math.max(...(<INumberValueTypeDesc>dataset.valuetype).range.map((d) => Math.abs(d)));
+
+    const options = mixin({}, this.heatMapOptions, {
+      scale,
+      domain: [-maxRangeValue, 0, maxRangeValue]
+    });
+
+    this.$node.classed('loading', true);
+
+    return Promise.all([plugins[0].load()])
+      .then((args) => {
+        this.clearContent();
+
+       // console.log('args from plugins', args);
+        const plugin = args[0];
+       // console.log('const plugin- args', plugin);
+        plugin.factory(
+          dataset,
+          this.$node.node(),
+          options
+        );
+        return this;
+      })
+      .then((instance) => {
+        this.$node.classed('loading', false);
+        events.fire(AppConstants.EVENT_HEATMAP_LOADED);
+        return instance;
+      });
   }
 
   /**
@@ -185,5 +224,5 @@ function chooseLabel(nrow: number, ncol: number):string {
  * @returns {HeatMap}
  */
 export function create(parent:Element, options:any) {
-  return new HeatMap(parent, options);
+  return new HeatMapAdapter(parent, options);
 }

@@ -13,7 +13,7 @@ import {hash} from 'phovea_core/src';
 import {ProductIDType} from 'phovea_core/src/idtype';
 import {parse} from 'phovea_core/src/range';
 import Format = d3.time.Format;
-import {IMalevoDataset, MalevoDatasetCollection} from './malevo_dataset';
+import {IMalevoDataset, IMalevoDatasetCollection} from './malevo_dataset';
 
 /**
  * Shows a list of available datasets and lets the user choose one.
@@ -66,7 +66,7 @@ class DataSetSelector implements IAppView {
             .data();
 
         if(selectedData.length > 0) {
-          events.fire(AppConstants.EVENT_DATA_COLLECTION_SELECTED, selectedData[0][1]);
+          events.fire(AppConstants.EVENT_DATA_COLLECTION_SELECTED, selectedData[0]);
         }
       });
   }
@@ -104,15 +104,19 @@ class DataSetSelector implements IAppView {
   private update() {
     const dataprovider = new DataProvider();
     return dataprovider.load()
-      .then((data:MalevoDatasetCollection) => {
-        const $options = this.$select.selectAll('option').data(Array.from( data.datasets ));
+      .then((data:IMalevoDatasetCollection) => {
+        const resultArray = Object.keys(data).map(function(index){
+          return data[index];
+        });
+
+        const $options = this.$select.selectAll('option').data(resultArray);
 
         $options.enter().append('option');
 
         $options
           .attr('value', (d) => d)
           .text((d) =>
-            `${d[0]}`
+            `${d.name}`
           );
 
         $options.exit().remove();
@@ -142,25 +146,24 @@ class DataProvider {
   }
 
   prepareData(data: ITable[]) {
-    const getDatasetName = function(x: ITable): String {
+    const getDatasetName = function(x: ITable): string {
       const str = /[^-]+$/;
       const res = str.exec(x.desc.name);
-      const name = x.desc.name.substr(0, res.index-1)
+      const name = x.desc.name.substr(0, res.index-1);
       return name;
     };
-    const obj = new Map<String, IMalevoDataset>();
-    const dsc = new MalevoDatasetCollection();
-    dsc.datasets = obj;
+    const dsc: IMalevoDatasetCollection = {};
 
     const epochs = data.map((x: ITable) => {
-    const dsName = getDatasetName(x);
-      if(!obj.get(dsName)) {
+      const dsName = getDatasetName(x);
+      if(!dsc[dsName]) {
         const ds = new IMalevoDataset();
+        ds.name = dsName;
         ds.epochInfos = new Array();
         ds.epochInfos.push(x);
-        obj.set(dsName, ds);
+        dsc[dsName] = ds;
       } else {
-        const ds = obj.get(dsName);
+        const ds = dsc[dsName];
         ds.epochInfos.push(x);
       }
     });
