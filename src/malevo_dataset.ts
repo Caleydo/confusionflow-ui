@@ -1,7 +1,7 @@
 import {ITable} from 'phovea_core/src/table';
 
 export class IMalevoDataset {
-  epochs: ITable[];
+  epochInfos: ITable[];
 }
 
 export class MalevoDatasetCollection {

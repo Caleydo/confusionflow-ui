@@ -66,7 +66,7 @@ class DataSetSelector implements IAppView {
             .data();
 
         if(selectedData.length > 0) {
-          events.fire(AppConstants.EVENT_DATA_COLLECTION_SELECTED, selectedData[0]);
+          events.fire(AppConstants.EVENT_DATA_COLLECTION_SELECTED, selectedData[0][1]);
         }
       });
   }
@@ -105,14 +105,15 @@ class DataSetSelector implements IAppView {
     const dataprovider = new DataProvider();
     return dataprovider.load()
       .then((data:MalevoDatasetCollection) => {
-        const keys = Array.from( data.datasets.keys() );
-        const $options = this.$select.selectAll('option').data(keys);
+        const $options = this.$select.selectAll('option').data(Array.from( data.datasets ));
 
         $options.enter().append('option');
 
         $options
           .attr('value', (d) => d)
-          .text((d) => `${d}`);
+          .text((d) =>
+            `${d[0]}`
+          );
 
         $options.exit().remove();
         this.$node.classed('hidden', false);
@@ -155,12 +156,12 @@ class DataProvider {
     const dsName = getDatasetName(x);
       if(!obj.get(dsName)) {
         const ds = new IMalevoDataset();
-        ds.epochs = new Array();
-        ds.epochs.push(x);
+        ds.epochInfos = new Array();
+        ds.epochInfos.push(x);
         obj.set(dsName, ds);
       } else {
         const ds = obj.get(dsName);
-        ds.epochs.push(x);
+        ds.epochInfos.push(x);
       }
     });
     return dsc;
