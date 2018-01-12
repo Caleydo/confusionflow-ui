@@ -18,26 +18,21 @@ _log = logging.getLogger(__name__)
 def ratio_bar(id):
   try:
     ds1 = dataset.get(id)
-    df = ds1.aspandas()
+    df = ds1.asnumpy()
     accuracy = calcAccuracy(df)
   except ValueError as e: #todo handle correctly
     response = jsonify({'message': 'An error occured: ' + e.message})
     response.status_code = 400
     return response
-
   return jsonify({
-    'accuracy': accuracy,
-    'ground_truth': df.ground_truth,
-    'predicted': df.predicted
+    'accuracy': accuracy
   })
 
+
 def calcAccuracy(df):
-  f = lambda acc, val: acc +1 if (val == True) else acc
-  classification = (df.ground_truth == df.predicted).tolist()
-  if len(df.ground_truth) != len(df.predicted):
-    raise ValueError('The dataset format is not correct')
-  tp_rate = reduce(f, classification)
-  fp_rate = len(classification) - tp_rate
+  f = lambda acc, val: acc+1 if (val[0] == val[1]) else acc
+  tp_rate = reduce(f, df, 0)
+  fp_rate = len(df) - tp_rate
   return [{'type': 'tp', 'value': tp_rate}, {'type': 'fp', 'value': fp_rate}]
 
 

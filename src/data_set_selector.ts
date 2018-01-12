@@ -7,13 +7,13 @@ import * as events from 'phovea_core/src/event';
 import {AppConstants} from './app_constants';
 import {IAppView} from './app';
 import {Language} from './language';
-import {ITable} from 'phovea_core/src/table';
+import {INumericalMatrix} from 'phovea_core/src/matrix';
 import * as d3 from 'd3';
 import {hash} from 'phovea_core/src';
 import {ProductIDType} from 'phovea_core/src/idtype';
 import {parse} from 'phovea_core/src/range';
 import Format = d3.time.Format;
-import {IMalevoDataset, IMalevoDatasetCollection} from './malevo_dataset';
+import {IMalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './malevo_dataset';
 
 /**
  * Shows a list of available datasets and lets the user choose one.
@@ -75,7 +75,7 @@ class DataSetSelector implements IAppView {
    * Toggle tracking of selection of rows/columns/cells for the given dataset
    * @param matrix selected dataset
    */
-  private trackSelections(matrix: ITable) {
+  private trackSelections(matrix: INumericalMatrix) {
     if (this.trackedSelections) {
       this.trackedSelections.off(ProductIDType.EVENT_SELECT_PRODUCT, this.onSelectionChanged);
     }
@@ -139,34 +139,56 @@ class DataProvider {
    */
   load() {
     return data
-      .list({'type': 'table'}) // use server-side filtering
-      .then((list: ITable[]) => {
+      .list({'type': 'matrix'}) // use server-side filtering
+      .then((list: INumericalMatrix[]) => {
         return this.prepareData(list);
       });
   }
 
-  prepareData(data: ITable[]) {
-    const getDatasetName = function(x: ITable): string {
-      const str = /[^-]+$/;
-      const res = str.exec(x.desc.name);
-      const name = x.desc.name.substr(0, res.index-1);
-      return name;
+  prepareData(data: INumericalMatrix[]) {
+    const getDatasetName = function(x: INumericalMatrix) {
+      const parts = x.desc.name.split('-');
+      if(parts.length < 2 || parts.length > 3) {
+        throw new Error('The received filename is not valid');
+      }
+      return parts;
     };
+
+    const getOrCreateMalevoDataset = function(dsc: IMalevoDatasetCollection, datasetName: string) {
+      if(!dsc[datasetName]) {
+        const ds = new IMalevoDataset();
+        ds.name = datasetName;
+        ds.epochInfos = new Array();
+        dsc[datasetName] = ds;
+        return ds;
+      }
+      return dsc[datasetName];
+    };
+
+    const getOrCreateEpochInfo = function(dataset: IMalevoDataset, epochName: string) {
+      let epochInfo = dataset.epochInfos.find((x) => x.name === epochName);
+      if(!epochInfo) {
+        epochInfo = {name: epochName, epochInfo: null, confusionInfo: null};
+        dataset.epochInfos.push(epochInfo);
+        return epochInfo;
+      }
+      return epochInfo;
+    };
+
     const dsc: IMalevoDatasetCollection = {};
 
-    const epochs = data.map((x: ITable) => {
-      const dsName = getDatasetName(x);
-      if(!dsc[dsName]) {
-        const ds = new IMalevoDataset();
-        ds.name = dsName;
-        ds.epochInfos = new Array();
-        ds.epochInfos.push(x);
-        dsc[dsName] = ds;
+    for(const x of data) {
+      const parts = getDatasetName(x);
+      const dataset = getOrCreateMalevoDataset(dsc, parts[0]);
+      const epochInfo: IMalevoEpochInfo = getOrCreateEpochInfo(dataset, parts[1]);
+      if(parts.length === 2) {
+        epochInfo.epochInfo = x;
       } else {
-        const ds = dsc[dsName];
-        ds.epochInfos.push(x);
+        epochInfo.confusionInfo = x;
       }
-    });
+      const epochname = parts[0];
+
+    }
     return dsc;
   }
 }

@@ -7,7 +7,8 @@ import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './app_constants';
 import * as ajax from 'phovea_core/src/ajax';
-import {ITable} from 'phovea_core/src/table';
+import {INumericalMatrix} from 'phovea_core/src/matrix';
+import * as data from 'phovea_core/src/data';
 
 export default class Timeline {
   private readonly $node:d3.Selection<any>;
@@ -23,16 +24,15 @@ export default class Timeline {
     });
   }
 
-  private getJSONEpochMetadata(data: ITable) : Promise<any> {
+  private getJSONEpochMetadata(data: INumericalMatrix) : Promise<any> {
     return ajax.getAPIJSON(`/malevo_api/epoch/${data.desc.id}/ratio_bar`);
   }
 
-  private loadData(malevoData: ITable) : Promise<any> {
-    return this.getJSONEpochMetadata(malevoData);
-  }
-
-  private foo(x:any) {
-    console.log(x);
+  private loadConfusionData(malevoData: INumericalMatrix) : Promise<any> {
+    return malevoData.data()
+      .then((x) => {
+        console.log(x);
+      });
   }
 
   updateItems(malevoData: IMalevoDataset) {
@@ -45,13 +45,22 @@ export default class Timeline {
       .style('width', 16 + 'px')
       .style('height', 100 + 'px')
       .each(function(epochInfo, i) {
-        that.loadData(epochInfo)
+        that.getJSONEpochMetadata(epochInfo.epochInfo)
           .then((json) => {
             const $bar = d3.select(this);
             that.drawBar($bar, json);
             $bar.classed('loading', false);
+            return epochInfo;
+          })
+          .then((epochInfo) => {
+            // get heatmap
+            const $bar = d3.select(this);
             $bar.on('click', (d) => {
-              events.fire(AppConstants.EVENT_EPOCH_SELECTED, json);
+              that.loadConfusionData(epochInfo.confusionInfo)
+                .then((data) => {
+                  console.log(data);
+                });
+              //events.fire(AppConstants.EVENT_EPOCH_SELECTED, json);
             });
           });
       });

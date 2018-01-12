@@ -1,8 +1,14 @@
-import {ITable} from 'phovea_core/src/table';
+import {INumericalMatrix} from 'phovea_core/src/matrix';
+
+export interface IMalevoEpochInfo {
+  name: string;
+  epochInfo: INumericalMatrix;
+  confusionInfo: INumericalMatrix;
+}
 
 export class IMalevoDataset {
   name: string;
-  epochInfos: ITable[];
+  epochInfos: IMalevoEpochInfo[];
 }
 
 export interface IMalevoDatasetCollection {

@@ -1,126 +1,122 @@
 [
   {
-    "name": "CIFAR-10-Epoch0",
+    "name": "CIFAR_10-Epoch0",
     "description": "DNN dataset that learned QuickDraw images",
-    "path": "cifar10_epoch0.csv",
+    "path": "raw-epochs/cifar10_epoch0.csv",
     "separator": ",",
-    "type": "table",
-    "size": [100000, 4],
+    "type": "matrix",
+    "size": [100000, 2],
     "idtype": "Epochs",
-    "columns": [
-      {
-        "name": "ground_truth",
-        "value": {
-          "type": "int",
-          "range": [0, 9]
-        }
-      },
-      {
-        "name": "predicted",
-        "value": {
-          "type": "int",
-          "range": [0, 9]
-        }
-      },
-      {
-        "name": "epoch_id",
-        "value": {
-          "type": "string"
-        }
-      }
-    ]
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,100]
+    }
   },
   {
-    "name": "CIFAR-10-Epoch1",
+    "name": "CIFAR_10-Epoch1",
     "description": "DNN dataset that learned QuickDraw images",
-    "path": "cifar10_epoch1.csv",
+    "path": "raw-epochs/cifar10_epoch1.csv",
     "separator": ",",
-    "type": "table",
-    "size": [100000, 4],
+    "type": "matrix",
+    "size": [100000, 2],
     "idtype": "Epochs",
-    "columns": [
-      {
-        "name": "ground_truth",
-        "value": {
-          "type": "int",
-          "range": [0, 9]
-        }
-      },
-      {
-        "name": "predicted",
-        "value": {
-          "type": "int",
-          "range": [0, 9]
-        }
-      },
-      {
-        "name": "epoch_id",
-        "value": {
-          "type": "string"
-        }
-      }
-    ]
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,100]
+    }
   },
   {
-    "name": "CIFAR-100-Epoch0",
+    "name": "CIFAR_100-Epoch0",
     "description": "DNN dataset that learned QuickDraw images",
-    "path": "cifar100_epoch0.csv",
+    "path": "raw-epochs/cifar100_epoch0.csv",
     "separator": ",",
-    "type": "table",
-    "size": [100000, 4],
+    "type": "matrix",
+    "size": [100000, 2],
     "idtype": "Epochs",
-    "columns": [
-      {
-        "name": "ground_truth",
-        "value": {
-          "type": "int",
-          "range": [0, 9]
-        }
-      },
-      {
-        "name": "predicted",
-        "value": {
-          "type": "int",
-          "range": [0, 9]
-        }
-      },
-      {
-        "name": "epoch_id",
-        "value": {
-          "type": "string"
-        }
-      }
-    ]
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,100]
+    }
   },
   {
-    "name": "CIFAR-100-Epoch1",
+    "name": "CIFAR_100-Epoch1",
     "description": "DNN dataset that learned QuickDraw images",
-    "path": "cifar100_epoch1.csv",
+    "path": "raw-epochs/cifar100_epoch1.csv",
     "separator": ",",
-    "type": "table",
-    "size": [100000, 4],
+    "type": "matrix",
+    "size": [100000, 2],
     "idtype": "Epochs",
-    "columns": [
-      {
-        "name": "ground_truth",
-        "value": {
-          "type": "int",
-          "range": [0, 9]
-        }
-      },
-      {
-        "name": "predicted",
-        "value": {
-          "type": "int",
-          "range": [0, 9]
-        }
-      },
-      {
-        "name": "epoch_id",
-        "value": {
-          "type": "string"
-        }
-      }
-    ]
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,100]
+    }
+  },
+  {
+    "name": "CIFAR_10-Epoch0-Confusion",
+    "description": "DNN dataset that learned QuickDraw images",
+    "path": "confusion-matrices/cifar10_epoch0_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [16, 18],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,100]
+    }
+  },
+  {
+    "name": "CIFAR_10-Epoch1-Confusion",
+    "description": "DNN dataset that learned QuickDraw images",
+    "path": "confusion-matrices/cifar10_epoch1_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [16, 18],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,100]
+    }
+  },
+  {
+    "name": "CIFAR_100-Epoch0-Confusion",
+    "description": "DNN dataset that learned QuickDraw images",
+    "path": "confusion-matrices/cifar100_epoch0_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [16, 18],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,100]
+    }
+  },
+  {
+    "name": "CIFAR_100-Epoch1-Confusion",
+    "description": "DNN dataset that learned QuickDraw images",
+    "path": "confusion-matrices/cifar100_epoch1_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [16, 18],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,100]
+    }
   }
 ]
