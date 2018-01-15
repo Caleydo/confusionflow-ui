@@ -1,0 +1,30 @@
+.timeline {
+  display: flex;
+  height: 100px;
+  position: relative;
+
+  .epoch-circle {
+    position: relative;
+    display: flex;
+    flex-direction: column-reverse;
+    border-radius: 50%;
+    background-color: #c5c5c5;
+    width: 20px;
+    height: 20px;
+    border: 2px solid black;
+    top: 50%;
+    margin-top: -10px;
+  }
+
+  .selected {
+    background-color: black;
+  }
+
+  .line{
+    width: 10px;
+    height: 2px;
+    background-color: black;
+    position: absolute;
+    top: 50%;
+  }
+}

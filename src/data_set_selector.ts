@@ -71,17 +71,6 @@ class DataSetSelector implements IAppView {
       });
   }
 
-  /**
-   * Toggle tracking of selection of rows/columns/cells for the given dataset
-   * @param matrix selected dataset
-   */
-  private trackSelections(matrix: INumericalMatrix) {
-    if (this.trackedSelections) {
-      this.trackedSelections.off(ProductIDType.EVENT_SELECT_PRODUCT, this.onSelectionChanged);
-    }
-  //  this.trackedSelections = matrix.
-  //  this.trackedSelections.on(ProductIDType.EVENT_SELECT_PRODUCT, this.onSelectionChanged);
-  }
 
   /**
    * Update the URL hash based on the selections
@@ -120,6 +109,9 @@ class DataSetSelector implements IAppView {
           );
 
         $options.exit().remove();
+        if(Object.keys(data).length > 0) {
+          events.fire(AppConstants.EVENT_DATA_COLLECTION_SELECTED, data[Object.keys(data)[0]]);
+        }
         this.$node.classed('hidden', false);
         return this;
       });
@@ -148,7 +140,7 @@ class DataProvider {
   prepareData(data: INumericalMatrix[]) {
     const getDatasetName = function(x: INumericalMatrix) {
       const parts = x.desc.name.split('-');
-      if(parts.length < 2 || parts.length > 3) {
+      if(parts.length < 2 || parts.length > 4) {
         throw new Error('The received filename is not valid');
       }
       return parts;
@@ -168,7 +160,7 @@ class DataProvider {
     const getOrCreateEpochInfo = function(dataset: IMalevoDataset, epochName: string) {
       let epochInfo = dataset.epochInfos.find((x) => x.name === epochName);
       if(!epochInfo) {
-        epochInfo = {name: epochName, epochInfo: null, confusionInfo: null};
+        epochInfo = {name: epochName, confusionInfo: null};
         dataset.epochInfos.push(epochInfo);
         return epochInfo;
       }
@@ -180,13 +172,8 @@ class DataProvider {
     for(const x of data) {
       const parts = getDatasetName(x);
       const dataset = getOrCreateMalevoDataset(dsc, parts[0]);
-      const epochInfo: IMalevoEpochInfo = getOrCreateEpochInfo(dataset, parts[1]);
-      if(parts.length === 2) {
-        epochInfo.epochInfo = x;
-      } else {
-        epochInfo.confusionInfo = x;
-      }
-      const epochname = parts[0];
+      const epochInfo: IMalevoEpochInfo = getOrCreateEpochInfo(dataset, parts[2]);
+      epochInfo.confusionInfo = x;
 
     }
     return dsc;

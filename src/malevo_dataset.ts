@@ -2,7 +2,6 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 
 export interface IMalevoEpochInfo {
   name: string;
-  epochInfo: INumericalMatrix;
   confusionInfo: INumericalMatrix;
 }
 

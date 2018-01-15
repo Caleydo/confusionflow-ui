@@ -2,7 +2,7 @@
  * Created by Martin on 04.01.2018.
  */
 
-import {IMalevoDataset, IMalevoDatasetCollection} from './malevo_dataset';
+import {IMalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './malevo_dataset';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './app_constants';
@@ -12,9 +12,10 @@ import * as data from 'phovea_core/src/data';
 
 export default class Timeline {
   private readonly $node:d3.Selection<any>;
+  private readonly OFFSET = 10;
 
   constructor(parent: d3.Selection<any>) {
-    this.$node = parent.append('div').classed('bar_chart', true);
+    this.$node = parent.append('div').classed('timeline', true);
     this.attachListener();
   }
 
@@ -35,36 +36,41 @@ export default class Timeline {
       });
   }
 
+  createLineSeparator($node: d3.Selection<any>) {
+    const count = 4 * 20 + 3 * this.OFFSET;
+    $node.append('div')
+      .classed('line', true)
+      .style('width', count + `px`);
+  }
+
   updateItems(malevoData: IMalevoDataset) {
     const that = this;
-    const $bars = this.$node.selectAll('div.bars')
+    this.createLineSeparator(this.$node);
+    const $bars = this.$node.selectAll('div.epoch-circle')
       .data(malevoData.epochInfos);
     $bars.enter().append('div')
-      .classed('bars', true)
+      .classed('epoch-circle', true)
       .classed('loading', true)
-      .style('width', 16 + 'px')
-      .style('height', 100 + 'px')
-      .each(function(epochInfo, i) {
-        that.getJSONEpochMetadata(epochInfo.epochInfo)
+      .each(function(epochInfo: IMalevoEpochInfo, i: number) {
+        that.getJSONEpochMetadata(epochInfo.confusionInfo)
           .then((json) => {
             const $bar = d3.select(this);
-            that.drawBar($bar, json);
+            //that.drawBar($bar, json);
             $bar.classed('loading', false);
             return epochInfo;
           })
           .then((epochInfo) => {
             // get heatmap
             const $bar = d3.select(this);
-            $bar.on('click', (d) => {
-              that.loadConfusionData(epochInfo.confusionInfo)
-                .then((data) => {
-                  console.log(data);
-                });
+            $bar.on('click', function(this: HTMLElement, d: IMalevoEpochInfo) {
+              const state = d3.select(this).classed('selected');
+              d3.select(this).classed('selected', !state);
+              // load heatmap
               //events.fire(AppConstants.EVENT_EPOCH_SELECTED, json);
             });
           });
       });
-    $bars.style('left', (d, i) => i * 10 + 'px');
+    $bars.style('left', (d, i) => i * that.OFFSET + 'px');
     $bars.exit().remove();
   }
 
