@@ -3,9 +3,14 @@
  */
 import * as d3 from 'd3';
 
+export interface ISelection {
+  getSelection(sel: d3.Selection<any>);
+}
+
 export default class TimelineRangeSelector {
   private dragStart: [number, number] = null;
-  constructor($node: d3.Selection<any>) {
+
+  constructor($node: d3.Selection<any>, private listeners: ISelection[]) {
     const that = this;
     const drag = d3.behavior.drag()
       .on('drag', function(d,i) {
@@ -42,6 +47,7 @@ export default class TimelineRangeSelector {
     const res = $circles.filter(function(d, i) {
       return isInRange(this, dragStart[0], dragEnd[0]);
     });
+    this.listeners.forEach((l) => l.getSelection(res));
     console.log(res);
   }
 }

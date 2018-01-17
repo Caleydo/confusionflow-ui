@@ -8,11 +8,13 @@ import * as events from 'phovea_core/src/event';
 import {AppConstants} from './app_constants';
 import * as ajax from 'phovea_core/src/ajax';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
+import {ISelection} from './timeline_range_selector';
 import TimelineRangeSelector from './timeline_range_selector';
 
-export default class Timeline {
+export default class Timeline implements ISelection {
   private readonly $node:d3.Selection<any>;
   private readonly OFFSET = 10;
+  private $circles:d3.Selection<any>;
 
   constructor(parent: d3.Selection<any>) {
     this.$node = parent.append('div').classed('timeline', true);
@@ -45,11 +47,11 @@ export default class Timeline {
 
   updateItems(malevoData: IMalevoDataset) {
     const that = this;
-    new TimelineRangeSelector(this.$node);
+    new TimelineRangeSelector(this.$node, [this]);
     this.createLineSeparator(this.$node);
-    const $bars = this.$node.selectAll('div.epoch-circle')
+    const $circles = this.$node.selectAll('div.epoch-circle')
       .data(malevoData.epochInfos);
-    $bars.enter().append('div')
+    $circles.enter().append('div')
       .classed('epoch-circle', true)
       .classed('loading', true)
       .each(function(epochInfo: IMalevoEpochInfo, i: number) {
@@ -70,7 +72,14 @@ export default class Timeline {
             });
           });
       });
-    $bars.style('left', (d, i) => i * that.OFFSET + 'px');
-    $bars.exit().remove();
+    $circles.style('left', (d, i) => i * that.OFFSET + 'px');
+    $circles.exit().remove();
+    this.$circles = $circles;
+  }
+
+  getSelection(sel: d3.Selection<any>) {
+    this.$circles.style('border-color', 'black');
+    sel.style('border-color', 'red');
+    //events.fire(AppConstants.EVENT_EPOCH_SELECTED, sel);
   }
 }
