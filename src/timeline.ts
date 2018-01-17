@@ -8,7 +8,7 @@ import * as events from 'phovea_core/src/event';
 import {AppConstants} from './app_constants';
 import * as ajax from 'phovea_core/src/ajax';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
-import * as data from 'phovea_core/src/data';
+import TimelineRangeSelector from './timeline_range_selector';
 
 export default class Timeline {
   private readonly $node:d3.Selection<any>;
@@ -45,6 +45,7 @@ export default class Timeline {
 
   updateItems(malevoData: IMalevoDataset) {
     const that = this;
+    new TimelineRangeSelector(this.$node);
     this.createLineSeparator(this.$node);
     const $bars = this.$node.selectAll('div.epoch-circle')
       .data(malevoData.epochInfos);
@@ -55,7 +56,6 @@ export default class Timeline {
         that.getJSONEpochMetadata(epochInfo.confusionInfo)
           .then((json) => {
             const $bar = d3.select(this);
-            //that.drawBar($bar, json);
             $bar.classed('loading', false);
             return epochInfo;
           })
@@ -72,17 +72,5 @@ export default class Timeline {
       });
     $bars.style('left', (d, i) => i * that.OFFSET + 'px');
     $bars.exit().remove();
-  }
-
-  drawBar($bar, json) {
-    const $divs = $bar.selectAll('div')
-      .data(json.accuracy);
-    const y = d3.scale.linear()
-      .domain([0, 7]).range([0, 100]);
-    $divs.enter().append('div')
-      .attr('class', (d) => `bar ${d.type}-color`)
-      .style('height', (d) => y(d.value) + 'px')
-      .style('width', 12 + 'px');
-    $divs.exit().remove();
   }
 }
