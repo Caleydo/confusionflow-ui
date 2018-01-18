@@ -60,16 +60,6 @@ export default class Timeline implements IDragSelection {
             $epochDiv.html(`<div class="point"></div>
                             <div class="label">${epochInfo.name}</div>`);
             return epochInfo;
-          })
-          .then((epochInfo) => {
-            // get heatmap
-            const $bar = d3.select(this);
-            /*$bar.on('click', function(this: HTMLElement, d: IMalevoEpochInfo) {
-              const state = d3.select(this).classed('selected');
-              d3.select(this).classed('selected', !state);
-              // load heatmap
-              //events.fire(AppConstants.EVENT_EPOCH_SELECTED, json);
-            });*/
           });
       });
     $circles.exit().remove();

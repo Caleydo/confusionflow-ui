@@ -9,9 +9,6 @@ import {IAppView} from './app';
 import {Language} from './language';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import * as d3 from 'd3';
-import {hash} from 'phovea_core/src';
-import {ProductIDType} from 'phovea_core/src/idtype';
-import {parse} from 'phovea_core/src/range';
 import Format = d3.time.Format;
 import {IMalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './malevo_dataset';
 
@@ -23,9 +20,6 @@ class DataSetSelector implements IAppView {
 
   private $node;
   private $select;
-
-  private trackedSelections: ProductIDType = null;
-  private onSelectionChanged = () => this.updateSelectionHash();
 
   constructor(parent:Element, private options:any) {
     this.$node = d3.select('.navbar-header')
@@ -72,19 +66,6 @@ class DataSetSelector implements IAppView {
   }
 
 
-  /**
-   * Update the URL hash based on the selections
-   */
-  private updateSelectionHash() {
-    if (!this.trackedSelections) {
-      return;
-    }
-    const ranges = this.trackedSelections.productSelections();
-    const value = ranges.map((r) => r.toString()).join(';');
-    hash.setProp(AppConstants.HASH_PROPS.SELECTION, value);
-  }
-
-
 
   /**
    * Update the list of datasets and returns a promise
@@ -120,11 +101,6 @@ class DataSetSelector implements IAppView {
 }
 
 class DataProvider {
-
-  constructor() {
-    //
-  }
-
   /**
    * Loads the data and retruns a promise
    * @returns {Promise<IMalevoDataset[]>}
