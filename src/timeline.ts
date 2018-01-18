@@ -15,6 +15,7 @@ export default class Timeline implements IDragSelection {
   private readonly $node:d3.Selection<any>;
   private $circles:d3.Selection<any>;
   private $rubberband: d3.Selection<any>;
+  private isDragging = false;
 
   constructor(parent: d3.Selection<any>) {
     this.$node = parent.append('div').attr('id', 'timeline');
@@ -87,21 +88,27 @@ export default class Timeline implements IDragSelection {
     } else {
       this.$circles.classed('single-selected', false);
       sel.classed('single-selected', true);
+      if(this.isDragging) { // if one point was selected by dragging => hide the band
+        this.$rubberband.style('visibility', 'hidden');
+      }
     }
     //this.$circles.style('border-color', 'black');
     sel.style('border-color', 'red');
+    this.isDragging = false;
     //events.fire(AppConstants.EVENT_EPOCH_SELECTED, sel);
   }
 
   dragStart() {
-    this.$rubberband.style('visibility', 'visible');
-
   }
 
   dragging(start: [number, number], end: [number, number]) {
     console.assert(start[0] <= end[0]);
-    this.$rubberband.style('left', start[0] + 'px');
-    this.$rubberband.style('width', end[0] - start[0] + 'px');
+    if(end[0] - start[0] > 10) {
+      this.isDragging = true;
+      this.$rubberband.style('visibility', 'visible');
+      this.$rubberband.style('left', start[0] + 'px');
+      this.$rubberband.style('width', end[0] - start[0] + 'px');
+    }
   }
 
   snapBand(sel: d3.Selection<any>) {

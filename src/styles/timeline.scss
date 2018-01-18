@@ -42,6 +42,10 @@
       }
     }
 
+    &.single-selected .point {
+        background-color: black;
+    }
+
     &:last-child .point:before {
       display: none;
     }
