@@ -1,32 +1,54 @@
-.timeline {
+#timeline {
   display: flex;
-  height: 100px;
+  justify-content: flex-start;
   position: relative;
+  padding: 20px;
 
-  .epoch-circle {
-    position: relative;
-    display: flex;
-    flex-direction: column-reverse;
-    border-radius: 50%;
-    background-color: #c5c5c5;
-    width: 20px;
-    height: 20px;
-    border-width: 2px;
-    border-style: solid;
-    border-color: black;
-    top: 50%;
-    margin-top: -10px;
-  }
-
-  .selected {
-    background-color: black;
-  }
-
-  .line{
-    width: 10px;
-    height: 2px;
-    background-color: black;
+  .selection {
     position: absolute;
-    top: 50%;
+    top: 20px;
+    height: 25px;
+    border: 2px red solid;
+    border-radius: 5px;
+    visibility: hidden;
+  }
+
+  .epochs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 20px;
+
+    .point {
+      border-radius: 50%;
+      background-color: #c5c5c5;
+      width: 25px;
+      height: 25px;
+      border-width: 2px;
+      border-style: solid;
+      border-color: black;
+      position: relative;
+
+      &:before {
+        content: '';
+        display: block;
+        position: absolute;
+        border-top: 2px solid black;
+        width: 300%;
+        top: 50%;
+        left: 100%;
+        z-index: -1;
+        user-select: none;
+      }
+    }
+
+    &:last-child .point:before {
+      display: none;
+    }
+
+    .label {
+      margin-top: 5px;
+      color: black;
+    }
   }
 }
