@@ -22,33 +22,15 @@ export class AppConstants {
    * Event that is fired when a data set collection has been selected
    * @type {string}
    */
-  static EVENT_DATA_COLLECTION_SELECTED = 'eventDataCollectionSelected';
+  static EVENT_DATA_COLLECTION_SELECTED = 'eventDataCollectionSelected'; // Fires when the use selects a dataset from the selector
 
-  static EVENT_EPOCH_SELECTED = 'eventEpochSelected';
+  static EVENT_EPOCH_SELECTED = 'eventEpochSelected'; // Fires when the user selects a timepoint (epoch)
 
+  //todo handle in "heatmap" issue
   static EVENT_DIFF_HEATMAP_LOADED = 'eventDiffHeatmapLoaded';
 
   static MAXIMAL_HEATMAP_LABEL_SIZE = 70;
 
   static EVENT_HEATMAP_LOADED = 'eventHeatmapLoaded';
 
-  /**
-   * Property for the URL hash
-   * @type {{DATASET: string; TIME_POINTS: string; DETAIL_VIEW: string}}
-   */
-  static HASH_PROPS = {
-    DATASET: 'ds',
-    TIME_POINTS: 'tp',
-    DETAIL_VIEW: 'detail',
-    FILTER: 'f',
-    SELECTION: 's'
-  };
-
-  /**
-   * Parse the following date formats from strings using moment.js (see http://momentjs.com/docs/#/parsing/)
-   * @type {string[]}
-   */
-  static PARSE_DATE_FORMATS = ['YYYY_MM_DD', 'YYYY-MM-DD', 'YYYY'];
-
-  static TIMELINE_BAR_WIDTH = 16;
 }

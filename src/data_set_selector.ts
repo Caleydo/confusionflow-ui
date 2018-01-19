@@ -114,7 +114,7 @@ class DataProvider {
   }
 
   prepareData(data: INumericalMatrix[]) {
-    const getDatasetName = function(x: INumericalMatrix) {
+    const getDatasetName = (x: INumericalMatrix) => {
       const parts = x.desc.name.split('-');
       if(parts.length < 2 || parts.length > 4) {
         throw new Error('The received filename is not valid');
@@ -122,18 +122,18 @@ class DataProvider {
       return parts;
     };
 
-    const getOrCreateMalevoDataset = function(dsc: IMalevoDatasetCollection, datasetName: string) {
+    const getOrCreateMalevoDataset = (dsc: IMalevoDatasetCollection, datasetName: string) => {
       if(!dsc[datasetName]) {
         const ds = new IMalevoDataset();
         ds.name = datasetName;
-        ds.epochInfos = new Array();
+        ds.epochInfos = [];
         dsc[datasetName] = ds;
         return ds;
       }
       return dsc[datasetName];
     };
 
-    const getOrCreateEpochInfo = function(dataset: IMalevoDataset, epochName: string) {
+    const getOrCreateEpochInfo = (dataset: IMalevoDataset, epochName: string) => {
       let epochInfo = dataset.epochInfos.find((x) => x.name === epochName);
       if(!epochInfo) {
         epochInfo = {name: epochName, confusionInfo: null};

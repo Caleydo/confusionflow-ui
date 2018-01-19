@@ -10,8 +10,8 @@ export interface IDragSelection {
 }
 
 class SelectionRect {
-  startPt: [number, number];
-  endPt: [number, number];
+  private startPt: [number, number];
+  private endPt: [number, number];
 
   init(point: [number, number]) {
     this.startPt = point;
@@ -33,10 +33,15 @@ class SelectionRect {
 
 export default class TimelineRangeSelector {
   selectionRect: SelectionRect;
+  private listeners: IDragSelection[] = [];
 
-  constructor($node: d3.Selection<any>, private candidates: d3.Selection<any>, private listeners: IDragSelection[]) {
+  constructor($node: d3.Selection<any>, private candidates: d3.Selection<any>) {
     this.setup($node);
     this.selectionRect = new SelectionRect();
+  }
+
+  addListener(l: IDragSelection) {
+    this.listeners.push(l);
   }
 
   private getSelectionCandidates(dragStart: [number, number], dragEnd: [number, number], $candidates: d3.Selection<any>) {

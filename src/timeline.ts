@@ -67,7 +67,7 @@ export default class Timeline implements IDragSelection, IAppView {
       });
     $circles.exit().remove();
     this.$circles = $circles;
-    new RangeSelector(this.$node, this.$node.selectAll('div.epochs'), [this]);
+    new RangeSelector(this.$node, this.$node.selectAll('div.epochs')).addListener(this);
   }
 
   dragEnd(sel: d3.Selection<any>) {
