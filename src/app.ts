@@ -57,7 +57,7 @@ export class App implements IAppView {
       options: {}
     },
     {
-      view: 'HeatMap',
+      view: 'ConfusionMatrix',
       parent: 'comparison',
       options: {
         eventName: ''

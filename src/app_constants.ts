@@ -25,12 +25,4 @@ export class AppConstants {
   static EVENT_DATA_COLLECTION_SELECTED = 'eventDataCollectionSelected'; // Fires when the use selects a dataset from the selector
 
   static EVENT_EPOCH_SELECTED = 'eventEpochSelected'; // Fires when the user selects a timepoint (epoch)
-
-  //todo handle in "heatmap" issue
-  static EVENT_DIFF_HEATMAP_LOADED = 'eventDiffHeatmapLoaded';
-
-  static MAXIMAL_HEATMAP_LABEL_SIZE = 70;
-
-  static EVENT_HEATMAP_LOADED = 'eventHeatmapLoaded';
-
 }

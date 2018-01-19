@@ -8,8 +8,8 @@ import 'phovea_ui/src/_bootstrap';
 import './style.scss';
 import { create as createApp } from './app';
 import { create as createHeader, AppHeaderLink } from 'phovea_ui/src/header';
-import { APP_NAME } from './language';
-createHeader(document.querySelector('#caleydoHeader'), { appLink: new AppHeaderLink(APP_NAME) });
+import { Language } from './language';
+createHeader(document.querySelector('#caleydoHeader'), { appLink: new AppHeaderLink(Language.APP_NAME) });
 var parent = document.querySelector('#app');
 createApp(parent).init();
 //# sourceMappingURL=index.js.map

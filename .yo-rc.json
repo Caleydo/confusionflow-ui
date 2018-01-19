@@ -48,10 +48,10 @@
     "extensions": [
        {
         "type": "malevoView",
-        "id": "HeatMap",
-        "module": "heatmap_adapter",
+        "id": "ConfusionMatrix",
+        "module": "ConfusionMatrix",
         "extras": {
-          "name": "Heat Map",
+          "name": "Confusion Matrix",
           "factory": "create"
         }
       },

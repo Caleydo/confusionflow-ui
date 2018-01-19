@@ -1,15 +1,24 @@
-export default class ConfusionMatrix {
-  private readonly $parent: d3.Selection<any>;
+import {IAppView} from './app';
+import * as d3 from 'd3';
+export default class ConfusionMatrix implements IAppView{
+  private readonly $node: d3.Selection<any>;
 
 
-  constructor($root: d3.Selection<any>) {
-    this.$parent = $root.classed('confusion_matrix', true);
-    // this.create();
+  constructor(parent:Element) {
+    this.$node = d3.select(parent)
+      .append('div')
+      .classed('confusion_matrix', true);
   }
 
-  /* private create() {
-
-   }*/
+  /**
+   * Initialize the view and return a promise
+   * that is resolved as soon the view is completely initialized.
+   * @returns {Promise<ConfusionMatrix>}
+   */
+  init() {
+    // return the promise directly as long there is no dynamical data to update
+    return Promise.resolve(this);
+  }
 
   render(data: any) {
 
@@ -53,4 +62,14 @@ export default class ConfusionMatrix {
      }
      */
   }
+}
+
+/**
+ * Factory method to create a new HeatMap instance
+ * @param parent
+ * @param options
+ * @returns {ConfusionMatrix}
+ */
+export function create(parent:Element, options:any) {
+  return new ConfusionMatrix(parent);
 }

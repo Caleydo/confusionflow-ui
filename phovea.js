@@ -8,8 +8,8 @@
 module.exports = function(registry) {
   //registry.push('extension-type', 'extension-id', function() { return System.import('./src/extension_impl'); }, {});
   // generator-phovea:begin
-  registry.push('malevoView', 'HeatMap', function() { return System.import('./src/heatmap_adapter'); }, {
-    'name': 'Heat Map'
+  registry.push('malevoView', 'ConfusionMatrix', function() { return System.import('./src/ConfusionMatrix'); }, {
+    'name': 'Confusion Matrix'
   });
 
   registry.push('malevoView', 'DataSetSelector', function() { return System.import('./src/data_set_selector'); }, {

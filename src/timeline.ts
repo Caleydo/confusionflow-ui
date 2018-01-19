@@ -34,10 +34,10 @@ export default class Timeline implements IDragSelection, IAppView {
     });
   }
 
-    /**
+  /**
    * Initialize the view and return a promise
    * that is resolved as soon the view is completely initialized.
-   * @returns {Promise<HeatMap>}
+   * @returns {Promise<Timeline>}
    */
   init() {
     this.rangeSelector.addListener(this);
@@ -123,7 +123,7 @@ export default class Timeline implements IDragSelection, IAppView {
   }
 }
 
-  /**
+/**
  * Factory method to create a new HeatMap instance
  * @param parent
  * @param options
