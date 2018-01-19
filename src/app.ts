@@ -60,7 +60,13 @@ export class App implements IAppView {
       view: 'HeatMap',
       parent: 'comparison',
       options: {
-        cssClass: 'heatmap-src',
+        eventName: ''
+      }
+    },
+    {
+      view: 'Timeline',
+      parent: 'selector-timepoint',
+      options: {
         eventName: ''
       }
     }
@@ -69,6 +75,7 @@ export class App implements IAppView {
   constructor(parent:Element) {
     this.$node = d3.select(parent);
 
+    this.$node.append('div').classed('selector-timepoint', true);
     this.$node.append('div').classed('comparison', true);
   }
 
@@ -122,8 +129,6 @@ export class App implements IAppView {
         this.setBusy(false);
         return this;
       });
-
-    new Timeline(this.$node);
 
     return buildPromise;
   }

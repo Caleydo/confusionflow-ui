@@ -63,6 +63,15 @@
           "name": "Data Set Selector",
           "factory": "create"
         }
+      },
+      {
+        "type": "malevoView",
+        "id": "Timeline",
+        "module": "timeline",
+        "extras": {
+          "name": "Timeline",
+          "factory": "create"
+        }
       }
     ]
   }

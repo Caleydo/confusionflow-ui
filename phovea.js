@@ -16,6 +16,10 @@ module.exports = function(registry) {
     'name': 'Data Set Selector'
   });
 
+  registry.push('malevoView', 'Timeline', function() { return System.import('./src/timeline'); }, {
+    'name': 'Timeline'
+  });
+
   // generator-phovea:end
 };
 

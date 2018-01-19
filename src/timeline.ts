@@ -6,20 +6,19 @@ import {IMalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './male
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './app_constants';
-import * as ajax from 'phovea_core/src/ajax';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {IDragSelection} from './range_selector';
 import RangeSelector from './range_selector';
+import {IAppView} from './app';
 
-export default class Timeline implements IDragSelection {
+export default class Timeline implements IDragSelection, IAppView {
   private readonly $node:d3.Selection<any>;
   private $circles:d3.Selection<any>;
   private $rubberband: d3.Selection<any>;
   private isDragging = false;
 
-  constructor(parent: d3.Selection<any>) {
-    this.$node = parent.append('div').attr('id', 'timeline');
-    this.attachListener();
+  constructor(parent: Element) {
+    this.$node = d3.select(parent).append('div').attr('id', 'timeline');
   }
 
   private attachListener() {
@@ -28,8 +27,16 @@ export default class Timeline implements IDragSelection {
     });
   }
 
-  private getJSONEpochMetadata(data: INumericalMatrix) : Promise<any> {
-    return ajax.getAPIJSON(`/malevo_api/epoch/${data.desc.id}/ratio_bar`);
+    /**
+   * Initialize the view and return a promise
+   * that is resolved as soon the view is completely initialized.
+   * @returns {Promise<HeatMap>}
+   */
+  init() {
+    this.attachListener();
+
+    // return the promise directly as long there is no dynamical data to update
+    return Promise.resolve(this);
   }
 
   private loadConfusionData(malevoData: INumericalMatrix) : Promise<any> {
@@ -53,14 +60,10 @@ export default class Timeline implements IDragSelection {
       .classed('epochs', true)
       .classed('loading', true)
       .each(function(epochInfo: IMalevoEpochInfo, i: number) {
-        that.getJSONEpochMetadata(epochInfo.confusionInfo)
-          .then((json) => {
-            const $epochDiv = d3.select(this);
+        const $epochDiv = d3.select(this);
             $epochDiv.classed('loading', false);
             $epochDiv.html(`<div class="point"></div>
                             <div class="label">${epochInfo.name}</div>`);
-            return epochInfo;
-          });
       });
     $circles.exit().remove();
     this.$circles = $circles;
@@ -110,5 +113,14 @@ export default class Timeline implements IDragSelection {
     this.$rubberband.style('left',start + 'px');
     this.$rubberband.style('width', width + 'px');
   }
+}
 
+  /**
+ * Factory method to create a new HeatMap instance
+ * @param parent
+ * @param options
+ * @returns {HeatMap}
+ */
+export function create(parent:Element, options:any) {
+  return new Timeline(parent);
 }
