@@ -1,26 +1,29 @@
 {
   "generator-phovea": {
-    "type": "app",
-    "app": "Malevo",
-    "clientOnly": false,
-    "entries": {
-      "app": "./src/index.ts"
-    },
-    "libraries": [],
+    "type": "app-slib",
     "modules": [
-      "phovea_vis"
+      "phovea_core",
+      "phovea_vis",
+      "phovea_ui",
+      "phovea_server"
+    ],
+    "libraries": [
+      "d3",
+      "jquery",
+      "select2"
     ],
     "libraryAliases": {
       "d3": "d3/d3"
     },
     "libraryExternals": [
-      "d3"
+      "d3",
+      "jquery",
+      "select2",
+      "font-awesome"
     ],
-    "ignores": [],
-    "extensions": [],
-    "name": "malevo_server",
+    "name": "malevo",
     "author": "Martin Ennemoser",
-    "today": "Mon, 18 Dec 2017 13:54:13 GMT",
+    "today": "Fri, 22 Dec 2017 14:45:05 GMT",
     "githubAccount": "phovea",
     "sextensions": [
       {
@@ -32,9 +35,44 @@
         }
       }
     ],
+    "app": "malevo",
+    "clientOnly": false,
+    "entries": {
+      "app": "./src/index.ts"
+    },
     "unknown": {
       "requirements": [],
       "dockerPackages": []
-    }
+    },
+    "ignores": [],
+    "extensions": [
+       {
+        "type": "malevoView",
+        "id": "HeatMap",
+        "module": "heatmap_adapter",
+        "extras": {
+          "name": "Heat Map",
+          "factory": "create"
+        }
+      },
+      {
+        "type": "malevoView",
+        "id": "DataSetSelector",
+        "module": "data_set_selector",
+        "extras": {
+          "name": "Data Set Selector",
+          "factory": "create"
+        }
+      },
+      {
+        "type": "malevoView",
+        "id": "Timeline",
+        "module": "timeline",
+        "extras": {
+          "name": "Timeline",
+          "factory": "create"
+        }
+      }
+    ]
   }
 }

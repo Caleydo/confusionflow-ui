@@ -8,6 +8,17 @@
 module.exports = function(registry) {
   //registry.push('extension-type', 'extension-id', function() { return System.import('./src/extension_impl'); }, {});
   // generator-phovea:begin
+  registry.push('malevoView', 'HeatMap', function() { return System.import('./src/heatmap_adapter'); }, {
+    'name': 'Heat Map'
+  });
+
+  registry.push('malevoView', 'DataSetSelector', function() { return System.import('./src/data_set_selector'); }, {
+    'name': 'Data Set Selector'
+  });
+
+  registry.push('malevoView', 'Timeline', function() { return System.import('./src/timeline'); }, {
+    'name': 'Timeline'
+  });
 
   // generator-phovea:end
 };
