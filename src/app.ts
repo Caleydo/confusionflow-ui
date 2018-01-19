@@ -149,7 +149,7 @@ export class App implements IAppView {
 }
 
 /**
- * Factory method to create a new TACO instance
+ * Factory method to create a new Malevo instance
  * @param parent
  * @returns {App}
  */

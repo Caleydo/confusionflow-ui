@@ -4,7 +4,7 @@
 export class AppConstants {
 
   /**
-   * Static constant as identification for TACO views
+   * Static constant as identification for malevo views
    * Note: the string value is referenced for multiple view definitions in the package.json,
    *       i.e. be careful when refactor the value
    */
