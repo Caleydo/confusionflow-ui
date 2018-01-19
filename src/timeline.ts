@@ -17,8 +17,10 @@ export default class Timeline implements IDragSelection, IAppView {
   private $rubberband: d3.Selection<any>;
   private isDragging = false;
   private readonly ELEMENT_WIDTH = 25; // adapt in _timeline.scss if necessary
+  private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interperted as click until it switches to drag
   private readonly OFFSET = 10; // Offset from the left border
   private rangeSelector: TimelineRangeSelector;
+
   constructor(parent: Element) {
     this.$node = d3.select(parent)
       .append('div')
@@ -102,7 +104,7 @@ export default class Timeline implements IDragSelection, IAppView {
 
   dragging(start: [number, number], end: [number, number]) {
     console.assert(start[0] <= end[0]);
-    if(end[0] - start[0] > 10) {
+    if(end[0] - start[0] > this.MAX_DRAG_TOLERANCE) {
       this.isDragging = true;
       this.$rubberband.style('visibility', 'visible');
       this.$rubberband.style('left', start[0] + 'px');
