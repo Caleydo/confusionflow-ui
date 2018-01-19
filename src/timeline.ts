@@ -2,7 +2,7 @@
  * Created by Martin on 04.01.2018.
  */
 
-import {IMalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './malevo_dataset';
+import {IMalevoDataset, IMalevoEpochInfo} from './malevo_dataset';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './app_constants';
@@ -82,8 +82,6 @@ export default class Timeline implements IDragSelection, IAppView {
     console.assert(sel.length === 1);
     if(sel[0].length > 1) {
       this.$circles.classed('range-selected', false);
-      // call listeners here
-      // call listeners here
       this.snapBand(sel);
       sel.classed('range-selected', true);
     } else {
@@ -93,10 +91,9 @@ export default class Timeline implements IDragSelection, IAppView {
         this.$rubberband.style('visibility', 'hidden');
       }
     }
-    //this.$circles.style('border-color', 'black');
+    events.fire(AppConstants.EVENT_EPOCH_SELECTED, sel.data());
     sel.style('border-color', 'red');
     this.isDragging = false;
-    //events.fire(AppConstants.EVENT_EPOCH_SELECTED, sel);
   }
 
   dragStart() {

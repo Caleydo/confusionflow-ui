@@ -1,13 +1,20 @@
 import {IAppView} from './app';
 import * as d3 from 'd3';
-export default class ConfusionMatrix implements IAppView{
+import * as events from 'phovea_core/src/event';
+import {AppConstants} from './app_constants';
+import {IMalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './malevo_dataset';
+import {INumericalMatrix} from 'phovea_core/src/matrix';
+
+type ConfusionData = [number, number];
+
+export class ConfusionMatrix implements IAppView{
   private readonly $node: d3.Selection<any>;
 
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
       .append('div')
-      .classed('confusion_matrix', true);
+      .classed('confusion-matrix', true);
   }
 
   /**
@@ -16,51 +23,43 @@ export default class ConfusionMatrix implements IAppView{
    * @returns {Promise<ConfusionMatrix>}
    */
   init() {
+    this.attachListeners();
     // return the promise directly as long there is no dynamical data to update
     return Promise.resolve(this);
   }
 
-  render(data: any) {
+  private attachListeners() {
+    events.on(AppConstants.EVENT_EPOCH_SELECTED, (evt, items:IMalevoEpochInfo[]) => {
+      if(items.length === 0) {
+        return;
+      } else if(items.length === 1) {
+        this.updateSingleEpoch(items[0].confusionInfo);
+      } else {
+        // rendering epoch ranges goes here
+      }
 
-    const margin = {top: 120, right: 20, bottom: 20, left: 110};
-    const width = 750 - margin.right - margin.left;
-    const height = 300 - margin.top - margin.bottom;
+    });
+  }
 
-    /* let svg = this.$parent.append('svg')
-     .attr('width', width + margin.left + margin.right)
-     .attr('height', height + margin.top + margin.bottom)
-     .append('g')
-     .attr('transform', `translate(${margin.left},${margin.top})`);
+  private loadConfusionData(matrix: INumericalMatrix) : Promise<any> {
+  return matrix.data()
+    .then((x) => {
+      return x;
+    });
+  }
 
-     svg.selectAll('rect')
-     .data(data)
-     .enter().append('g').append('rect')
-     .attr('class', 'cell')
-     .attr('width', cellSize)
-     .attr('height', cellSize)
-     .attr('y', function(d) { return yScale(d.country); })
-     .attr('x', function(d) { return xScale(d.product); })
-     .attr('fill', function(d) { return colorScale(d.value); });
+  private updateSingleEpoch(item:INumericalMatrix) {
+    this.loadConfusionData(item).then((data: ConfusionData) => {
+      this.renderSingleEpoch(data);
+    });
+  }
 
-     svg.append('g')
-     .attr('class', 'y axis')
-     .call(yAxis)
-     .selectAll('text')
-     .attr('font-weight', 'normal');
+  private renderSingleEpoch(data: ConfusionData) {
+    if(!data) {
+      return;
+    }
 
-     svg.append('g')
-     .attr("class", "x axis")
-     .call(xAxis)
-     .selectAll('text')
-     .attr('font-weight', 'normal')
-     .style("text-anchor", "start")
-     .attr("dx", ".8em")
-     .attr("dy", ".5em")
-     .attr("transform", function (d) {
-     return "rotate(-65)";
-     });
-     }
-     */
+    const data1D = [].concat(...data);
   }
 }
 
