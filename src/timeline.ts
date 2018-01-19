@@ -8,7 +8,7 @@ import * as events from 'phovea_core/src/event';
 import {AppConstants} from './app_constants';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {IDragSelection} from './range_selector';
-import RangeSelector from './range_selector';
+import {TimelineRangeSelector} from './range_selector';
 import {IAppView} from './app';
 
 export default class Timeline implements IDragSelection, IAppView {
@@ -16,9 +16,14 @@ export default class Timeline implements IDragSelection, IAppView {
   private $circles:d3.Selection<any>;
   private $rubberband: d3.Selection<any>;
   private isDragging = false;
-
+  private readonly ELEMENT_WIDTH = 25; // adapt in _timeline.scss if necessary
+  private readonly OFFSET = 10; // Offset from the left border
+  private rangeSelector: TimelineRangeSelector;
   constructor(parent: Element) {
-    this.$node = d3.select(parent).append('div').attr('id', 'timeline');
+    this.$node = d3.select(parent)
+      .append('div')
+      .classed('timeline', true);
+    this.rangeSelector = new TimelineRangeSelector(this.$node);
   }
 
   private attachListener() {
@@ -33,6 +38,7 @@ export default class Timeline implements IDragSelection, IAppView {
    * @returns {Promise<HeatMap>}
    */
   init() {
+    this.rangeSelector.addListener(this);
     this.attachListener();
 
     // return the promise directly as long there is no dynamical data to update
@@ -67,7 +73,7 @@ export default class Timeline implements IDragSelection, IAppView {
       });
     $circles.exit().remove();
     this.$circles = $circles;
-    new RangeSelector(this.$node, this.$node.selectAll('div.epochs')).addListener(this);
+    this.rangeSelector.updateCandidateList(this.$node.selectAll('div.epochs'));
   }
 
   dragEnd(sel: d3.Selection<any>) {
@@ -108,8 +114,8 @@ export default class Timeline implements IDragSelection, IAppView {
     console.assert(sel[0].length > 1);
     const first = sel[0][0];
     const last = sel[0][sel[0].length - 1];
-    const start = (<any>first).offsetLeft + 10;
-    const width = ((<any>last).offsetLeft + 10 - start) + 25;
+    const start = (<any>first).offsetLeft + this.OFFSET;
+    const width = ((<any>last).offsetLeft + this.OFFSET - start) + this.ELEMENT_WIDTH;
     this.$rubberband.style('left',start + 'px');
     this.$rubberband.style('width', width + 'px');
   }
