@@ -1,4 +1,5 @@
 import {INumericalMatrix} from 'phovea_core/src/matrix';
+import {ITable} from 'phovea_core/src/table';
 
 /**
  * Stores data of a single epoch
@@ -11,14 +12,15 @@ export interface IMalevoEpochInfo {
 /**
  * A whole dataset which consists of 1..n epochs
  */
-export class IMalevoDataset {
+export class MalevoDataset {
   name: string;
   epochInfos: IMalevoEpochInfo[];
+  classLabels: ITable;
 }
 
 /**
  * A collection of multiple datasets
  */
 export interface IMalevoDatasetCollection {
-  [key: string]: IMalevoDataset;
+  [key: string]: MalevoDataset;
 }

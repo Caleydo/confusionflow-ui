@@ -10,7 +10,8 @@ import {Language} from './language';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import * as d3 from 'd3';
 import Format = d3.time.Format;
-import {IMalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './malevo_dataset';
+import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './malevo_dataset';
+import {ITable} from 'phovea_core/src/table';
 
 /**
  * Shows a list of available datasets and lets the user choose one.
@@ -103,28 +104,46 @@ class DataSetSelector implements IAppView {
 class DataProvider {
   /**
    * Loads the data and retruns a promise
-   * @returns {Promise<IMalevoDataset[]>}
+   * @returns {Promise<MalevoDataset[]>}
    */
-  load() {
-    return data
-      .list({'type': 'matrix'}) // use server-side filtering
-      .then((list: INumericalMatrix[]) => {
-        return this.prepareData(list);
-      });
+  load():Promise<IMalevoDatasetCollection> {
+      const promMatrix = data
+        .list({'type': 'matrix'}) // use server-side filtering
+        .then((list: INumericalMatrix[]) => {
+          return this.prepareEpochData(list);
+        });
+      const promTable = data
+        .list({'type': 'table'})
+        .then((list: ITable[]) => {
+          return this.prepareClassLabels(list);
+        });
+
+    return Promise.all([promMatrix, promTable]).then((x:any) => {
+      const dsc:IMalevoDatasetCollection = x[0];
+      const tables = x[1];
+
+      for(const key of Object.keys(tables)) {
+        dsc[key].classLabels = tables[key];
+      }
+      return dsc;
+    });
   }
 
-  prepareData(data: INumericalMatrix[]) {
-    const getDatasetName = (x: INumericalMatrix) => {
-      const parts = x.desc.name.split('-');
-      if(parts.length < 2 || parts.length > 4) {
-        throw new Error('The received filename is not valid');
-      }
-      return parts;
-    };
+  prepareClassLabels(data: ITable[]) {
+    const labelCollection:{[key: string]: ITable} = {};
+    for(const x of data) {
+      const parts = this.getDatasetName(x);
+      labelCollection[parts[0]] = x;
+    }
+    return labelCollection;
+  }
+
+  prepareEpochData(data: INumericalMatrix[]):IMalevoDatasetCollection {
+
 
     const getOrCreateMalevoDataset = (dsc: IMalevoDatasetCollection, datasetName: string) => {
       if(!dsc[datasetName]) {
-        const ds = new IMalevoDataset();
+        const ds = new MalevoDataset();
         ds.name = datasetName;
         ds.epochInfos = [];
         dsc[datasetName] = ds;
@@ -133,7 +152,7 @@ class DataProvider {
       return dsc[datasetName];
     };
 
-    const getOrCreateEpochInfo = (dataset: IMalevoDataset, epochName: string) => {
+    const getOrCreateEpochInfo = (dataset: MalevoDataset, epochName: string) => {
       let epochInfo = dataset.epochInfos.find((x) => x.name === epochName);
       if(!epochInfo) {
         epochInfo = {name: epochName, confusionInfo: null};
@@ -146,7 +165,7 @@ class DataProvider {
     const dsc: IMalevoDatasetCollection = {};
 
     for(const x of data) {
-      const parts = getDatasetName(x);
+      const parts = this.getDatasetName(x);
       const dataset = getOrCreateMalevoDataset(dsc, parts[0]);
       const epochInfo: IMalevoEpochInfo = getOrCreateEpochInfo(dataset, parts[2]);
       epochInfo.confusionInfo = x;
@@ -154,6 +173,14 @@ class DataProvider {
     }
     return dsc;
   }
+
+  getDatasetName(x: INumericalMatrix | ITable) {
+    const parts = x.desc.name.split('-');
+    if(parts.length < 2 || parts.length > 4) {
+      throw new Error('The received filename is not valid');
+    }
+    return parts;
+  };
 }
 
 /**

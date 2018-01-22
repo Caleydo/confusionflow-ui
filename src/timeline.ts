@@ -2,7 +2,7 @@
  * Created by Martin on 04.01.2018.
  */
 
-import {IMalevoDataset, IMalevoEpochInfo} from './malevo_dataset';
+import {MalevoDataset, IMalevoEpochInfo} from './malevo_dataset';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './app_constants';
@@ -17,9 +17,10 @@ export default class Timeline implements IDragSelection, IAppView {
   private $rubberband: d3.Selection<any>;
   private isDragging = false;
   private readonly ELEMENT_WIDTH = 25; // adapt in _timeline.scss if necessary
-  private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interperted as click until it switches to drag
+  private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interpreted as click until it switches to drag
   private readonly OFFSET = 10; // Offset from the left border
   private rangeSelector: TimelineRangeSelector;
+  private malevoDataset: MalevoDataset;
 
   constructor(parent: Element) {
     this.$node = d3.select(parent)
@@ -29,7 +30,7 @@ export default class Timeline implements IDragSelection, IAppView {
   }
 
   private attachListener() {
-    events.on(AppConstants.EVENT_DATA_COLLECTION_SELECTED, (evt, items:IMalevoDataset) => {
+    events.on(AppConstants.EVENT_DATA_COLLECTION_SELECTED, (evt, items:MalevoDataset) => {
      this.updateItems(items);
     });
   }
@@ -58,8 +59,9 @@ export default class Timeline implements IDragSelection, IAppView {
     this.$rubberband = this.$node.append('div').classed('selection', true);
   }
 
-  updateItems(malevoData: IMalevoDataset) {
+  updateItems(malevoData: MalevoDataset) {
     const that = this;
+    this.malevoDataset = malevoData;
     this.createRubberband();
     const $circles = this.$node.selectAll('div.epochs')
       .data(malevoData.epochInfos);
@@ -91,7 +93,7 @@ export default class Timeline implements IDragSelection, IAppView {
         this.$rubberband.style('visibility', 'hidden');
       }
     }
-    events.fire(AppConstants.EVENT_EPOCH_SELECTED, sel.data());
+    events.fire(AppConstants.EVENT_EPOCH_SELECTED, sel.data(), this.malevoDataset);
     sel.style('border-color', 'red');
     this.isDragging = false;
   }

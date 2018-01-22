@@ -1,4 +1,27 @@
 .confusion-matrix {
   display: grid;
+  grid-template-rows: 30px repeat(10, 50px);
+  grid-template-columns: 30px repeat(10, 50px);
+  grid-gap: 1px;
+}
 
+.confusion-matrix > div {
+  background-color: #8ca0ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confusion-matrix > div:first-child {
+  visibility: hidden;
+}
+
+.confusion-matrix > .col-header {
+  transform: rotate(-180deg);
+  writing-mode: vertical-lr;
+  background-color: green;
+}
+
+.confusion-matrix > .row-header {
+  background-color: red;
 }
