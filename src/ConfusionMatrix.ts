@@ -64,7 +64,7 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
-  private addRowAndColHeader(data: Matrix, labels: [number, String]) {
+  private addRowAndColHeader(data: Matrix, labels: [number, String]):Matrix {
     const size = data.length + 1;
     const res = [];
     for(let i = 0; i < size; i++) {
@@ -84,7 +84,7 @@ export class ConfusionMatrix implements IAppView {
         res[i][j] = data[i-1][j-1];
       }
     }
-    return res;
+    return <Matrix>res;
   }
 
   private renderSingleEpoch(data: Matrix, labels: [number, String]) {
@@ -92,8 +92,8 @@ export class ConfusionMatrix implements IAppView {
       return;
     }
     const ROW_COUNT = data.length;
-    const rowHeaderPredicate = (datum: any, index: number, outerIndex: number) => {return index > 0 && index <= ROW_COUNT;};
-    const colHeaderPredicate = (datum: any, index: number, outerIndex: number) => {return index > 0 && index % (ROW_COUNT + 1) === 0;};
+    const rowHeaderPredicate = (datum: any, index: number) => {return index > 0 && index <= ROW_COUNT;};
+    const colHeaderPredicate = (datum: any, index: number) => {return index > 0 && index % (ROW_COUNT + 1) === 0;};
     if(ROW_COUNT !== labels.length) {
       throw new TypeError('The length of the labels does not fit with the matrix length');
     }
@@ -101,18 +101,40 @@ export class ConfusionMatrix implements IAppView {
     const matrix = this.addRowAndColHeader(data, labels);
     const data1D = [].concat(...matrix);
 
+    const heatmapColorScale = d3.scale.linear().domain([0, this.calcMaxValue(matrix)])
+      .range((<any>['white', 'green']))
+      .interpolate(<any>d3.interpolateHcl);
+
+    const classColors = d3.scale.category10();
+
     const $cells = this.$node.selectAll('div')
       .data(data1D);
     const $cellsEnter = $cells.enter().append('div')
       .classed('row-header', rowHeaderPredicate)
       .classed('col-header', colHeaderPredicate);
-
     $cells
       .text((datum: any, index: number, outerIndex: number) => {
         return datum;
-      });
+      })
+      .style('background-color', ((datum: any, index: number) => {
+        if(rowHeaderPredicate(datum, index) || colHeaderPredicate(datum, index)) {
+          return classColors(String(index));
+        } else {
+          return heatmapColorScale(datum);
+        }
+      }));
 
     $cells.exit().remove();
+  }
+
+  calcMaxValue(matrix: Matrix):number {
+    const aggrCols = new Array(10).fill(0);
+    for(let i = 1; i < matrix.length; i++) {
+      for(let j = 1; j < matrix.length; j++) {
+        aggrCols[i-1] += matrix[j][i];
+      }
+    }
+    return Math.max(...aggrCols);
   }
 }
 
