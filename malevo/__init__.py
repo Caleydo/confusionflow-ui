@@ -11,7 +11,7 @@ def phovea(registry):
   :param registry:
   """
   # generator-phovea:begin
-  registry.append('namespace', 'malevo_api', 'malevo.malevo_api', {
+  registry.append('namespace', 'malevo_api', 'malevo.api', {
    'namespace': '/api/malevo_api'
   })
   # generator-phovea:end
