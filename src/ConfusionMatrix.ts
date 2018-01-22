@@ -101,8 +101,8 @@ export class ConfusionMatrix implements IAppView {
     const matrix = this.addRowAndColHeader(data, labels);
     const data1D = [].concat(...matrix);
 
-    const heatmapColorScale = d3.scale.linear().domain([0, this.calcMaxValue(matrix)])
-      .range((<any>['white', 'green']))
+    const heatmapColorScale = d3.scale.linear().domain([0, this.findMaxValue(data)])
+      .range((<any>['white', 'yellow']))
       .interpolate(<any>d3.interpolateHcl);
 
     const classColors = d3.scale.category10();
@@ -127,12 +127,10 @@ export class ConfusionMatrix implements IAppView {
     $cells.exit().remove();
   }
 
-  calcMaxValue(matrix: Matrix):number {
+  findMaxValue(matrix: Matrix):number {
     const aggrCols = new Array(10).fill(0);
-    for(let i = 1; i < matrix.length; i++) {
-      for(let j = 1; j < matrix.length; j++) {
-        aggrCols[i-1] += matrix[j][i];
-      }
+    for(let i = 0; i < matrix.length; i++) {
+      aggrCols[i] = Math.max(...matrix[i]);
     }
     return Math.max(...aggrCols);
   }
