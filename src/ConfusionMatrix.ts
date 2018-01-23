@@ -6,6 +6,7 @@ import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './Malev
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {text} from 'd3';
+import {IDecorator} from 'typedoc/dist/lib/models';
 
 type Matrix = [[number, number]];
 
@@ -33,20 +34,35 @@ export class ConfusionMatrix implements IAppView {
 
   private setupLayout() {
     this.$node.append('div')
+      .classed('button', true);
+
+    this.$node.append('div')
       .classed('header', true)
       .classed('barstyle', true)
       .text('Predicted');
 
     this.$node.append('div')
-      .classed('button', true);
+      .classed('cell-empty', true);
 
     this.$node.append('div')
       .classed('left', true)
       .classed('barstyle', true)
       .text('Actual');
 
+    this.$node.append('div')
+      .classed('bars-right', true);
+
+    this.$node.append('div')
+      .classed('bars-bottom', true);
+
     this.$confusionMatrix = this.$node.append('div')
       .classed('confusion-matrix', true);
+
+    this.$node.append('div')
+      .classed('cell-empty2', true);
+
+    this.$node.append('div')
+      .classed('cell-empty3', true);
   }
 
   private attachListeners() {
@@ -154,6 +170,16 @@ export class ConfusionMatrix implements IAppView {
       aggrCols[i] = Math.max(...matrix[i]);
     }
     return Math.max(...aggrCols);
+  }
+}
+
+interface IRightDecorator {
+  render();
+}
+
+class BarchartColumn {
+  constructor(matrix: ConfusionMatrix) {
+
   }
 }
 
