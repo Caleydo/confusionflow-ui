@@ -4,13 +4,13 @@
 
 import * as data from 'phovea_core/src/data';
 import * as events from 'phovea_core/src/event';
-import {AppConstants} from './app_constants';
-import {IAppView} from './app';
+import {AppConstants} from './AppConstants';
+import {IAppView} from './App';
 import {Language} from './language';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import * as d3 from 'd3';
 import Format = d3.time.Format;
-import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './malevo_dataset';
+import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './MalevoDataset';
 import {ITable} from 'phovea_core/src/table';
 
 /**
@@ -22,7 +22,7 @@ class DataSetSelector implements IAppView {
   private $node;
   private $select;
 
-  constructor(parent:Element, private options:any) {
+  constructor() {
     this.$node = d3.select('.navbar-header')
       .append('div')
       .classed('dataSelector', true)
@@ -118,9 +118,9 @@ class DataProvider {
           return this.prepareClassLabels(list);
         });
 
-    return Promise.all([promMatrix, promTable]).then((x:any) => {
-      const dsc:IMalevoDatasetCollection = x[0];
-      const tables = x[1];
+    return Promise.all([promMatrix, promTable]).then((results:any) => {
+      const dsc:IMalevoDatasetCollection = results[0];
+      const tables = results[1];
 
       for(const key of Object.keys(tables)) {
         dsc[key].classLabels = tables[key];
@@ -129,7 +129,7 @@ class DataProvider {
     });
   }
 
-  prepareClassLabels(data: ITable[]) {
+  prepareClassLabels(data: ITable[]): {[key: string]: ITable} {
     const labelCollection:{[key: string]: ITable} = {};
     for(const x of data) {
       const parts = this.getDatasetName(x);
@@ -138,7 +138,7 @@ class DataProvider {
     return labelCollection;
   }
 
-  prepareEpochData(data: INumericalMatrix[]):IMalevoDatasetCollection {
+  prepareEpochData(data: INumericalMatrix[]): IMalevoDatasetCollection {
 
 
     const getOrCreateMalevoDataset = (dsc: IMalevoDatasetCollection, datasetName: string) => {
@@ -190,5 +190,5 @@ class DataProvider {
  * @returns {DataSetSelector}
  */
 export function create(parent:Element, options:any) {
-  return new DataSetSelector(parent, options);
+  return new DataSetSelector();
 }

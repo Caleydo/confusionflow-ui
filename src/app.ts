@@ -5,8 +5,8 @@
 import * as plugins from 'phovea_core/src/plugin';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
-import {AppConstants} from './app_constants';
-import Timeline from './timeline';
+import {AppConstants} from './AppConstants';
+import Timeline from './Timeline';
 
 /**
  * Interface for all Views

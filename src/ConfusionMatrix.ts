@@ -1,8 +1,8 @@
-import {IAppView} from './app';
+import {IAppView} from './App';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
-import {AppConstants} from './app_constants';
-import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './malevo_dataset';
+import {AppConstants} from './AppConstants';
+import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {text} from 'd3';
@@ -69,7 +69,7 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  private loadLabels(table: ITable) {
+  private loadLabels(table: ITable) : Promise<any> {
     return table.data()
       .then((x) => {
         return x;

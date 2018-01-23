@@ -2,19 +2,19 @@
  * Created by Martin on 04.01.2018.
  */
 
-import {MalevoDataset, IMalevoEpochInfo} from './malevo_dataset';
+import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
-import {AppConstants} from './app_constants';
+import {AppConstants} from './AppConstants';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
-import {IDragSelection} from './range_selector';
-import {TimelineRangeSelector} from './range_selector';
-import {IAppView} from './app';
+import {IDragSelection} from './RangeSelector';
+import {TimelineRangeSelector} from './RangeSelector';
+import {IAppView} from './App';
 
 export default class Timeline implements IDragSelection, IAppView {
   private readonly $node:d3.Selection<any>;
   private $circles:d3.Selection<any>;
-  private $rubberband: d3.Selection<any>;
+  private $rangeband: d3.Selection<any>;
   private isDragging = false;
   private readonly ELEMENT_WIDTH = 25; // adapt in _timeline.scss if necessary
   private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interpreted as click until it switches to drag
@@ -55,14 +55,14 @@ export default class Timeline implements IDragSelection, IAppView {
       });
   }
 
-  private createRubberband() {
-    this.$rubberband = this.$node.append('div').classed('selection', true);
+  private createRangeband() {
+    this.$rangeband = this.$node.append('div').classed('selection', true);
   }
 
   updateItems(malevoData: MalevoDataset) {
     const that = this;
     this.malevoDataset = malevoData;
-    this.createRubberband();
+    this.createRangeband();
     const $circles = this.$node.selectAll('div.epochs')
       .data(malevoData.epochInfos);
 
@@ -90,7 +90,7 @@ export default class Timeline implements IDragSelection, IAppView {
       this.$circles.classed('single-selected', false);
       sel.classed('single-selected', true);
       if(this.isDragging) { // if one point was selected by dragging => hide the band
-        this.$rubberband.style('visibility', 'hidden');
+        this.$rangeband.style('visibility', 'hidden');
       }
     }
     events.fire(AppConstants.EVENT_EPOCH_SELECTED, sel.data(), this.malevoDataset);
@@ -105,9 +105,9 @@ export default class Timeline implements IDragSelection, IAppView {
     console.assert(start[0] <= end[0]);
     if(end[0] - start[0] > this.MAX_DRAG_TOLERANCE) {
       this.isDragging = true;
-      this.$rubberband.style('visibility', 'visible');
-      this.$rubberband.style('left', start[0] + 'px');
-      this.$rubberband.style('width', end[0] - start[0] + 'px');
+      this.$rangeband.style('visibility', 'visible');
+      this.$rangeband.style('left', start[0] + 'px');
+      this.$rangeband.style('width', end[0] - start[0] + 'px');
     }
   }
 
@@ -117,8 +117,8 @@ export default class Timeline implements IDragSelection, IAppView {
     const last = sel[0][sel[0].length - 1];
     const start = (<any>first).offsetLeft + this.OFFSET;
     const width = ((<any>last).offsetLeft + this.OFFSET - start) + this.ELEMENT_WIDTH;
-    this.$rubberband.style('left',start + 'px');
-    this.$rubberband.style('width', width + 'px');
+    this.$rangeband.style('left',start + 'px');
+    this.$rangeband.style('width', width + 'px');
   }
 }
 

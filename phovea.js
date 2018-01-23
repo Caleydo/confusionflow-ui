@@ -12,11 +12,11 @@ module.exports = function(registry) {
     'name': 'Confusion Matrix'
   });
 
-  registry.push('malevoView', 'DataSetSelector', function() { return System.import('./src/data_set_selector'); }, {
+  registry.push('malevoView', 'DataSetSelector', function() { return System.import('./src/DatasetSelector'); }, {
     'name': 'Data Set Selector'
   });
 
-  registry.push('malevoView', 'Timeline', function() { return System.import('./src/timeline'); }, {
+  registry.push('malevoView', 'Timeline', function() { return System.import('./src/Timeline'); }, {
     'name': 'Timeline'
   });
 
