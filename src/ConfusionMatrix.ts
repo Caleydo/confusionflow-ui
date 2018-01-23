@@ -5,16 +5,18 @@ import {AppConstants} from './app_constants';
 import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './malevo_dataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
+import {text} from 'd3';
 
 type Matrix = [[number, number]];
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
+  private $confusionMatrix: d3.Selection<any>;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
       .append('div')
-      .classed('confusion-matrix', true);
+      .classed('matrix-wrapper', true);
   }
 
   /**
@@ -24,8 +26,27 @@ export class ConfusionMatrix implements IAppView {
    */
   init() {
     this.attachListeners();
+    this.setupLayout();
     // return the promise directly as long there is no dynamical data to update
     return Promise.resolve(this);
+  }
+
+  private setupLayout() {
+    this.$node.append('div')
+      .classed('header', true)
+      .classed('barstyle', true)
+      .text('Predicted');
+
+    this.$node.append('div')
+      .classed('button', true);
+
+    this.$node.append('div')
+      .classed('left', true)
+      .classed('barstyle', true)
+      .text('Actual');
+
+    this.$confusionMatrix = this.$node.append('div')
+      .classed('confusion-matrix', true);
   }
 
   private attachListeners() {
@@ -107,7 +128,7 @@ export class ConfusionMatrix implements IAppView {
 
     const classColors = d3.scale.category10();
 
-    const $cells = this.$node.selectAll('div')
+    const $cells = this.$confusionMatrix.selectAll('div')
       .data(data1D);
     const $cellsEnter = $cells.enter().append('div')
       .classed('row-header', rowHeaderPredicate)

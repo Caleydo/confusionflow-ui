@@ -3,7 +3,7 @@
   grid-template-rows: 30px repeat(10, 50px);
   grid-template-columns: 30px repeat(10, 50px);
   grid-gap: 1px;
-  padding: 20px;
+  padding: 10px;
 }
 
 .confusion-matrix > div {
@@ -25,4 +25,39 @@
 
 .confusion-matrix > .row-header {
   background-color: red;
+}
+
+.matrix-wrapper {
+  display: grid;
+  width: 60px;
+  height: 60px;
+  grid-template-areas: "bt head"
+                       "nav  div1";
+  grid-template-rows: 30px auto;
+  grid-template-columns: 30px auto;
+}
+
+.barstyle {
+  text-align: center;
+  vertical-align: middle;
+  font: 30px arial, sans-serif;
+  background-color: lightgray;
+}
+
+.matrix-wrapper > .header.barstyle {
+  grid-area: head;
+}
+
+.matrix-wrapper > .left.barstyle {
+  grid-area: nav;
+  transform: rotate(-180deg);
+  writing-mode: vertical-rl;
+}
+
+.matrix-wrapper > .button {
+  grid-area: bt;
+}
+
+.matrix-wrapper > .confusion-matrix {
+  grid-area: div1;
 }
