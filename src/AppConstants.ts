@@ -11,13 +11,6 @@ export class AppConstants {
   static VIEW = 'malevoView';
 
   static EVENT_RESIZE = 'eventResize';
-
-  /**
-   * Initial size of a heatmap cell
-   * @type {number}
-   */
-  static HEATMAP_CELL_SIZE = 5;
-
   /**
    * Event that is fired when a data set collection has been selected
    * @type {string}

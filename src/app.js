@@ -55,7 +55,6 @@ var App = (function () {
      */
     App.prototype.build = function () {
         var _this = this;
-        this.setBusy(true); // show loading indicator before loading
         // wrap view ids from package.json as plugin and load the necessary files
         var pluginPromises = this.views
             .map(function (d) { return plugins.get(AppConstants.VIEW, d.view); })
@@ -76,21 +75,9 @@ var App = (function () {
         })
             .then(function (viewInstances) {
             // loading and initialization has finished -> hide loading indicator
-            _this.setBusy(false);
             return _this;
         });
         return buildPromise;
-    };
-    /**
-     * Show or hide the application loading indicator
-     * @param isBusy
-     */
-    App.prototype.setBusy = function (isBusy) {
-        this.$node.select('.leftMetaBox').classed('invisibleClass', isBusy);
-        this.$node.select('.rightMetaBox').classed('invisibleClass', isBusy);
-        this.$node.select('.detailview').classed('invisibleClass', isBusy);
-        this.$node.select('.histogram_2d').classed('invisibleClass', isBusy);
-        this.$node.select('.busy').classed('hidden', !isBusy);
     };
     return App;
 }());

@@ -100,8 +100,6 @@ export class App implements IAppView {
    * @returns {Promise<App>}
    */
   private build() {
-    this.setBusy(true); // show loading indicator before loading
-
     // wrap view ids from package.json as plugin and load the necessary files
     const pluginPromises = this.views
       .map((d) => plugins.get(AppConstants.VIEW, d.view))
@@ -126,25 +124,11 @@ export class App implements IAppView {
       })
       .then((viewInstances) => {
         // loading and initialization has finished -> hide loading indicator
-        this.setBusy(false);
         return this;
       });
-
     return buildPromise;
   }
 
-  /**
-   * Show or hide the application loading indicator
-   * @param isBusy
-   */
-  setBusy(isBusy) {
-    this.$node.select('.leftMetaBox').classed('invisibleClass', isBusy);
-    this.$node.select('.rightMetaBox').classed('invisibleClass', isBusy);
-    this.$node.select('.detailview').classed('invisibleClass', isBusy);
-    this.$node.select('.histogram_2d').classed('invisibleClass', isBusy);
-
-    this.$node.select('.busy').classed('hidden', !isBusy);
-  }
 
 }
 
