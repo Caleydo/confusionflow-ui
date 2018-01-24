@@ -19,11 +19,6 @@
 .confusion-matrix > .col-header {
   transform: rotate(-180deg);
   writing-mode: vertical-lr;
-  background-color: green;
-}
-
-.confusion-matrix > .row-header {
-  background-color: red;
 }
 
 .matrix-wrapper {
@@ -78,4 +73,16 @@
 
 .matrix-wrapper > .cell-empty2 {
   grid-area: empty2
+}
+
+.l {
+  display: grid;
+  grid-template-rows: 30px repeat(10, 50px);
+  grid-template-columns: 30px;
+  rid-gap: 1px;
+}
+
+
+.l > div {
+  background-color: green;
 }
