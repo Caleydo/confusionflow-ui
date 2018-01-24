@@ -6,7 +6,6 @@
 }
 
 .confusion-matrix > div {
-  background-color: #8ca0ff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,11 +77,14 @@
 .l {
   display: grid;
   grid-template-rows: 30px repeat(10, 50px);
-  grid-template-columns: 30px;
+  grid-template-columns: 50px;
   rid-gap: 1px;
 }
 
 
-.l > div {
-  background-color: green;
+.l > div:first-child {
+  background-color: lightgray;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

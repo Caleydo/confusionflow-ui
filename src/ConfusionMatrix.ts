@@ -7,12 +7,14 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {text} from 'd3';
 import {IDecorator} from 'typedoc/dist/lib/models';
+import {Barchart} from './Barchart';
 
 type Matrix = [[number, number]];
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
+  private $panelRight: d3.Selection<any>;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
@@ -49,8 +51,11 @@ export class ConfusionMatrix implements IAppView {
       .classed('barstyle', true)
       .text('Actual');
 
-    this.$node.append('div')
-      .classed('bars-right', true);
+    this.$panelRight = this.$node.append('div')
+      .classed('bars-right', true)
+      .classed('l', true);
+    this.$panelRight.append('div')
+      .text('FP');
 
     this.$node.append('div')
       .classed('bars-bottom', true);
@@ -92,12 +97,43 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
+  private renderPanelRight(data: Matrix) {
+    const aggrMatrix = data.map((row) => {
+      return row;
+    });
+
+    aggrMatrix.unshift([0, 0]); // for the label
+
+    const $cells = this.$panelRight
+      .selectAll('div')
+      .data(aggrMatrix);
+
+    $cells
+      .enter()
+      .append('div')
+      .each((d, i) => {
+        if(i === 0) {
+          return;
+        }
+
+        const bc = new Barchart(d3.select($cells[0][i]), d);
+        bc.render();
+
+      });
+
+    $cells
+      .exit()
+      .remove();
+
+  }
+
   private updateSingleEpoch(item:INumericalMatrix, classLabels: ITable) {
     const confusionData = this.loadConfusionData(item);
     const labels = this.loadLabels(classLabels);
 
     Promise.all([confusionData, labels]).then((x:any) => {
       this.renderSingleEpoch(x[0], x[1]);
+      this.renderPanelRight(x[0]);
     });
   }
 
@@ -146,7 +182,7 @@ export class ConfusionMatrix implements IAppView {
 
     const $cells = this.$confusionMatrix.selectAll('div')
       .data(data1D);
-    const $cellsEnter = $cells.enter().append('div')
+    $cells.enter().append('div')
       .classed('row-header', rowHeaderPredicate)
       .classed('col-header', colHeaderPredicate);
     $cells
