@@ -1,11 +1,8 @@
 import * as d3 from 'd3';
-import * as events from 'phovea_core/src/event';
-import {AppConstants} from './AppConstants';
-import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './MalevoDataset';
 
 export class Barchart {
   private readonly $node: d3.Selection<any>;
-  private readonly margin = {top: 5, bottom: 5};
+  private readonly margin = {top: 5, bottom: 0};
   private readonly width: number;
   private readonly height: number;
   private readonly BAR_WIDTH = 2;
@@ -38,10 +35,13 @@ export class Barchart {
     $bars.enter().append('rect')
       .attr('class', 'bar');
 
+    const barColors = d3.scale.category10();
+
     $bars.attr('x', (d, i) => { return x(i); })
     .attr('y', (d) => { return y(d); })
     .attr('width', this.BAR_WIDTH+ 'px')
-    .attr('height', (d) => { return this.height - y(d); });
+    .attr('height', (d) => { return this.height - y(d); })
+    .attr('fill', (d, i) => barColors(String(i)));
 
     $bars.exit().remove();
   }

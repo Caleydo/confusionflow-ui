@@ -98,8 +98,6 @@ export class ConfusionMatrix implements IAppView {
       return row;
     });
 
-    aggrMatrix.unshift([0, 0]); // add dummy data for the label
-
     this.panelRight.render(aggrMatrix);
   }
 
@@ -208,6 +206,8 @@ class BarchartColumn {
   }
 
   render(data: number[][]) {
+    data.unshift([0, 0]); // add dummy data for the label
+
     const $cells = this.$node
       .selectAll('div')
       .data(data);
