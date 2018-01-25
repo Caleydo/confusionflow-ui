@@ -102,7 +102,7 @@ export class ConfusionMatrix implements IAppView {
       return row;
     });
 
-    aggrMatrix.unshift([0, 0]); // for the label
+    aggrMatrix.unshift([0, 0]); // add dummy data for the label
 
     const $cells = this.$panelRight
       .selectAll('div')
@@ -110,12 +110,13 @@ export class ConfusionMatrix implements IAppView {
 
     $cells
       .enter()
-      .append('div')
-      .each((d, i) => {
+      .append('div');
+
+    $cells.each((d, i) => {
         if(i === 0) {
           return;
         }
-
+        d[i-1] = 0;
         const bc = new Barchart(d3.select($cells[0][i]), d);
         bc.render();
 

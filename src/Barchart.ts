@@ -21,17 +21,16 @@ export class Barchart {
   render() {
     const svg = this.$node;
     const barWidth = 2;
-    //margin = {top: 20, right: 20, bottom: 30, left: 40},
+    const margin = {top: 5, bottom: 5};
     const width = (<any>svg[0][0]).clientWidth;
-    const height = (<any>svg[0][0]).clientHeight;
+    const height = (<any>svg[0][0]).clientHeight - margin.top - margin.bottom;
 
-    //const x = d3.scale.ordinal().rangeBands([0, width], 0.1);
     const x = d3.scale.linear().domain([0, 9]).rangeRound([0, width-barWidth]);
     const y = d3.scale.linear().rangeRound([height, 0]);
-    //x.domain([0, 10]);
     y.domain([0, d3.max(this.bins, (d) => { return d; })]);
 
-    const g = svg.append('g');
+    const g = svg.append('g')
+      .attr('transform', 'translate(' + '0' + ',' + margin.top + ')');
 
     g.selectAll('.bar')
     .data(this.bins)
