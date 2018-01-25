@@ -14,7 +14,7 @@ type Matrix = [[number, number]];
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
-  private $panelRight: d3.Selection<any>;
+  private panelRight: BarchartColumn;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
@@ -51,11 +51,7 @@ export class ConfusionMatrix implements IAppView {
       .classed('barstyle', true)
       .text('Actual');
 
-    this.$panelRight = this.$node.append('div')
-      .classed('bars-right', true)
-      .classed('l', true);
-    this.$panelRight.append('div')
-      .text('FP');
+    this.panelRight = new BarchartColumn(this.$node);
 
     this.$node.append('div')
       .classed('bars-bottom', true);
@@ -104,28 +100,7 @@ export class ConfusionMatrix implements IAppView {
 
     aggrMatrix.unshift([0, 0]); // add dummy data for the label
 
-    const $cells = this.$panelRight
-      .selectAll('div')
-      .data(aggrMatrix);
-
-    $cells
-      .enter()
-      .append('div');
-
-    $cells.each((d, i) => {
-        if(i === 0) {
-          return;
-        }
-        d[i-1] = 0;
-        const bc = new Barchart(d3.select($cells[0][i]), d);
-        bc.render();
-
-      });
-
-    $cells
-      .exit()
-      .remove();
-
+    this.panelRight.render(aggrMatrix);
   }
 
   private updateSingleEpoch(item:INumericalMatrix, classLabels: ITable) {
@@ -215,8 +190,43 @@ interface IRightDecorator {
 }
 
 class BarchartColumn {
-  constructor(matrix: ConfusionMatrix) {
+  readonly $node: d3.Selection<any>;
+  readonly barcharts: Barchart[] = [];
+  readonly CHART_COUNT = 10;
 
+  constructor($parent: d3.Selection<any>) {
+    this.$node = $parent.append('div')
+      .classed('bars-right', true)
+      .classed('l', true);
+    this.$node.append('div')
+      .text('FP');
+
+    for(let i = 0; i < this.CHART_COUNT; i++) {
+      const $div = this.$node.append('div');
+      this.barcharts.push(new Barchart($div));
+    }
+  }
+
+  render(data: number[][]) {
+    const $cells = this.$node
+      .selectAll('div')
+      .data(data);
+
+    $cells
+      .enter()
+      .append('div');
+
+    $cells.each((d, i) => {
+        if(i === 0) {
+          return;
+        }
+        d[i-1] = 0;
+        this.barcharts[i-1].render(d);
+      });
+
+    $cells
+      .exit()
+      .remove();
   }
 }
 

@@ -5,40 +5,44 @@ import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './Malev
 
 export class Barchart {
   private readonly $node: d3.Selection<any>;
+  private readonly margin = {top: 5, bottom: 5};
+  private readonly width: number;
+  private readonly height: number;
+  private readonly BAR_WIDTH = 2;
 
-  constructor($parent: d3.Selection<any>, private readonly bins: number[]) {
-    this.$node = $parent
+  constructor($parent: d3.Selection<any>) {
+    const $svg = $parent
       .append('svg')
       .classed('barchart', true)
       .attr('width', '100%')
       .attr('height', '100%');
+
+    this.$node = $svg.append('g')
+      .attr('transform', 'translate(' + '0' + ',' + this.margin.top + ')');
+
+    this.width = (<any>$svg[0][0]).clientWidth;
+    this.height = (<any>$svg[0][0]).clientHeight - this.margin.top - this.margin.bottom;
   }
 
-  private update(epochData:IMalevoEpochInfo) {
-    this.render();
-  }
 
-  render() {
-    const svg = this.$node;
-    const barWidth = 2;
-    const margin = {top: 5, bottom: 5};
-    const width = (<any>svg[0][0]).clientWidth;
-    const height = (<any>svg[0][0]).clientHeight - margin.top - margin.bottom;
+  render(bins: number[]) {
+    const $g = this.$node;
 
-    const x = d3.scale.linear().domain([0, 9]).rangeRound([0, width-barWidth]);
-    const y = d3.scale.linear().rangeRound([height, 0]);
-    y.domain([0, d3.max(this.bins, (d) => { return d; })]);
+    const x = d3.scale.linear().domain([0, 9]).rangeRound([0, this.width-this.BAR_WIDTH]);
+    const y = d3.scale.linear().rangeRound([this.height, 0]);
+    y.domain([0, d3.max(bins, (d) => { return d; })]);
 
-    const g = svg.append('g')
-      .attr('transform', 'translate(' + '0' + ',' + margin.top + ')');
+    const $bars = $g.selectAll('.bar')
+    .data(bins);
 
-    g.selectAll('.bar')
-    .data(this.bins)
-    .enter().append('rect')
-      .attr('class', 'bar')
-      .attr('x', function(d, i) { return x(i); })
-      .attr('y', function(d) { return y(d); })
-      .attr('width', barWidth + 'px')
-      .attr('height', function(d) { return height - y(d); });
+    $bars.enter().append('rect')
+      .attr('class', 'bar');
+
+    $bars.attr('x', (d, i) => { return x(i); })
+    .attr('y', (d) => { return y(d); })
+    .attr('width', this.BAR_WIDTH+ 'px')
+    .attr('height', (d) => { return this.height - y(d); });
+
+    $bars.exit().remove();
   }
 }
