@@ -15,6 +15,7 @@ export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
   private panelRight: BarchartColumn;
+  private panelBottom: BarchartColumn;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
@@ -51,10 +52,22 @@ export class ConfusionMatrix implements IAppView {
       .classed('barstyle', true)
       .text('Actual');
 
-    this.panelRight = new BarchartColumn(this.$node);
+    let $n =this.$node.append('div')
+      .classed('bars-right', true)
+      .classed('r-col', true);
+    $n.append('div')
+      .text('FP');
 
-    this.$node.append('div')
-      .classed('bars-bottom', true);
+    this.panelRight = new BarchartColumn($n, {top:5, bottom:0, left:0, right:0});
+
+    $n =this.$node.append('div')
+      .classed('bars-bottom', true)
+      .classed('b-col', true);
+    $n.append('div')
+      .text('FN');
+
+    this.panelBottom = new BarchartColumn($n, {top:0, bottom:0, left:5, right:0});
+
 
     this.$confusionMatrix = this.$node.append('div')
       .classed('confusion-matrix', true);
@@ -93,12 +106,25 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
-  private renderPanelRight(data: Matrix) {
-    const aggrMatrix = data.map((row) => {
-      return row;
-    });
+  private renderPanels(data: Matrix) {
+    const rowData = [];
+    for(let c = 0; c < data.length; c++) {
+      rowData[c] = [];
+      for(let r = 0; r < data.length; r++) {
+        rowData[c][r] = data[c][r];
+      }
+    }
 
-    this.panelRight.render(aggrMatrix);
+    const colData = data[0].map(function (_, c) { return data.map(function (r) { return r[c]; }); }); // transpose matrix
+
+    this.panelRight.render(rowData);
+    this.panelBottom.render(colData);
+  }
+
+  private setTP(val: number, data: Matrix) {
+    for(let i = 0; i < data.length; i++) {
+      data[i][i] = val;
+    }
   }
 
   private updateSingleEpoch(item:INumericalMatrix, classLabels: ITable) {
@@ -106,8 +132,9 @@ export class ConfusionMatrix implements IAppView {
     const labels = this.loadLabels(classLabels);
 
     Promise.all([confusionData, labels]).then((x:any) => {
+      this.setTP(0, x[0]);
       this.renderSingleEpoch(x[0], x[1]);
-      this.renderPanelRight(x[0]);
+      this.renderPanels(x[0]);
     });
   }
 
@@ -188,26 +215,18 @@ interface IRightDecorator {
 }
 
 class BarchartColumn {
-  readonly $node: d3.Selection<any>;
   readonly barcharts: Barchart[] = [];
   readonly CHART_COUNT = 10;
 
-  constructor($parent: d3.Selection<any>) {
-    this.$node = $parent.append('div')
-      .classed('bars-right', true)
-      .classed('l', true);
-    this.$node.append('div')
-      .text('FP');
-
+  constructor(private $node: d3.Selection<any>, margin: {top, bottom, left, right} = {top:0, bottom:0, left:0, right:0}) {
     for(let i = 0; i < this.CHART_COUNT; i++) {
       const $div = this.$node.append('div');
-      this.barcharts.push(new Barchart($div));
+      this.barcharts.push(new Barchart($div, margin));
     }
   }
 
   render(data: number[][]) {
-    data.unshift([0, 0]); // add dummy data for the label
-
+    data.unshift([0, 0]); // add dummy data for label
     const $cells = this.$node
       .selectAll('div')
       .data(data);

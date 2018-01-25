@@ -2,12 +2,11 @@ import * as d3 from 'd3';
 
 export class Barchart {
   private readonly $node: d3.Selection<any>;
-  private readonly margin = {top: 5, bottom: 0};
   private readonly width: number;
   private readonly height: number;
-  private readonly BAR_WIDTH = 2;
+  private readonly BAR_WIDTH = 3;
 
-  constructor($parent: d3.Selection<any>) {
+  constructor($parent: d3.Selection<any>, margin: {top, bottom, left, right}) {
     const $svg = $parent
       .append('svg')
       .classed('barchart', true)
@@ -15,10 +14,10 @@ export class Barchart {
       .attr('height', '100%');
 
     this.$node = $svg.append('g')
-      .attr('transform', 'translate(' + '0' + ',' + this.margin.top + ')');
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-    this.width = (<any>$svg[0][0]).clientWidth;
-    this.height = (<any>$svg[0][0]).clientHeight - this.margin.top - this.margin.bottom;
+    this.width = (<any>$svg[0][0]).clientWidth - margin.left - margin.right;
+    this.height = (<any>$svg[0][0]).clientHeight - margin.top - margin.bottom;
   }
 
 

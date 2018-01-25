@@ -74,7 +74,7 @@
   grid-area: empty2
 }
 
-.l {
+.r-col {
   display: grid;
   grid-template-rows: 30px repeat(10, 50px);
   grid-template-columns: 50px;
@@ -82,8 +82,24 @@
 }
 
 
-.l > div:first-child {
+.r-col > div:first-child {
   background-color: lightgray;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.b-col {
+  display: grid;
+  grid-template-rows: 50px;
+  grid-template-columns: 30px repeat(10, 50px);
+}
+
+.b-col > div:first-child {
+  background-color: lightgray;
+  display: flex;
+  transform: rotate(-180deg);
+  writing-mode: vertical-lr;
   display: flex;
   align-items: center;
   justify-content: center;
