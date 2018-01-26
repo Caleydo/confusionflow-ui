@@ -12,7 +12,7 @@ def phovea(registry):
   """
   # generator-phovea:begin
   registry.append('namespace', 'malevo_api', 'malevo.api', {
-    'namespace': '/api/malevo_api'
+      'namespace': '/api/malevo_api'
   })
   # generator-phovea:end
   pass
