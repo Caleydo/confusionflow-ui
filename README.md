@@ -1,4 +1,4 @@
-malevo [![Phovea][phovea-image]][phovea-url] [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
+Malevo [![Phovea][phovea-image]][phovea-url] [![NPM version][npm-image]][npm-url] [![Build Status][circleci-image]][circleci-url] [![Dependency Status][daviddm-image]][daviddm-url]
 =====================
 
 
@@ -34,11 +34,11 @@ npm run build
 This repository is part of **[Phovea](http://phovea.caleydo.org/)**, a platform for developing web-based visualization applications. For tutorials, API docs, and more information about the build and deployment process, see the [documentation page](http://phovea.caleydo.org).
 
 
-[phovea-image]: https://img.shields.io/badge/Phovea-Client%20Plugin-F47D20.svg
+[phovea-image]: https://img.shields.io/badge/Phovea-Application-1BA64E.svg
 [phovea-url]: https://phovea.caleydo.org
 [npm-image]: https://badge.fury.io/js/malevo.svg
 [npm-url]: https://npmjs.org/package/malevo
-[travis-image]: https://travis-ci.org/phovea/malevo.svg?branch=master
-[travis-url]: https://travis-ci.org/phovea/malevo
-[daviddm-image]: https://david-dm.org/phovea/malevo/status.svg
-[daviddm-url]: https://david-dm.org/phovea/malevo
+[circleci-image]: https://circleci.com/gh/Caleydo/malevo/tree/develop.svg?style=svg
+[circleci-url]: https://circleci.com/gh/Caleydo/malevo/tree/develop
+[daviddm-image]: https://david-dm.org/Caleydo/malevo/status.svg
+[daviddm-url]: https://david-dm.org/Caleydo/malevo

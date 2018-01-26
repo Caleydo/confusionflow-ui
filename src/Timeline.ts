@@ -99,6 +99,7 @@ export default class Timeline implements IDragSelection, IAppView {
   }
 
   dragStart() {
+     // nothing
   }
 
   dragging(start: [number, number], end: [number, number]) {
