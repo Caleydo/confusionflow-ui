@@ -5,7 +5,7 @@
 import * as data from 'phovea_core/src/data';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
-import {IAppView} from './App';
+import {IAppView} from './app';
 import {Language} from './language';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import * as d3 from 'd3';

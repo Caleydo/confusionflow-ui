@@ -9,7 +9,7 @@ import {AppConstants} from './AppConstants';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {IDragSelection} from './RangeSelector';
 import {TimelineRangeSelector} from './RangeSelector';
-import {IAppView} from './App';
+import {IAppView} from './app';
 
 export default class Timeline implements IDragSelection, IAppView {
   private readonly $node:d3.Selection<any>;

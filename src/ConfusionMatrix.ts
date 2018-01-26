@@ -1,4 +1,4 @@
-import {IAppView} from './App';
+import {IAppView} from './app';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';

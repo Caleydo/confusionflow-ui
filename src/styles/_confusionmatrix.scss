@@ -2,8 +2,7 @@
   display: grid;
   grid-template-rows: 30px repeat(10, 50px);
   grid-template-columns: 30px repeat(10, 50px);
-  rid-gap: 1px;
-  padding: 0px;
+  grid-gap: 1px;
 }
 
 .confusion-matrix > div {
