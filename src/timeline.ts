@@ -34,7 +34,7 @@ export default class Timeline implements IDragSelection, IAppView {
     });
   }
 
-    /**
+  /**
    * Initialize the view and return a promise
    * that is resolved as soon the view is completely initialized.
    * @returns {Promise<HeatMap>}
@@ -100,6 +100,7 @@ export default class Timeline implements IDragSelection, IAppView {
   }
 
   dragStart() {
+     // nothing
   }
 
   dragging(start: [number, number], end: [number, number]) {
@@ -123,7 +124,7 @@ export default class Timeline implements IDragSelection, IAppView {
   }
 }
 
-  /**
+/**
  * Factory method to create a new HeatMap instance
  * @param parent
  * @param options
