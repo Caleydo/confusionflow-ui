@@ -1,8 +1,8 @@
 [
   {
-    "name": "CIFAR_10-RESNET18_01-Epoch0-Confusion",
-    "description": "DNN dataset that learned QuickDraw images",
-    "path": "cifar-10/resnet18_01/epoch0_confusion.csv",
+    "name": "cifar10-vgg16_01-epoch0-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/vgg16_01/epoch0_confusion.csv",
     "separator": ",",
     "type": "matrix",
     "size": [10, 10],
@@ -11,13 +11,13 @@
     "coltype": "predicted",
     "value": {
       "type": "int",
-      "range": [0,10000]
+      "range": [0,50000]
     }
   },
   {
-    "name": "CIFAR_10-RESNET18_01-Epoch1-Confusion",
-    "description": "DNN dataset that learned QuickDraw images",
-    "path": "cifar-10/resnet18_01/epoch1_confusion.csv",
+    "name": "cifar10-vgg16_01-epoch1-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/vgg16_01/epoch1_confusion.csv",
     "separator": ",",
     "type": "matrix",
     "size": [10, 10],
@@ -26,13 +26,13 @@
     "coltype": "predicted",
     "value": {
       "type": "int",
-      "range": [0,10000]
+      "range": [0,50000]
     }
   },
   {
-    "name": "CIFAR_10-RESNET18_01-Epoch2-Confusion",
-    "description": "DNN dataset that learned QuickDraw images",
-    "path": "cifar-10/resnet18_01/epoch2_confusion.csv",
+    "name": "cifar10-vgg16_01-epoch5-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/vgg16_01/epoch5_confusion.csv",
     "separator": ",",
     "type": "matrix",
     "size": [10, 10],
@@ -41,13 +41,13 @@
     "coltype": "predicted",
     "value": {
       "type": "int",
-      "range": [0,10000]
+      "range": [0,50000]
     }
   },
   {
-    "name": "CIFAR_10-RESNET18_01-Epoch3-Confusion",
-    "description": "DNN dataset that learned QuickDraw images",
-    "path": "cifar-10/resnet18_01/epoch3_confusion.csv",
+    "name": "cifar10-vgg16_01-epoch10-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/vgg16_01/epoch10_confusion.csv",
     "separator": ",",
     "type": "matrix",
     "size": [10, 10],
@@ -56,11 +56,71 @@
     "coltype": "predicted",
     "value": {
       "type": "int",
-      "range": [0,10000]
+      "range": [0,50000]
     }
   },
   {
-    "name": "CIFAR_10-Class_Labels",
+    "name": "cifar10-vgg16_01-epoch15-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/vgg16_01/epoch15_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [10, 10],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,50000]
+    }
+  },
+  {
+    "name": "cifar10-vgg16_01-epoch20-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/vgg16_01/epoch20_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [10, 10],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,50000]
+    }
+  },
+  {
+    "name": "cifar10-vgg16_01-epoch25-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/vgg16_01/epoch25_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [10, 10],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,50000]
+    }
+  },
+  {
+    "name": "cifar10-vgg16_01-epoch30-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/vgg16_01/epoch30_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [10, 10],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,50000]
+    }
+  },
+  {
+    "name": "cifar10-classlabels",
     "description": "Some user attributes",
     "path": "cifar-10/labels.csv",
     "separator": ",",
