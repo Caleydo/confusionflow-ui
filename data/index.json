@@ -1,0 +1,62 @@
+[
+  {
+    "name": "CIFAR_10-RESNET18_01-Epoch0-Confusion",
+    "description": "DNN dataset that learned QuickDraw images",
+    "path": "cifar-10/resnet18_01/epoch0_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [10, 10],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,10000]
+    }
+  },
+  {
+    "name": "CIFAR_10-RESNET18_01-Epoch1-Confusion",
+    "description": "DNN dataset that learned QuickDraw images",
+    "path": "cifar-10/resnet18_01/epoch1_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [10, 10],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,10000]
+    }
+  },
+  {
+    "name": "CIFAR_10-RESNET18_01-Epoch2-Confusion",
+    "description": "DNN dataset that learned QuickDraw images",
+    "path": "cifar-10/resnet18_01/epoch2_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [10, 10],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,10000]
+    }
+  },
+  {
+    "name": "CIFAR_10-RESNET18_01-Epoch3-Confusion",
+    "description": "DNN dataset that learned QuickDraw images",
+    "path": "cifar-10/resnet18_01/epoch3_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [10, 10],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [0,10000]
+    }
+  }
+]
