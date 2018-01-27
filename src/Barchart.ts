@@ -7,17 +7,17 @@ export class Barchart {
   private readonly BAR_WIDTH = 3;
 
   constructor($parent: d3.Selection<any>, margin: {top, bottom, left, right}) {
+    this.width = (<any>$parent[0][0]).clientWidth - margin.left - margin.right;
+    this.height = (<any>$parent[0][0]).clientHeight - margin.top - margin.bottom;
+
     const $svg = $parent
       .append('svg')
       .classed('barchart', true)
-      .attr('width', '100%')
-      .attr('height', '100%');
+      .attr('width', this.width + 'px')
+      .attr('height', this.height + 'px');
 
     this.$node = $svg.append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-    this.width = (<any>$svg[0][0]).clientWidth - margin.left - margin.right;
-    this.height = (<any>$svg[0][0]).clientHeight - margin.top - margin.bottom;
   }
 
 

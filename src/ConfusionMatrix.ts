@@ -13,7 +13,8 @@ export class ConfusionMatrix implements IAppView {
   private $confusionMatrix: d3.Selection<any>;
   private $labelsTop: d3.Selection<any>;
   private $labelsLeft: d3.Selection<any>;
-  private panels: BarchartColumn[] = [];
+  private fpColumn: BarchartColumn;
+  private fnColumn: BarchartColumn;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
@@ -67,12 +68,6 @@ export class ConfusionMatrix implements IAppView {
       .classed('aspect-ratio', true);
     this.$confusionMatrix = $mwrapper.append('div')
     .classed('matrix', true);
-
-    this.$node.append('div')
-      .classed('chart-right', true);
-
-    this.$node.append('div')
-      .classed('chart-bottom', true);
   }
 
   private attachListeners() {
@@ -105,26 +100,18 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
-  /*private renderPanels(data: Matrix) {
-    const rowData = [];
-    for(let c = 0; c < data.length; c++) {
-      rowData[c] = [];
-      for(let r = 0; r < data.length; r++) {
-        rowData[c][r] = data[c][r];
-      }
-    }
+  private renderPanels(data: NumberMatrix) {
+    //todo use singleton here
+     this.fpColumn = new BarchartColumn(this.$node.append('div')
+      .classed('chart-right', true)
+      .append('div').classed('bar-chart', true), data.order());
+     this.fpColumn.render(data);
 
-    const colData = data[0].map(function (_, c) { return data.map(function (r) { return r[c]; }); }); // transpose matrix
-
-    this.panelRight.render(rowData);
-    this.panelBottom.render(colData);
+    this.fnColumn = new BarchartColumn(this.$node.append('div')
+      .classed('chart-bottom', true)
+      .append('div').classed('bar-chart', true), data.order());
+    this.fnColumn.render(data.transpose());
   }
-
-  private setTP(val: number, data: Matrix) {
-    for(let i = 0; i < data.length; i++) {
-      data[i][i] = val;
-    }
-  }*/
 
   private updateSingleEpoch(item:INumericalMatrix, classLabels: ITable) {
     const confusionData = this.loadConfusionData(item);
@@ -134,32 +121,9 @@ export class ConfusionMatrix implements IAppView {
       this.checkDataSanity(x[0], x[1]);
       this.addRowAndColumnLabels(x[1]);
       this.renderSingleEpoch(x[0], x[1]);
-      //this.renderPanels(x[0]);
+      this.renderPanels(x[0]);
     });
   }
-
-  /*private addRowAndColHeader(data: Matrix, labels: [number, String]):Matrix {
-    const size = data.length + 1;
-    const res = [];
-    for(let i = 0; i < size; i++) {
-        res[i] = [];
-      for(let j = 0; j < size; j++) {
-        if(i === 0 && j === 0) {
-          continue;
-        }
-        if(i === 0 && j < size) {
-          res[0][j] = labels[j-1][1];
-          continue;
-        }
-        if(j === 0 && i < size) {
-          res[i][0] = labels[i-1][1];
-          continue;
-        }
-        res[i][j] = data[i-1][j-1];
-      }
-    }
-    return <Matrix>res;
-  }*/
 
   checkDataSanity(data: NumberMatrix, labels: [number, String]) {
     if(data.order() !== labels.length) {

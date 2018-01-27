@@ -2,34 +2,33 @@
  * Created by Martin on 27.01.2018.
  */
 import {Barchart} from './Barchart';
+import {NumberMatrix} from './DataStructures';
+import * as d3 from 'd3';
 
 export class BarchartColumn {
   readonly barcharts: Barchart[] = [];
-  readonly CHART_COUNT = 10;
 
-  constructor(private $node: d3.Selection<any>, margin: {top, bottom, left, right} = {top:0, bottom:0, left:0, right:0}) {
+  constructor(private $node: d3.Selection<any>, private readonly CHART_COUNT, margin: {top, bottom, left, right} = {top:0, bottom:0, left:0, right:0}) {
     for(let i = 0; i < this.CHART_COUNT; i++) {
-      const $div = this.$node.append('div');
-      this.barcharts.push(new Barchart($div, margin));
+     // const $div = this.$node.append('div');
+     // this.barcharts.push(new Barchart($div, margin));
     }
   }
 
-  render(data: number[][]) {
-    data.unshift([0, 0]); // add dummy data for label
+  render(data: NumberMatrix) {
     const $cells = this.$node
       .selectAll('div')
-      .data(data);
+      .data(data.values);
 
     $cells
       .enter()
-      .append('div');
+      .append('div')
+      .classed('cell', true);
 
     $cells.each((d, i) => {
-        if(i === 0) {
-          return;
-        }
-        d[i-1] = 0;
-        this.barcharts[i-1].render(d);
+        d[i] = 0; // don't show the bars located on the main diagonal
+        const bc = new Barchart(d3.select($cells[0][i]), {top: 0, left: 0, bottom: 0, right: 0});
+        bc.render(d);
       });
 
     $cells

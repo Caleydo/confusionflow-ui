@@ -28,6 +28,13 @@ export class SquareMatrix<U> {
   order(): number {
     return this.ORDER;
   }
+
+  transpose(): SquareMatrix<U> {
+    const transposedValues = this.values[0].map((_, c) => { return this.values.map((r) => { return r[c]; }); });
+    const sm = new SquareMatrix<U>(this.order());
+    sm.init(transposedValues);
+    return sm;
+  }
 }
 
 export type NumberMatrix = SquareMatrix<number>;
