@@ -25,15 +25,6 @@ export class SquareMatrix<U> implements Iterable<U> {
     return this.id;
   }
 
-  setDiagonal(vals: U[]) {
-    if(vals.length !== this.ORDER) {
-      throw new RangeError('Illegal array length');
-    }
-    for(let i = 0; i < this.order(); i++) {
-      this.values[i][i] = vals[i];
-    }
-  }
-
   order(): number {
     return this.ORDER;
   }
@@ -47,6 +38,17 @@ export class SquareMatrix<U> implements Iterable<U> {
 
   to1DArray(): Array<U> {
     return [].concat(...this.values);
+  }
+
+  clone(): SquareMatrix<U> {
+    const sqm = new SquareMatrix<U>(this.order());
+    for(let r = 0; r < this.order(); r++) {
+      sqm.values[r] = [];
+      for(let c = 0; c < this.order(); c++) {
+        sqm.values[r][c] = this.values[r][c];
+      }
+    }
+    return sqm;
   }
 
   // todo ask holger why this cannot be invoked
@@ -80,6 +82,20 @@ export function maxValue(matrix: NumberMatrix): number {
       aggrCols[i] = Math.max(...matrix.values[i]);
     }
     return Math.max(...aggrCols);
+}
+
+export function matrixSum(matrix: NumberMatrix): number {
+    return matrix.values.reduce((acc, val) => {
+      return acc + val.reduce((acc2, val2) => {
+        return acc2 + val2;
+      }, 0);
+    }, 0);
+}
+
+export function setDiagonal<U>(matrix: SquareMatrix<U>, funct: (r: number) => U) {
+  for(let i = 0; i < matrix.order(); i++) {
+    matrix.values[i][i] = funct(i);
+  }
 }
 
 export function transform<U,V>(matrix: SquareMatrix<U>, funct: (r: number, c: number, matrix: SquareMatrix<U>) => V) {

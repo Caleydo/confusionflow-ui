@@ -6,8 +6,9 @@ import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
-import {NumberMatrix, SquareMatrix, maxValue, transform} from './DataStructures';
+import {NumberMatrix, SquareMatrix, maxValue, transform, setDiagonal} from './DataStructures';
 import {BarchartCellRenderer, HeatCellRenderer} from './CellRenderer';
+import * as confmeasures from './ConfusionMeasures';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -105,7 +106,6 @@ export class ConfusionMatrix implements IAppView {
       .then((x: number[][]) => {
         const m = new SquareMatrix<number>(x.length);
         m.init(x);
-        m.setDiagonal(new Array(m.order()).fill(0));
         return m;
       });
   }
@@ -119,14 +119,14 @@ export class ConfusionMatrix implements IAppView {
 
   private renderPanels(data: NumberMatrix, labels: [number, string]) {
     const combined0 = transform(data, (r, c, matrix) => {return {count: matrix.values[r][c], label: labels[c][1]};});
-    const combined1 = transform(data, (r, c, matrix) => {return {count: matrix.values[c][r], label: labels[c][1]};});
+    setDiagonal(combined0, (r) => {return {count: 0, label: labels[r][1]};});
 
-    //todo use real data!
-    const accuracy = [0.4, 0.7, 0.2, 0.6, 0.3, 0.6, 0.8, 0.9, 0.2, 0.1];
+    const combined1 = transform(data, (r, c, matrix) => {return {count: matrix.values[c][r], label: labels[c][1]};});
+    setDiagonal(combined1, (r) => {return {count: 0, label: labels[r][1]};});
 
     this.fpColumn.render(new BarchartCellRenderer(combined0));
 
-    this.accuracyColumn.render(new HeatCellRenderer(accuracy));
+    this.accuracyColumn.render(new HeatCellRenderer(confmeasures.calcForMultipleClasses(data, confmeasures.ACC)));
 
     this.fnColumn.render(new BarchartCellRenderer(combined1));
   }
@@ -175,6 +175,8 @@ export class ConfusionMatrix implements IAppView {
     if(!data) {
       return;
     }
+    data = data.clone();
+    setDiagonal(data, (r) => {return 0;});
     const data1D = data.to1DArray();
 
     const heatmapColorScale = d3.scale.linear().domain([0, maxValue(data)])
