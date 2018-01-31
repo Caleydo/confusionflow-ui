@@ -37,9 +37,15 @@ body {
   grid-area: label-right;
   background: #eee;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  grid-template-columns: repeat(auto-fill, minmax(50%, 1fr));
+
+  display: grid;
+
+  div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .label-bottom {

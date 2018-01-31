@@ -47,9 +47,12 @@ export class ConfusionMatrix implements IAppView {
       .classed('axis-left', true)
       .text('Ground Truth');
 
-    this.$node.append('div')
-      .classed('label-right', true)
+    const $labelRight = this.$node.append('div')
+      .classed('label-right', true);
+    $labelRight.append('div')
       .text('FP');
+    $labelRight.append('div')
+      .text('Accuracy');
 
     this.$node.append('div')
       .classed('label-bottom', true)
@@ -180,7 +183,7 @@ export class ConfusionMatrix implements IAppView {
     const data1D = data.to1DArray();
 
     const heatmapColorScale = d3.scale.linear().domain([0, maxValue(data)])
-      .range((<any>['white', 'yellow']))
+      .range((<any>['white', 'gray']))
       .interpolate(<any>d3.interpolateHcl);
 
     const $cells = this.$confusionMatrix.selectAll('div')

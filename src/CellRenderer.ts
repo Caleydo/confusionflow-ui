@@ -48,7 +48,7 @@ export class HeatCellRenderer implements ICellRenderer {
 
   constructor(private data: number[]) {
     this.heatmapColorScale = d3.scale.linear().domain([0, Math.max(...data)])
-      .range((<any>['white', 'yellow']))
+      .range((<any>['white', 'gray']))
       .interpolate(<any>d3.interpolateHcl);
   }
 

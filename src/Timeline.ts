@@ -32,6 +32,7 @@ export default class Timeline implements IDragSelection, IAppView {
   private attachListener() {
     events.on(AppConstants.EVENT_DATA_COLLECTION_SELECTED, (evt, items:MalevoDataset) => {
      this.updateItems(items);
+     this.selectLast();
     });
   }
 
@@ -48,11 +49,8 @@ export default class Timeline implements IDragSelection, IAppView {
     return Promise.resolve(this);
   }
 
-  private loadConfusionData(malevoData: INumericalMatrix) : Promise<any> {
-    return malevoData.data()
-      .then((x) => {
-        console.log(x);
-      });
+  private selectLast() {
+    this.dragEnd(d3.select(this.$circles[0][this.$circles[0].length - 1]));
   }
 
   private createRangeband() {
