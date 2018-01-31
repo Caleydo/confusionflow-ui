@@ -113,24 +113,37 @@ body {
 }
 
 .labels,
-.bar-chart {
+.chart {
   display: grid;
+
+  .bar-tooltip {
+    rect {
+      opacity: 0.5;
+    }
+  }
 }
 
 .label-left > .labels,
-.chart-right > .bar-chart {
+.chart-right > .chart {
   grid-template-rows: repeat(10, 1fr);
 }
 
 .label-top > .labels,
-.chart-bottom > .bar-chart {
+.chart-bottom > .chart {
   grid-template-columns: repeat(10, 1fr);
 }
 
-
 .cell {
+  position: relative;
   border: 1px solid black;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  svg {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+  }
 }
+

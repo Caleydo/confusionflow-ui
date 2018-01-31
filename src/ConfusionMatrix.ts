@@ -2,19 +2,21 @@ import {IAppView} from './app';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
-import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './MalevoDataset';
+import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
-import {BarchartColumn} from './BarchartColumn';
-import {NumberMatrix, SquareMatrix, maxValue} from './DataStructures';
+import {ChartColumn} from './ChartColumn';
+import {NumberMatrix, SquareMatrix, maxValue, transform} from './DataStructures';
+import {BarchartCellRenderer, HeatCellRenderer} from './CellRenderer';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
   private $labelsTop: d3.Selection<any>;
   private $labelsLeft: d3.Selection<any>;
-  private fpColumn: BarchartColumn;
-  private fnColumn: BarchartColumn;
+  private fpColumn: ChartColumn;
+  private fnColumn: ChartColumn;
+  private accuracyColumn: ChartColumn;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
@@ -37,11 +39,13 @@ export class ConfusionMatrix implements IAppView {
   private setupLayout() {
     this.$node.append('div')
       .classed('axis', true)
-      .classed('axis-top', true);
+      .classed('axis-top', true)
+      .text('Predicted');
 
     this.$node.append('div')
       .classed('axis', true)
-      .classed('axis-left', true);
+      .classed('axis-left', true)
+      .text('Ground Truth');
 
     this.$node.append('div')
       .classed('label-right', true)
@@ -68,6 +72,16 @@ export class ConfusionMatrix implements IAppView {
       .classed('aspect-ratio', true);
     this.$confusionMatrix = $mwrapper.append('div')
     .classed('matrix', true);
+
+    const $chartRight = this.$node.append('div')
+      .classed('chart-right', true);
+    this.fpColumn = new ChartColumn($chartRight.append('div').classed('chart', true));
+
+    const $chartBottom = this.$node.append('div')
+      .classed('chart-bottom', true);
+    this.fnColumn = new ChartColumn($chartBottom.append('div').classed('chart', true));
+
+    this.accuracyColumn = new ChartColumn($chartRight.append('div').classed('chart', true));
   }
 
   private attachListeners() {
@@ -100,17 +114,21 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
-  private renderPanels(data: NumberMatrix) {
-    //todo use singleton here
-     this.fpColumn = new BarchartColumn(this.$node.append('div')
-      .classed('chart-right', true)
-      .append('div').classed('bar-chart', true), data.order());
-     this.fpColumn.render(data);
+  private renderPanels(data: NumberMatrix, labels: [number, string]) {
+    const combined0 = transform(data, (r, c, matrix) => {return {count: matrix.values[r][c], label: labels[c][1]};});
+    const combined1 = transform(data, (r, c, matrix) => {return {count: matrix.values[c][r], label: labels[c][1]};});
 
-    this.fnColumn = new BarchartColumn(this.$node.append('div')
-      .classed('chart-bottom', true)
-      .append('div').classed('bar-chart', true), data.order());
-    this.fnColumn.render(data.transpose());
+    //todo use real data!
+    const accuracy = [0.4, 0.7, 0.2, 0.6, 0.3, 0.6, 0.8, 0.9, 0.2, 0.1];
+
+    //todo use singleton here
+
+    this.fpColumn.render(new BarchartCellRenderer(combined0));
+
+    this.accuracyColumn.render(new HeatCellRenderer(accuracy));
+
+
+    this.fnColumn.render(new BarchartCellRenderer(combined1));
   }
 
   private updateSingleEpoch(item:INumericalMatrix, classLabels: ITable) {
@@ -120,8 +138,8 @@ export class ConfusionMatrix implements IAppView {
     Promise.all([confusionData, labels]).then((x:any) => {
       this.checkDataSanity(x[0], x[1]);
       this.addRowAndColumnLabels(x[1]);
-      this.renderSingleEpoch(x[0], x[1]);
-      this.renderPanels(x[0]);
+      this.renderSingleEpoch(x[0]);
+      this.renderPanels(x[0], x[1]);
     });
   }
 
@@ -153,13 +171,13 @@ export class ConfusionMatrix implements IAppView {
     $cells.exit().remove();
   }
 
-  private renderSingleEpoch(data: NumberMatrix, labels: [number, String]) {
+  private renderSingleEpoch(data: NumberMatrix) {
     if(!data) {
       return;
     }
     const ROW_COUNT = data.order();
 
-    const data1D = [].concat(...data.values);
+    const data1D = data.to1DArray();
 
     const heatmapColorScale = d3.scale.linear().domain([0, maxValue(data)])
       .range((<any>['white', 'yellow']))
@@ -173,7 +191,7 @@ export class ConfusionMatrix implements IAppView {
       .text((datum: any) => {
         return datum;
       })
-      .style('background-color', ((datum: any) => {
+      .style('background-color', ((datum: number) => {
           return heatmapColorScale(datum);
       }));
 
