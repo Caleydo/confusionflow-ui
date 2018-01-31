@@ -6,7 +6,6 @@
 }
 
 .confusion-matrix > div {
-  background-color: #8ca0ff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19,21 +18,17 @@
 .confusion-matrix > .col-header {
   transform: rotate(-180deg);
   writing-mode: vertical-lr;
-  background-color: green;
-}
-
-.confusion-matrix > .row-header {
-  background-color: red;
 }
 
 .matrix-wrapper {
   display: grid;
   width: 60px;
   height: 60px;
-  grid-template-areas: "bt head"
-                       "nav  div1";
-  grid-template-rows: 30px auto;
-  grid-template-columns: 30px auto;
+  grid-template-areas: "bt head empty2"
+                       "bar-left  heatmap bars-right"
+                        "empty3 bars-bottom empty";
+  grid-template-rows: 30px auto 30px;
+  grid-template-columns: 30px auto 30px;
   padding: 20px;
   grid-gap: 10px;
 }
@@ -50,7 +45,7 @@
 }
 
 .matrix-wrapper > .left.barstyle {
-  grid-area: nav;
+  grid-area: bar-left;
   transform: rotate(-180deg);
   writing-mode: vertical-rl;
 }
@@ -60,5 +55,52 @@
 }
 
 .matrix-wrapper > .confusion-matrix {
-  grid-area: div1;
+  grid-area: heatmap;
+}
+
+.matrix-wrapper > .bars-right {
+  grid-area: bars-right
+}
+
+.matrix-wrapper > .bars-bottom {
+  grid-area: bars-bottom
+}
+
+.matrix-wrapper > .cell-empty {
+  grid-area: empty
+}
+
+.matrix-wrapper > .cell-empty2 {
+  grid-area: empty2
+}
+
+.r-col {
+  display: grid;
+  grid-template-rows: 30px repeat(10, 50px);
+  grid-template-columns: 50px;
+  rid-gap: 1px;
+}
+
+
+.r-col > div:first-child {
+  background-color: lightgray;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.b-col {
+  display: grid;
+  grid-template-rows: 50px;
+  grid-template-columns: 30px repeat(10, 50px);
+}
+
+.b-col > div:first-child {
+  background-color: lightgray;
+  display: flex;
+  transform: rotate(-180deg);
+  writing-mode: vertical-lr;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

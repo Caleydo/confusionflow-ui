@@ -6,12 +6,16 @@ import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './Malev
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {text} from 'd3';
+import {IDecorator} from 'typedoc/dist/lib/models';
+import {Barchart} from './Barchart';
 
 type Matrix = [[number, number]];
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
+  private panelRight: BarchartColumn;
+  private panelBottom: BarchartColumn;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
@@ -33,20 +37,46 @@ export class ConfusionMatrix implements IAppView {
 
   private setupLayout() {
     this.$node.append('div')
+      .classed('button', true);
+
+    this.$node.append('div')
       .classed('header', true)
       .classed('barstyle', true)
       .text('Predicted');
 
     this.$node.append('div')
-      .classed('button', true);
+      .classed('cell-empty', true);
 
     this.$node.append('div')
       .classed('left', true)
       .classed('barstyle', true)
       .text('Actual');
 
+    let $n =this.$node.append('div')
+      .classed('bars-right', true)
+      .classed('r-col', true);
+    $n.append('div')
+      .text('FP');
+
+    this.panelRight = new BarchartColumn($n, {top:5, bottom:0, left:0, right:0});
+
+    $n =this.$node.append('div')
+      .classed('bars-bottom', true)
+      .classed('b-col', true);
+    $n.append('div')
+      .text('FN');
+
+    this.panelBottom = new BarchartColumn($n, {top:0, bottom:0, left:5, right:0});
+
+
     this.$confusionMatrix = this.$node.append('div')
       .classed('confusion-matrix', true);
+
+    this.$node.append('div')
+      .classed('cell-empty2', true);
+
+    this.$node.append('div')
+      .classed('cell-empty3', true);
   }
 
   private attachListeners() {
@@ -76,12 +106,35 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
+  private renderPanels(data: Matrix) {
+    const rowData = [];
+    for(let c = 0; c < data.length; c++) {
+      rowData[c] = [];
+      for(let r = 0; r < data.length; r++) {
+        rowData[c][r] = data[c][r];
+      }
+    }
+
+    const colData = data[0].map(function (_, c) { return data.map(function (r) { return r[c]; }); }); // transpose matrix
+
+    this.panelRight.render(rowData);
+    this.panelBottom.render(colData);
+  }
+
+  private setTP(val: number, data: Matrix) {
+    for(let i = 0; i < data.length; i++) {
+      data[i][i] = val;
+    }
+  }
+
   private updateSingleEpoch(item:INumericalMatrix, classLabels: ITable) {
     const confusionData = this.loadConfusionData(item);
     const labels = this.loadLabels(classLabels);
 
     Promise.all([confusionData, labels]).then((x:any) => {
+      this.setTP(0, x[0]);
       this.renderSingleEpoch(x[0], x[1]);
+      this.renderPanels(x[0]);
     });
   }
 
@@ -130,7 +183,7 @@ export class ConfusionMatrix implements IAppView {
 
     const $cells = this.$confusionMatrix.selectAll('div')
       .data(data1D);
-    const $cellsEnter = $cells.enter().append('div')
+    $cells.enter().append('div')
       .classed('row-header', rowHeaderPredicate)
       .classed('col-header', colHeaderPredicate);
     $cells
@@ -154,6 +207,45 @@ export class ConfusionMatrix implements IAppView {
       aggrCols[i] = Math.max(...matrix[i]);
     }
     return Math.max(...aggrCols);
+  }
+}
+
+interface IRightDecorator {
+  render();
+}
+
+class BarchartColumn {
+  readonly barcharts: Barchart[] = [];
+  readonly CHART_COUNT = 10;
+
+  constructor(private $node: d3.Selection<any>, margin: {top, bottom, left, right} = {top:0, bottom:0, left:0, right:0}) {
+    for(let i = 0; i < this.CHART_COUNT; i++) {
+      const $div = this.$node.append('div');
+      this.barcharts.push(new Barchart($div, margin));
+    }
+  }
+
+  render(data: number[][]) {
+    data.unshift([0, 0]); // add dummy data for label
+    const $cells = this.$node
+      .selectAll('div')
+      .data(data);
+
+    $cells
+      .enter()
+      .append('div');
+
+    $cells.each((d, i) => {
+        if(i === 0) {
+          return;
+        }
+        d[i-1] = 0;
+        this.barcharts[i-1].render(d);
+      });
+
+    $cells
+      .exit()
+      .remove();
   }
 }
 
