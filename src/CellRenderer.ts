@@ -19,7 +19,7 @@ export class BarchartCellRenderer implements ICellRenderer {
       .selectAll('div')
       .data(this.data.values, (d) => this.createKey(d));
 
-    // has to be called before enter, otherwise clientheight = 0
+    // has to be called before enter(), otherwise clientheight = 0
     $cells
       .exit()
       .remove();

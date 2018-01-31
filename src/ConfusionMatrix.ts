@@ -124,12 +124,9 @@ export class ConfusionMatrix implements IAppView {
     //todo use real data!
     const accuracy = [0.4, 0.7, 0.2, 0.6, 0.3, 0.6, 0.8, 0.9, 0.2, 0.1];
 
-    //todo use singleton here
-
     this.fpColumn.render(new BarchartCellRenderer(combined0));
 
     this.accuracyColumn.render(new HeatCellRenderer(accuracy));
-
 
     this.fnColumn.render(new BarchartCellRenderer(combined1));
   }
@@ -178,8 +175,6 @@ export class ConfusionMatrix implements IAppView {
     if(!data) {
       return;
     }
-    const ROW_COUNT = data.order();
-
     const data1D = data.to1DArray();
 
     const heatmapColorScale = d3.scale.linear().domain([0, maxValue(data)])
