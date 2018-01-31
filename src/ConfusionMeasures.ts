@@ -48,7 +48,7 @@ export function F1(matrix: NumberMatrix, index: number): number {
 }
 
 export function calcForMultipleClasses(matrix: NumberMatrix, funct: (matrix: NumberMatrix, index: number) => number): number[] {
-  const result = []
+  const result = [];
   for(let i = 0; i < matrix.order(); i++) {
     result.push(funct(matrix, i));
   }
