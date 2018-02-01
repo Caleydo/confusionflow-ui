@@ -2,12 +2,32 @@
  * Created by Martin on 29.01.2018.
  */
 
-import {IClassAffiliation, SquareMatrix} from './DataStructures';
+import {IClassAffiliation, IClassEvolution, SquareMatrix} from './DataStructures';
 import {Barchart} from './Barchart';
 import * as d3 from 'd3';
 
 export interface ICellRenderer {
   renderCells($parent: d3.Selection<any>);
+}
+
+export class LinechartCellRenderer implements ICellRenderer {
+  constructor(private data: SquareMatrix<IClassEvolution>) {
+  }
+
+  renderCells($parent: d3.Selection<any>) {
+    const $cells = $parent.selectAll('div')
+      .data(this.data.values);
+
+    $cells.exit().remove();
+
+    $cells.enter().append('div')
+      .classed('cell', true);
+
+
+    $cells.each(function(d, i) {
+
+    });
+  }
 }
 
 export class BarchartCellRenderer implements ICellRenderer {

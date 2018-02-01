@@ -6,8 +6,9 @@ import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
-import {NumberMatrix, SquareMatrix, maxValue, transform, setDiagonal} from './DataStructures';
-import {BarchartCellRenderer, HeatCellRenderer} from './CellRenderer';
+import {NumberMatrix, SquareMatrix, maxValue, transform, setDiagonal, IClassEvolution} from './DataStructures';
+import {BarchartCellRenderer, HeatCellRenderer, LinechartCellRenderer} from './CellRenderer';
+import {LinechartCalculator} from './MatrixCellCalculation';
 import * as confmeasures from './ConfusionMeasures';
 
 export class ConfusionMatrix implements IAppView {
@@ -95,7 +96,7 @@ export class ConfusionMatrix implements IAppView {
       } else if(items.length === 1) {
         this.updateSingleEpoch(items[0].confusionInfo, dataset.classLabels);
       } else {
-        // rendering epoch ranges goes here
+        this.updateEpochRange(items, dataset.classLabels);
       }
 
     });
@@ -118,10 +119,10 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private renderPanels(data: NumberMatrix, labels: [number, string]) {
-    const combined0 = transform(data, (r, c, matrix) => {return {count: matrix.values[r][c], label: labels[c][1]};});
+    const combined0 = transform(data, (r, c, value) => {return {count: value, label: labels[c][1]};});
     setDiagonal(combined0, (r) => {return {count: 0, label: labels[r][1]};});
 
-    const combined1 = transform(data, (r, c, matrix) => {return {count: matrix.values[c][r], label: labels[c][1]};});
+    const combined1 = transform(data, (r, c, value) => {return {count: value, label: labels[c][1]};});
     setDiagonal(combined1, (r) => {return {count: 0, label: labels[r][1]};});
 
     this.fpColumn.render(new BarchartCellRenderer(combined0));
@@ -131,20 +132,46 @@ export class ConfusionMatrix implements IAppView {
     this.fnColumn.render(new BarchartCellRenderer(combined1));
   }
 
+  private updateEpochRange(items:IMalevoEpochInfo[], classLabels: ITable) {
+    const dataPromises = [];
+    for(const item of items) {
+      dataPromises.push(this.loadConfusionData(item.confusionInfo));
+    }
+    dataPromises.push(this.loadLabels(classLabels));
+
+    Promise.all(dataPromises).then((x: any) => {
+      const labels = x.splice(-1, 1)[0];
+      this.checkDataSanity(x, labels);
+      this.addRowAndColumnLabels(labels);
+      this.renderEpochRange(x);
+    });
+  }
+
   private updateSingleEpoch(item:INumericalMatrix, classLabels: ITable) {
     const confusionData = this.loadConfusionData(item);
     const labels = this.loadLabels(classLabels);
 
     Promise.all([confusionData, labels]).then((x:any) => {
-      this.checkDataSanity(x[0], x[1]);
+      this.checkDataSanity([x[0]], x[1]);
       this.addRowAndColumnLabels(x[1]);
       this.renderSingleEpoch(x[0]);
       this.renderPanels(x[0], x[1]);
     });
   }
 
-  checkDataSanity(data: NumberMatrix, labels: [number, String]) {
-    if(data.order() !== labels.length) {
+  checkDataSanity(data: NumberMatrix[], labels: [number, String]) {
+    if(data.length === 0) {
+      throw new TypeError('No confusion matrix was found');
+    }
+    const order = data[0].order();
+
+    for(let i = 1; i < data.length; i++) {
+      if(order !== data[i].order()) {
+        throw new TypeError('The loaded confusion matrix is not valid');
+      }
+    }
+    if(order !== labels.length) {
+      //todo handle correctly (ask holger)
       throw new TypeError('The length of the labels does not fit with the matrix length');
     }
   }
@@ -169,6 +196,19 @@ export class ConfusionMatrix implements IAppView {
       }));
 
     $cells.exit().remove();
+  }
+
+  private renderEpochRange(data: NumberMatrix[]) {
+    if(!data || data.length === 0) {
+      return;
+    }
+
+    const calculator = new LinechartCalculator();
+    const cellContent = calculator.calculate(data);
+    console.assert(cellContent.order() === data[0].order());
+    const transRes = transform<number[], IClassEvolution>(cellContent, (r, c, value) => {return {values: value, label: ''};});
+
+    new LinechartCellRenderer(transRes);
   }
 
   private renderSingleEpoch(data: NumberMatrix) {

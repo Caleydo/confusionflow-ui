@@ -98,13 +98,13 @@ export function setDiagonal<U>(matrix: SquareMatrix<U>, funct: (r: number) => U)
   }
 }
 
-export function transform<U,V>(matrix: SquareMatrix<U>, funct: (r: number, c: number, matrix: SquareMatrix<U>) => V) {
+export function transform<U,V>(matrix: SquareMatrix<U>, funct: (r: number, c: number, value: U) => V) {
   const sm = new SquareMatrix<V>(matrix.order());
   const ix:V[][] = [];
   for(let r = 0; r < matrix.order(); r++) {
       ix[r] = [];
       for(let c = 0; c < matrix.order(); c++) {
-        const res = funct(r, c, matrix);//{count: matrix.values[r][c], label: labels[c][1]};
+        const res = funct(r, c, matrix.values[r][c]);
         ix[r][c] = res;
       }
     }
@@ -113,6 +113,11 @@ export function transform<U,V>(matrix: SquareMatrix<U>, funct: (r: number, c: nu
 }
 
 export interface IClassAffiliation  {
-    count: number;
-    label: string;
+  count: number;
+  label: string;
+}
+
+export interface IClassEvolution {
+  values: number[];
+  label: string;
 }
