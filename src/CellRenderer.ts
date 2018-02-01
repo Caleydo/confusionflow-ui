@@ -65,7 +65,8 @@ export class HeatCellRenderer implements ICellRenderer {
     $cells
       .style('background-color', ((datum: any) => {
           return this.heatmapColorScale(datum);
-      }));
+      }))
+      .text((d) => String(d));
 
     $cells
       .exit()
