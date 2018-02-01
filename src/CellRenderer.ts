@@ -30,6 +30,7 @@ export class LinechartCellRenderer implements ICellRenderer {
   }
 
   private createKey(d: IClassEvolution[]) {
+    console.log(d);
     const res = d.reduce((acc, cur) => {
       acc += cur.values + cur.label;
       return acc;

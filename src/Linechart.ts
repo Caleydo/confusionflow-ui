@@ -3,7 +3,7 @@
  */
 import {IClassEvolution} from './DataStructures';
 import * as d3 from 'd3';
-//import {d3_shape} from 'd3-shape';
+import {d3_shape} from 'd3-shape';
 
 export class Linechart {
   private readonly $node: d3.Selection<any>;
@@ -29,17 +29,17 @@ export class Linechart {
     x.domain([0, data.values.length]);
     y.domain([0, d3.max(data.values)]);
 
-    /*const line = d3.
+    const line = d3_shape
       .x(function(d) { return x(d.date); })
       .y(function(d) { return y(d.close); });
 
-    $g.append("path")
+    $g.append('path')
       .datum(data)
-      .attr("fill", "none")
-      .attr("stroke", "steelblue")
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-linecap", "round")
-      .attr("stroke-width", 1.5)
-      .attr("d", line);*/
+      .attr('fill', 'none')
+      .attr('stroke', 'steelblue')
+      .attr('stroke-linejoin', 'round')
+      .attr('stroke-linecap', 'round')
+      .attr('stroke-width', 1.5)
+      .attr('d', line);
   }
 }
