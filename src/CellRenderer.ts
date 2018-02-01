@@ -4,6 +4,7 @@
 
 import {IClassAffiliation, IClassEvolution, SquareMatrix} from './DataStructures';
 import {Barchart} from './Barchart';
+import {Linechart} from './Linechart';
 import * as d3 from 'd3';
 
 export interface ICellRenderer {
@@ -16,17 +17,24 @@ export class LinechartCellRenderer implements ICellRenderer {
 
   renderCells($parent: d3.Selection<any>) {
     const $cells = $parent.selectAll('div')
-      .data(this.data.values);
+      .data(this.data.values, (d) => this.createKey(d));
 
     $cells.exit().remove();
 
-    $cells.enter().append('div')
+    const $enterSelection = $cells.enter().append('div')
       .classed('cell', true);
 
-
-    $cells.each(function(d, i) {
-
+    $enterSelection.each(function(d, i) {
+      new Linechart(d3.select(this)).render(d[i]);
     });
+  }
+
+  private createKey(d: IClassEvolution[]) {
+    const res = d.reduce((acc, cur) => {
+      acc += cur.values + cur.label;
+      return acc;
+    }, '');
+    return res;
   }
 }
 
@@ -49,7 +57,7 @@ export class BarchartCellRenderer implements ICellRenderer {
       .append('div')
       .classed('cell', true);
 
-    $enterSelection.each(function(d, i) {
+    $enterSelection.each(function(d) {
         new Barchart(d3.select(this), {top:0, bottom:0, left:0, right:0}).render(d);
       });
   }

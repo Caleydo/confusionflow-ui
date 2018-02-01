@@ -5,7 +5,6 @@ export class Barchart {
   private readonly $node: d3.Selection<any>;
   private readonly width: number;
   private readonly height: number;
-  private readonly BAR_WIDTH = 3;
 
   constructor($parent: d3.Selection<any>, margin: {top, bottom, left, right}) {
     this.width = (<any>$parent[0][0]).clientWidth - margin.left - margin.right;

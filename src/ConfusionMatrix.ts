@@ -208,7 +208,7 @@ export class ConfusionMatrix implements IAppView {
     console.assert(cellContent.order() === data[0].order());
     const transRes = transform<number[], IClassEvolution>(cellContent, (r, c, value) => {return {values: value, label: ''};});
 
-    new LinechartCellRenderer(transRes);
+    new LinechartCellRenderer(transRes).renderCells(this.$confusionMatrix);
   }
 
   private renderSingleEpoch(data: NumberMatrix) {
