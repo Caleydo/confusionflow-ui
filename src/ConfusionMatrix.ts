@@ -69,10 +69,8 @@ export class ConfusionMatrix implements IAppView {
       .classed('labels', true);
 
     const $mwrapper = this.$node.append('div')
-      .classed('matrix-wrapper', true);
-    $mwrapper.append('div')
-      .classed('one-by-one', true)
-      .classed('aspect-ratio', true);
+      .classed('matrix-wrapper', true)
+      .attr('data-aspect-ratio','one-by-one');
     this.$confusionMatrix = $mwrapper.append('div')
     .classed('matrix', true);
 

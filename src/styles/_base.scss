@@ -1,8 +1,34 @@
 body, html {
   font-family: Yantramanav, 'Helvetica Neue', Helvetica, sans-serif;
   font-weight: 400;
+  margin: 0;
+  padding: 0;
 }
 
 th, label, strong, b, .label {
   font-weight: 500 !important;
 }
+
+/*
+#app {
+  display: grid;
+  grid-template-areas:
+    "timeline"
+    "comparison";
+  grid-template-columns: 100%;
+  grid-template-rows: minmax(min-content, 10vh) minmax(min-content, 80vh);
+}
+
+.selector-timepoint {
+  grid-area: timeline;
+}
+
+.comparison {
+  grid-area: comparison;
+  display: flex;
+
+  > div {
+    flex-basis: 65%;
+  }
+}
+*/
