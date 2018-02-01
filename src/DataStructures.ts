@@ -92,6 +92,22 @@ export function matrixSum(matrix: NumberMatrix): number {
     }, 0);
 }
 
+export function max<U>(matrix: SquareMatrix<U>, funct: (a: U) => number): number {
+  const arr = matrix.to1DArray();
+  const res = arr.reduce(function(a, b) {
+    return Math.max(a, funct(b));
+  }, funct(arr[0]));
+  return res;
+}
+
+export function min<U>(matrix: SquareMatrix<U>, funct: (a: U) => number): number {
+  const arr = matrix.to1DArray();
+  const res = arr.reduce(function(a, b) {
+    return Math.min(a, funct(b));
+  }, funct(arr[0]));
+  return res;
+}
+
 export function setDiagonal<U>(matrix: SquareMatrix<U>, funct: (r: number) => U) {
   for(let i = 0; i < matrix.order(); i++) {
     matrix.values[i][i] = funct(i);

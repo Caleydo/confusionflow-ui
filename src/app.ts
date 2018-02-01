@@ -74,9 +74,31 @@ export class App implements IAppView {
 
   constructor(parent:Element) {
     this.$node = d3.select(parent);
+    this.$node.append('div');
 
     this.$node.append('div').classed('selector-timepoint', true);
     this.$node.append('div').classed('comparison', true);
+
+    /*const arr = [3, 5, 6];
+    let $cells = this.$node.selectAll('div')
+      .data(arr);
+
+    console.log($cells.enter());
+    console.log($cells.exit());
+    $cells.exit().remove();
+
+    const $enterSelection = $cells.enter().append('div');
+    console.log($enterSelection);
+
+    const arr2 = [1, 2, 4];
+    $cells = this.$node.selectAll('div')
+      .data(arr2, (d, i) => {
+        console.log(d);
+        return String(d);
+      });
+    console.log($cells.enter());
+    console.log($cells.exit());*/
+
   }
 
   /**

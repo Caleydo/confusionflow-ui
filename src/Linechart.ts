@@ -3,7 +3,7 @@
  */
 import {IClassEvolution} from './DataStructures';
 import * as d3 from 'd3';
-import {d3_shape} from 'd3-shape';
+import * as d3_shape from 'd3-shape';
 
 export class Linechart {
   private readonly $node: d3.Selection<any>;
@@ -13,7 +13,7 @@ export class Linechart {
   constructor($parent: d3.Selection<any>) {
     const $svg = $parent
       .append('svg')
-      .classed('barchart', true);
+      .classed('linechart', true);
 
     this.width = (<any>$parent[0][0]).clientWidth;
     this.height = (<any>$parent[0][0]).clientHeight;
@@ -21,25 +21,28 @@ export class Linechart {
     this.$node = $svg.append('g');
   }
 
-  render(data: IClassEvolution) {
+  render(data: IClassEvolution, maxVal: number, minVal: number) {
     const $g = this.$node;
 
     const x = d3.scale.linear().rangeRound([0, this.width]);
     const y = d3.scale.linear().rangeRound([this.height, 0]);
-    x.domain([0, data.values.length]);
-    y.domain([0, d3.max(data.values)]);
+    x.domain([0, data.values.length - 1]);
+    y.domain([minVal, maxVal]);
 
-    const line = d3_shape
-      .x(function(d) { return x(d.date); })
-      .y(function(d) { return y(d.close); });
+    const line = d3_shape.line()
+      .x((d, i) => {
+        return x(i);
+      })
+      .y((d) => {
+        return y(d);
+      });
 
     $g.append('path')
-      .datum(data)
       .attr('fill', 'none')
       .attr('stroke', 'steelblue')
       .attr('stroke-linejoin', 'round')
       .attr('stroke-linecap', 'round')
       .attr('stroke-width', 1.5)
-      .attr('d', line);
+      .attr('d', line(data.values));
   }
 }
