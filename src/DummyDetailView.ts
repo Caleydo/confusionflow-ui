@@ -1,4 +1,3 @@
-import {ITable} from '../../phovea_core/src/table';
 import * as d3 from 'd3';
 import {IAppView} from './app';
 import {ConfusionMatrix} from './ConfusionMatrix';
