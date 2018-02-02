@@ -12,7 +12,7 @@
     height: 24px;
     border: 2px $select-color solid;
     background: transparentize($select-color, 0.75);
-    //border-radius: 15px;
+    border-radius: 5px;
     visibility: hidden;
     z-index: -1;
   }

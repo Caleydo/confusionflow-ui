@@ -9,6 +9,7 @@ import {ChartColumn} from './ChartColumn';
 import {NumberMatrix, SquareMatrix, maxValue, transform} from './DataStructures';
 import {BarChartCellRenderer, HeatCellRenderer} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
+import {Language} from './language';
 
 export class ConfusionMatrix implements IAppView {
 
@@ -42,28 +43,28 @@ export class ConfusionMatrix implements IAppView {
     this.$node.append('div')
       .classed('axis', true)
       .classed('axis-top', true)
-      .text('Predicted');
+      .text(Language.PREDICTED);
 
     this.$node.append('div')
       .classed('axis', true)
       .classed('axis-left', true)
       .append('span')
-      .text('Ground Truth');
+      .text(Language.GROUND_TRUTH);
 
     const $labelRight = this.$node.append('div')
       .classed('malevo-label', true)
       .classed('label-right', true);
 
     $labelRight.append('div')
-      .text('FP');
+      .text(Language.FP);
 
     $labelRight.append('div')
-      .text('Accuracy');
+      .text(Language.ACCURACY);
 
     this.$node.append('div')
       .classed('malevo-label', true)
       .classed('label-bottom', true)
-      .text('FN');
+      .text(Language.FN);
 
     this.$labelsTop = this.$node.append('div')
       .classed('malevo-label', true)
