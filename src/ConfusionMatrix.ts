@@ -7,7 +7,7 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {NumberMatrix, SquareMatrix, maxValue, transform} from './DataStructures';
-import {BarchartCellRenderer, HeatCellRenderer} from './CellRenderer';
+import {BarChartCellRenderer, HeatCellRenderer} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
 
 export class ConfusionMatrix implements IAppView {
@@ -53,8 +53,10 @@ export class ConfusionMatrix implements IAppView {
     const $labelRight = this.$node.append('div')
       .classed('malevo-label', true)
       .classed('label-right', true);
+
     $labelRight.append('div')
       .text('FP');
+
     $labelRight.append('div')
       .text('Accuracy');
 
@@ -78,18 +80,15 @@ export class ConfusionMatrix implements IAppView {
     const $mwrapper = this.$node.append('div')
       .classed('matrix-wrapper', true)
       .attr('data-aspect-ratio','one-by-one');
-    this.$confusionMatrix = $mwrapper.append('div')
-    .classed('matrix', true);
 
-    const $chartRight = this.$node.append('div')
-      .classed('chart-right', true);
-    this.fpColumn = new ChartColumn($chartRight.append('div').classed('chart', true));
+    this.$confusionMatrix = $mwrapper.append('div').classed('matrix', true);
 
-    const $chartBottom = this.$node.append('div')
-      .classed('chart-bottom', true);
-    this.fnColumn = new ChartColumn($chartBottom.append('div').classed('chart', true));
+    const $chartRight = this.$node.append('div').classed('chart-right', true);
+    this.fpColumn = new ChartColumn($chartRight.append('div'));
+    this.accuracyColumn = new ChartColumn($chartRight.append('div'));
 
-    this.accuracyColumn = new ChartColumn($chartRight.append('div').classed('chart', true));
+    const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
+    this.fnColumn = new ChartColumn($chartBottom.append('div'));
   }
 
   private attachListeners() {
@@ -101,7 +100,6 @@ export class ConfusionMatrix implements IAppView {
       } else {
         // rendering epoch ranges goes here
       }
-
     });
   }
 
@@ -119,7 +117,7 @@ export class ConfusionMatrix implements IAppView {
     return table.data()
       .then((x) => {
         return x;
-    });
+      });
   }
 
   private renderPanels(data: NumberMatrix, labels: [number, string]) {
@@ -129,11 +127,11 @@ export class ConfusionMatrix implements IAppView {
     //todo use real data!
     const accuracy = [0.4, 0.7, 0.2, 0.6, 0.3, 0.6, 0.8, 0.9, 0.2, 1];
 
-    this.fpColumn.render(new BarchartCellRenderer(combined0));
+    this.fpColumn.render(new BarChartCellRenderer(combined0));
 
     this.accuracyColumn.render(new HeatCellRenderer(accuracy));
 
-    this.fnColumn.render(new BarchartCellRenderer(combined1));
+    this.fnColumn.render(new BarChartCellRenderer(combined1));
   }
 
   private updateSingleEpoch(item:INumericalMatrix, classLabels: ITable) {
@@ -161,10 +159,14 @@ export class ConfusionMatrix implements IAppView {
 
   private renderLabels($node: d3.Selection<any>, labels: [number, string]) {
     const classColors = d3.scale.category10();
+
     const $cells = $node.selectAll('div')
       .data(labels);
-    $cells.enter().append('div')
+
+    $cells.enter()
+      .append('div')
       .classed('cell', true);
+
     $cells
       .text((datum: any) => datum[1])
       .style('background-color', (datum: any) => classColors(datum))
@@ -177,16 +179,21 @@ export class ConfusionMatrix implements IAppView {
     if(!data) {
       return;
     }
+
     const data1D = data.to1DArray();
 
     const heatmapColorScale = d3.scale.linear().domain([0, maxValue(data)])
       .range(<any>AppConstants.BW_COLOR_SCALE)
       .interpolate(<any>d3.interpolateHcl);
 
-    const $cells = this.$confusionMatrix.selectAll('div')
+    const $cells = this.$confusionMatrix
+      .selectAll('div')
       .data(data1D);
-    $cells.enter().append('div')
+
+    $cells.enter()
+      .append('div')
       .classed('cell', true);
+
     $cells
       .text((datum: any) => datum)
       .style('background-color', (datum: number) => heatmapColorScale(datum))

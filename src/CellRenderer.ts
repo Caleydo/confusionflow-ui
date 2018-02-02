@@ -3,7 +3,7 @@
  */
 
 import {IClassAffiliation, SquareMatrix} from './DataStructures';
-import {Barchart} from './Barchart';
+import {BarChart} from './BarChart';
 import * as d3 from 'd3';
 import {adaptTextColorToBgColor} from './utils';
 import {AppConstants} from './AppConstants';
@@ -12,7 +12,7 @@ export interface ICellRenderer {
   renderCells($parent: d3.Selection<any>);
 }
 
-export class BarchartCellRenderer implements ICellRenderer {
+export class BarChartCellRenderer implements ICellRenderer {
 
   constructor(private data: SquareMatrix<IClassAffiliation>) {
 
@@ -34,7 +34,7 @@ export class BarchartCellRenderer implements ICellRenderer {
       .classed('cell', true);
 
     $enterSelection.each(function(d, i) {
-        new Barchart(d3.select(this), {top:0, bottom:0, left:0, right:0}).render(d);
+        new BarChart(d3.select(this), {top:0, bottom:0, left:0, right:0}).render(d);
       });
   }
 
