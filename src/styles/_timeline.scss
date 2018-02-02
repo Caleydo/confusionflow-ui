@@ -12,7 +12,7 @@
     height: 24px;
     border: 2px $select-color solid;
     background: transparentize($select-color, 0.75);
-    border-radius: 15px;
+    //border-radius: 15px;
     visibility: hidden;
     z-index: -1;
   }
@@ -25,7 +25,7 @@
 
     .point {
       position: relative;
-      border-radius: 50%;
+      //border-radius: 50%;
       background-color: darken($label-bg, 15%);
       width: 15px;
       height: 15px;
