@@ -24,5 +24,15 @@ export class AppConstants {
    */
   static EVENT_EPOCH_SELECTED = 'eventEpochSelected';
 
+  /**
+   * Fires when the user selects a cell in a confusion matrix
+   * @param predicted {number}
+   * @param groundTruth {number}
+   * @param labels {string[]}
+   * @type {string}
+   */
+  static EVENT_CELL_SELECTED = 'eventCellSelected';
+
+
   static BW_COLOR_SCALE = ['white', 'gray'];
 }

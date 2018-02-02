@@ -121,7 +121,7 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  private renderPanels(data: NumberMatrix, labels: [number, string]) {
+  private renderPanels(data: NumberMatrix, labels: string[]) {
     const combined0 = transform(data, (r, c, matrix) => {return {count: matrix.values[r][c], label: labels[c][1]};});
     const combined1 = transform(data, (r, c, matrix) => {return {count: matrix.values[c][r], label: labels[c][1]};});
 
@@ -142,23 +142,23 @@ export class ConfusionMatrix implements IAppView {
     Promise.all([confusionData, labels]).then((x:any) => {
       this.checkDataSanity(x[0], x[1]);
       this.addRowAndColumnLabels(x[1]);
-      this.renderSingleEpoch(x[0]);
+      this.renderSingleEpoch(x[0], x[1]);
       this.renderPanels(x[0], x[1]);
     });
   }
 
-  checkDataSanity(data: NumberMatrix, labels: [number, String]) {
+  checkDataSanity(data: NumberMatrix, labels: string[]) {
     if(data.order() !== labels.length) {
       throw new TypeError('The length of the labels does not fit with the matrix length');
     }
   }
 
-  private addRowAndColumnLabels(labels: [number, string]) {
+  private addRowAndColumnLabels(labels: string[]) {
     this.renderLabels(this.$labelsLeft, labels);
     this.renderLabels(this.$labelsTop, labels);
   }
 
-  private renderLabels($node: d3.Selection<any>, labels: [number, string]) {
+  private renderLabels($node: d3.Selection<any>, labels: string[]) {
     const classColors = d3.scale.category10();
 
     const $cells = $node.selectAll('div')
@@ -176,7 +176,7 @@ export class ConfusionMatrix implements IAppView {
     $cells.exit().remove();
   }
 
-  private renderSingleEpoch(data: NumberMatrix) {
+  private renderSingleEpoch(data: NumberMatrix, labels: string[]) {
     if(!data) {
       return;
     }
@@ -193,7 +193,15 @@ export class ConfusionMatrix implements IAppView {
 
     $cells.enter()
       .append('div')
-      .classed('cell', true);
+      .classed('cell', true)
+      .on('click', function(d, i) {
+        $cells.classed('selected', false);
+        d3.select(this).classed('selected', true);
+
+        const predicted = i % data.order();
+        const groundTruth = Math.floor(i / data.order());
+        events.fire(AppConstants.EVENT_CELL_SELECTED, predicted, groundTruth, labels);
+      });
 
     $cells
       .text((datum: any) => datum)
