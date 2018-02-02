@@ -1,3 +1,4 @@
+@import "vars";
 
 .grid {
   display: grid;
@@ -7,27 +8,22 @@
     "axis-left label-left matrix chart-right"
     ". label-bottom chart-bottom .";
   grid-template-columns: 40px 50px auto minmax(100px, 200px);
-  grid-template-rows: 40px 50px auto minmax(50px, 1fr);
+  grid-template-rows: 40px 50px auto minmax(60px, 1fr);
 }
 
-[data-aspect-ratio='one-by-one'] {
-  display: grid;
-
-  // @see https://cssence.com/code/2018-01-21-maintaining-aspect-ratio-with-css-grid
-  &:before {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E");
-    display: block;
-    line-height: 0; // needed for certain browsers
-  }
-
-  &:before,
-  > div {
-    grid-area: 1 / 1 / 2 / 2;
-  }
+.axis,
+.malevo-label {
+  font-weight: 500;
+  font-size: 16px;
 }
+
 
 .axis {
-  background: #eee;
+  background: $label-bg;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &.axis-top {
     grid-area: axis-top;
@@ -40,13 +36,14 @@
       display: block;
       transform: rotate(-180deg);
       writing-mode: vertical-lr;
+      white-space: nowrap;
     }
   }
 }
 
 .label-right {
   grid-area: label-right;
-  background: #eee;
+  background: $label-bg;
 
   grid-template-columns: repeat(auto-fill, minmax(50%, 1fr));
 
@@ -61,7 +58,7 @@
 
 .label-bottom {
   grid-area: label-bottom;
-  background: #eee;
+  background: $label-bg;
 
   display: flex;
   align-items: center;
@@ -71,7 +68,7 @@
 
 .label-top {
   grid-area: label-top;
-  background: #E94858;
+  //background: #E94858;
   position: relative;
 
   display: grid;
@@ -80,7 +77,7 @@
 
 .label-left {
   grid-area: label-left;
-  background: #F3A32A;
+  //background: #F3A32A;
   position: relative;
 
   display: grid;
@@ -88,7 +85,7 @@
 }
 .chart-right {
   grid-area: chart-right;
-  background: #3CB4CB;
+  //background: #3CB4CB;
   position: relative;
 
   display: grid;
@@ -97,7 +94,7 @@
 
 .chart-bottom {
   grid-area: chart-bottom;
-  background: #16434B;
+  //background: #16434B;
   position: relative;
 
   display: grid;
@@ -106,7 +103,7 @@
 
 .matrix-wrapper {
   grid-area: matrix;
-  background: #82BF6E;
+  //background: #82BF6E;
 }
 
 .matrix {
@@ -138,7 +135,7 @@
 
 .cell {
   position: relative;
-  border: 1px solid black;
+  border: 1px solid #fff;
   display: flex;
   align-items: center;
   justify-content: center;

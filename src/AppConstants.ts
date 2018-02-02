@@ -11,11 +11,18 @@ export class AppConstants {
   static VIEW = 'malevoView';
 
   static EVENT_RESIZE = 'eventResize';
+
   /**
-   * Event that is fired when a data set collection has been selected
+   * Fires when the use selects a dataset from the selector
    * @type {string}
    */
-  static EVENT_DATA_COLLECTION_SELECTED = 'eventDataCollectionSelected'; // Fires when the use selects a dataset from the selector
+  static EVENT_DATA_COLLECTION_SELECTED = 'eventDataCollectionSelected';
 
-  static EVENT_EPOCH_SELECTED = 'eventEpochSelected'; // Fires when the user selects a timepoint (epoch)
+  /**
+   * Fires when the user selects a timepoint (epoch)
+   * @type {string}
+   */
+  static EVENT_EPOCH_SELECTED = 'eventEpochSelected';
+
+  static BW_COLOR_SCALE = ['white', 'gray'];
 }

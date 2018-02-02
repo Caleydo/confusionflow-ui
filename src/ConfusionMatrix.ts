@@ -8,8 +8,10 @@ import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {NumberMatrix, SquareMatrix, maxValue, transform} from './DataStructures';
 import {BarchartCellRenderer, HeatCellRenderer} from './CellRenderer';
+import {adaptTextColorToBgColor} from './utils';
 
 export class ConfusionMatrix implements IAppView {
+
   private readonly $node: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
   private $labelsTop: d3.Selection<any>;
@@ -45,9 +47,11 @@ export class ConfusionMatrix implements IAppView {
     this.$node.append('div')
       .classed('axis', true)
       .classed('axis-left', true)
+      .append('span')
       .text('Ground Truth');
 
     const $labelRight = this.$node.append('div')
+      .classed('malevo-label', true)
       .classed('label-right', true);
     $labelRight.append('div')
       .text('FP');
@@ -55,15 +59,18 @@ export class ConfusionMatrix implements IAppView {
       .text('Accuracy');
 
     this.$node.append('div')
+      .classed('malevo-label', true)
       .classed('label-bottom', true)
       .text('FN');
 
     this.$labelsTop = this.$node.append('div')
+      .classed('malevo-label', true)
       .classed('label-top', true)
       .append('div')
       .classed('labels', true);
 
     this.$labelsLeft = this.$node.append('div')
+      .classed('malevo-label', true)
       .classed('label-left', true)
       .append('div')
       .classed('labels', true);
@@ -120,7 +127,7 @@ export class ConfusionMatrix implements IAppView {
     const combined1 = transform(data, (r, c, matrix) => {return {count: matrix.values[c][r], label: labels[c][1]};});
 
     //todo use real data!
-    const accuracy = [0.4, 0.7, 0.2, 0.6, 0.3, 0.6, 0.8, 0.9, 0.2, 0.1];
+    const accuracy = [0.4, 0.7, 0.2, 0.6, 0.3, 0.6, 0.8, 0.9, 0.2, 1];
 
     this.fpColumn.render(new BarchartCellRenderer(combined0));
 
@@ -159,12 +166,9 @@ export class ConfusionMatrix implements IAppView {
     $cells.enter().append('div')
       .classed('cell', true);
     $cells
-      .text((datum: any) => {
-        return datum[1];
-      })
-      .style('background-color', ((datum: any) => {
-          return classColors(datum);
-      }));
+      .text((datum: any) => datum[1])
+      .style('background-color', (datum: any) => classColors(datum))
+      .style('color', (datum: any) => adaptTextColorToBgColor(classColors(datum)));
 
     $cells.exit().remove();
   }
@@ -176,7 +180,7 @@ export class ConfusionMatrix implements IAppView {
     const data1D = data.to1DArray();
 
     const heatmapColorScale = d3.scale.linear().domain([0, maxValue(data)])
-      .range((<any>['white', 'gray']))
+      .range(<any>AppConstants.BW_COLOR_SCALE)
       .interpolate(<any>d3.interpolateHcl);
 
     const $cells = this.$confusionMatrix.selectAll('div')
@@ -184,12 +188,9 @@ export class ConfusionMatrix implements IAppView {
     $cells.enter().append('div')
       .classed('cell', true);
     $cells
-      .text((datum: any) => {
-        return datum;
-      })
-      .style('background-color', ((datum: number) => {
-          return heatmapColorScale(datum);
-      }));
+      .text((datum: any) => datum)
+      .style('background-color', (datum: number) => heatmapColorScale(datum))
+      .style('color', (datum: number) => adaptTextColorToBgColor(heatmapColorScale(datum).toString()));
 
     $cells.exit().remove();
   }

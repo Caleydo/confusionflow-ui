@@ -5,13 +5,17 @@
 import {IClassAffiliation, SquareMatrix} from './DataStructures';
 import {Barchart} from './Barchart';
 import * as d3 from 'd3';
+import {adaptTextColorToBgColor} from './utils';
+import {AppConstants} from './AppConstants';
 
 export interface ICellRenderer {
   renderCells($parent: d3.Selection<any>);
 }
 
 export class BarchartCellRenderer implements ICellRenderer {
+
   constructor(private data: SquareMatrix<IClassAffiliation>) {
+
   }
 
   renderCells($parent: d3.Selection<any>) {
@@ -35,11 +39,10 @@ export class BarchartCellRenderer implements ICellRenderer {
   }
 
   private createKey(d: IClassAffiliation[]) {
-    const res = d.reduce((acc, cur) => {
+    return d.reduce((acc, cur) => {
       acc += cur.count + cur.label;
       return acc;
     }, '');
-    return res;
   }
 }
 
@@ -47,8 +50,9 @@ export class HeatCellRenderer implements ICellRenderer {
   private readonly heatmapColorScale: any;
 
   constructor(private data: number[]) {
-    this.heatmapColorScale = d3.scale.linear().domain([0, Math.max(...data)])
-      .range((<any>['white', 'gray']))
+    this.heatmapColorScale = d3.scale.linear()
+      .domain([0, Math.max(...data)])
+      .range(<any>AppConstants.BW_COLOR_SCALE)
       .interpolate(<any>d3.interpolateHcl);
   }
 
@@ -63,9 +67,8 @@ export class HeatCellRenderer implements ICellRenderer {
       .classed('cell', true);
 
     $cells
-      .style('background-color', ((datum: any) => {
-          return this.heatmapColorScale(datum);
-      }))
+      .style('background-color', (datum: any) => this.heatmapColorScale(datum))
+      .style('color', (datum: number) => adaptTextColorToBgColor(this.heatmapColorScale(datum).toString()))
       .text((d) => String(d));
 
     $cells

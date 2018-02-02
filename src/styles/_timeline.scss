@@ -1,16 +1,20 @@
+@import "vars";
+
 .timeline {
   display: flex;
   justify-content: flex-start;
   position: relative;
-  padding: 20px;
+  margin-left: 40px;
 
   .selection {
     position: absolute;
-    top: 20px;
-    height: 25px;
-    border: 2px red solid;
-    border-radius: 5px;
+    top: -4px;
+    height: 24px;
+    border: 2px $select-color solid;
+    background: transparentize($select-color, 0.75);
+    border-radius: 15px;
     visibility: hidden;
+    z-index: -1;
   }
 
   .epochs {
@@ -20,20 +24,29 @@
     margin-right: 20px;
 
     .point {
-      border-radius: 50%;
-      background-color: #c5c5c5;
-      width: 25px;
-      height: 25px;
-      border-width: 2px;
-      border-style: solid;
-      border-color: black;
       position: relative;
+      border-radius: 50%;
+      background-color: darken($label-bg, 15%);
+      width: 15px;
+      height: 15px;
 
       &:before {
         content: '';
         display: block;
         position: absolute;
-        border-top: 2px solid black;
+        border-top: 2px solid darken($label-border, 10%);
+        width: 300%;
+        top: 50%;
+        right: 100%;
+        z-index: -1;
+        user-select: none;
+      }
+
+      &:after {
+        content: '';
+        display: block;
+        position: absolute;
+        border-top: 2px solid darken($label-border, 10%);
         width: 300%;
         top: 50%;
         left: 100%;
@@ -43,14 +56,15 @@
     }
 
     &.single-selected .point {
-        background-color: black;
+        background-color: $select-color;
     }
 
-    &:last-child .point:before {
+    &:nth-child(2) .point:before,
+    &:last-child .point:after {
       display: none;
     }
 
-    .label {
+    .epoch-label {
       margin-top: 5px;
       color: black;
     }
