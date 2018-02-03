@@ -17,7 +17,7 @@ export class ConfusionMatrix implements IAppView {
   private $labelsLeft: d3.Selection<any>;
   private fpColumn: ChartColumn;
   private fnColumn: ChartColumn;
-  private accuracyColumn: ChartColumn;
+  private precisionColumn: ChartColumn;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
@@ -53,7 +53,7 @@ export class ConfusionMatrix implements IAppView {
     $labelRight.append('div')
       .text('FP');
     $labelRight.append('div')
-      .text('Accuracy');
+      .text('Precision');
 
     this.$node.append('div')
       .classed('label-bottom', true)
@@ -85,7 +85,7 @@ export class ConfusionMatrix implements IAppView {
       .classed('chart-bottom', true);
     this.fnColumn = new ChartColumn($chartBottom.append('div').classed('chart', true));
 
-    this.accuracyColumn = new ChartColumn($chartRight.append('div').classed('chart', true));
+    this.precisionColumn = new ChartColumn($chartRight.append('div').classed('chart', true));
   }
 
   private attachListeners() {
@@ -126,7 +126,7 @@ export class ConfusionMatrix implements IAppView {
 
     this.fpColumn.render(new BarchartCellRenderer(combined0));
 
-    this.accuracyColumn.render(new HeatCellRenderer(confmeasures.calcForMultipleClasses(data, confmeasures.ACC)));
+    this.precisionColumn.render(new HeatCellRenderer(confmeasures.calcForMultipleClasses(data, confmeasures.PPV)));
 
     this.fnColumn.render(new BarchartCellRenderer(combined1));
   }
