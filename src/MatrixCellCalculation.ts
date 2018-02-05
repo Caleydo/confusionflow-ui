@@ -3,7 +3,7 @@ interface ICellCalculator {
   calculate(sm: SquareMatrix<number>[]): SquareMatrix<number[]>;
 }
 
-export class LinechartCalculator implements ICellCalculator {
+export class LineChartCalculator implements ICellCalculator {
 
   calculate(sm: SquareMatrix<number>[]): SquareMatrix<number[]> {
     if(sm.length === 0) {
@@ -14,7 +14,7 @@ export class LinechartCalculator implements ICellCalculator {
     const vals:number[][][] = [];
 
     for(let r = 0; r < order; r++) {
-      vals[r] = []
+      vals[r] = [];
       for(let c = 0; c < order; c++) {
         const acc = [];
         for(const matrix of sm) {

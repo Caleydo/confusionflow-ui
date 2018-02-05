@@ -4,7 +4,7 @@
 
 import {IClassAffiliation, IClassEvolution, SquareMatrix, max, min} from './DataStructures';
 import {BarChart} from './BarChart';
-import {Linechart} from './Linechart';
+import {LineChart} from './LineChart';
 import * as d3 from 'd3';
 import {adaptTextColorToBgColor} from './utils';
 import {AppConstants} from './AppConstants';
@@ -33,7 +33,7 @@ export class LineChartCellRenderer implements ICellRenderer {
 
     const that = this;
     $cells.each(function(d, i) {
-      new Linechart(d3.select(this)).render(d, that.maxVal, that.minVal);
+      new LineChart(d3.select(this)).render(d, that.maxVal, that.minVal);
     });
   }
 

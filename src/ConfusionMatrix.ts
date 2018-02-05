@@ -8,7 +8,7 @@ import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {BarChartCellRenderer, HeatCellRenderer, LineChartCellRenderer} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
-import {LinechartCalculator} from './MatrixCellCalculation';
+import {LineChartCalculator} from './MatrixCellCalculation';
 import * as confmeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {IClassEvolution, NumberMatrix, SquareMatrix, maxValue, transform, setDiagonal} from './DataStructures';
@@ -207,7 +207,7 @@ export class ConfusionMatrix implements IAppView {
       return;
     }
 
-    const calculator = new LinechartCalculator();
+    const calculator = new LineChartCalculator();
     const cellContent = calculator.calculate(data);
     console.assert(cellContent.order() === data[0].order());
     const transRes = transform<number[], IClassEvolution>(cellContent, (r, c, value) => {return {values: value, label: ''};});
