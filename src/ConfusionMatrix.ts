@@ -6,10 +6,12 @@ import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
-import {NumberMatrix, SquareMatrix, maxValue, transform, setDiagonal, IClassEvolution} from './DataStructures';
-import {BarchartCellRenderer, HeatCellRenderer, LineChartCellRenderer} from './CellRenderer';
+import {BarChartCellRenderer, HeatCellRenderer, LineChartCellRenderer} from './CellRenderer';
+import {adaptTextColorToBgColor} from './utils';
 import {LinechartCalculator} from './MatrixCellCalculation';
 import * as confmeasures from './ConfusionMeasures';
+import {Language} from './language';
+import {IClassEvolution, NumberMatrix, SquareMatrix, maxValue, transform, setDiagonal} from './DataStructures';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -18,7 +20,7 @@ export class ConfusionMatrix implements IAppView {
   private $labelsLeft: d3.Selection<any>;
   private fpColumn: ChartColumn;
   private fnColumn: ChartColumn;
-  private accuracyColumn: ChartColumn;
+  private precisionColumn: ChartColumn;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
@@ -42,51 +44,53 @@ export class ConfusionMatrix implements IAppView {
     this.$node.append('div')
       .classed('axis', true)
       .classed('axis-top', true)
-      .text('Predicted');
+      .text(Language.PREDICTED);
 
     this.$node.append('div')
       .classed('axis', true)
       .classed('axis-left', true)
-      .text('Ground Truth');
+      .append('span')
+      .text(Language.GROUND_TRUTH);
 
     const $labelRight = this.$node.append('div')
+      .classed('malevo-label', true)
       .classed('label-right', true);
+
     $labelRight.append('div')
-      .text('FP');
+      .text(Language.FP);
+
     $labelRight.append('div')
-      .text('Accuracy');
+      .text(Language.PRECISION);
 
     this.$node.append('div')
+      .classed('malevo-label', true)
       .classed('label-bottom', true)
-      .text('FN');
+      .text(Language.FN);
 
     this.$labelsTop = this.$node.append('div')
+      .classed('malevo-label', true)
       .classed('label-top', true)
       .append('div')
       .classed('labels', true);
 
     this.$labelsLeft = this.$node.append('div')
+      .classed('malevo-label', true)
       .classed('label-left', true)
       .append('div')
       .classed('labels', true);
 
     const $mwrapper = this.$node.append('div')
-      .classed('matrix-wrapper', true);
-    $mwrapper.append('div')
-      .classed('one-by-one', true)
-      .classed('aspect-ratio', true);
-    this.$confusionMatrix = $mwrapper.append('div')
-    .classed('matrix', true);
+      .classed('matrix-wrapper', true)
+      .attr('data-aspect-ratio','one-by-one');
 
-    const $chartRight = this.$node.append('div')
-      .classed('chart-right', true);
-    this.fpColumn = new ChartColumn($chartRight.append('div').classed('chart', true));
+    this.$confusionMatrix = $mwrapper.append('div').classed('matrix', true);
 
-    const $chartBottom = this.$node.append('div')
-      .classed('chart-bottom', true);
-    this.fnColumn = new ChartColumn($chartBottom.append('div').classed('chart', true));
+    const $chartRight = this.$node.append('div').classed('chart-right', true);
+    this.fpColumn = new ChartColumn($chartRight.append('div'));
+    this.precisionColumn = new ChartColumn($chartRight.append('div'));
 
-    this.accuracyColumn = new ChartColumn($chartRight.append('div').classed('chart', true));
+    const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
+    this.fnColumn = new ChartColumn($chartBottom.append('div'));
   }
 
   private attachListeners() {
@@ -98,7 +102,6 @@ export class ConfusionMatrix implements IAppView {
       } else {
         this.updateEpochRange(items, dataset.classLabels);
       }
-
     });
   }
 
@@ -115,7 +118,7 @@ export class ConfusionMatrix implements IAppView {
     return table.data()
       .then((x) => {
         return x;
-    });
+      });
   }
 
   private renderPanels(data: NumberMatrix, labels: [number, string]) {
@@ -125,11 +128,11 @@ export class ConfusionMatrix implements IAppView {
     const combined1 = transform(data, (r, c, value) => {return {count: value, label: labels[c][1]};});
     setDiagonal(combined1, (r) => {return {count: 0, label: labels[r][1]};});
 
-    this.fpColumn.render(new BarchartCellRenderer(combined0));
+    this.fpColumn.render(new BarChartCellRenderer(combined0));
 
-    this.accuracyColumn.render(new HeatCellRenderer(confmeasures.calcForMultipleClasses(data, confmeasures.ACC)));
+    this.precisionColumn.render(new HeatCellRenderer(confmeasures.calcForMultipleClasses(data, confmeasures.PPV)));
 
-    this.fnColumn.render(new BarchartCellRenderer(combined1));
+    this.fnColumn.render(new BarChartCellRenderer(combined1));
   }
 
   private updateEpochRange(items:IMalevoEpochInfo[], classLabels: ITable) {
@@ -183,17 +186,18 @@ export class ConfusionMatrix implements IAppView {
 
   private renderLabels($node: d3.Selection<any>, labels: [number, string]) {
     const classColors = d3.scale.category10();
+
     const $cells = $node.selectAll('div')
       .data(labels);
-    $cells.enter().append('div')
+
+    $cells.enter()
+      .append('div')
       .classed('cell', true);
+
     $cells
-      .text((datum: any) => {
-        return datum[1];
-      })
-      .style('background-color', ((datum: any) => {
-          return classColors(datum);
-      }));
+      .text((datum: any) => datum[1])
+      .style('background-color', (datum: any) => classColors(datum))
+      .style('color', (datum: any) => adaptTextColorToBgColor(classColors(datum)));
 
     $cells.exit().remove();
   }
@@ -220,20 +224,21 @@ export class ConfusionMatrix implements IAppView {
     const data1D = data.to1DArray();
 
     const heatmapColorScale = d3.scale.linear().domain([0, maxValue(data)])
-      .range((<any>['white', 'gray']))
+      .range(<any>AppConstants.BW_COLOR_SCALE)
       .interpolate(<any>d3.interpolateHcl);
 
-    const $cells = this.$confusionMatrix.selectAll('div')
+    const $cells = this.$confusionMatrix
+      .selectAll('div')
       .data(data1D);
-    $cells.enter().append('div')
+
+    $cells.enter()
+      .append('div')
       .classed('cell', true);
+
     $cells
-      .text((datum: any) => {
-        return datum;
-      })
-      .style('background-color', ((datum: number) => {
-          return heatmapColorScale(datum);
-      }));
+      .text((datum: any) => datum)
+      .style('background-color', (datum: number) => heatmapColorScale(datum))
+      .style('color', (datum: number) => adaptTextColorToBgColor(heatmapColorScale(datum).toString()));
 
     $cells.exit().remove();
   }

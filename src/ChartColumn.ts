@@ -7,7 +7,7 @@ import {ICellRenderer} from './CellRenderer';
 export class ChartColumn {
 
   constructor(private $node: d3.Selection<any>) {
-
+    $node.classed('chart', true);
   }
 
   render(renderer: ICellRenderer) {

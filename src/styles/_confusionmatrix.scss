@@ -1,22 +1,29 @@
-body {
-  margin: 0;
-  padding: 0;
-}
+@import "vars";
 
 .grid {
-  height: 100vh;
   display: grid;
   grid-template-areas:
     ". axis-top axis-top ."
     "axis-left . label-top label-right"
     "axis-left label-left matrix chart-right"
     ". label-bottom chart-bottom .";
-  grid-template-columns: 40px 50px auto auto;
-  grid-template-rows: 40px 50px auto 1fr;
+  grid-template-columns: 40px 50px auto minmax(100px, 200px);
+  grid-template-rows: 40px 50px auto minmax(60px, 1fr);
 }
 
+.axis,
+.malevo-label {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+
 .axis {
-  background: #eee;
+  background: $label-bg;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &.axis-top {
     grid-area: axis-top;
@@ -29,13 +36,14 @@ body {
       display: block;
       transform: rotate(-180deg);
       writing-mode: vertical-lr;
+      white-space: nowrap;
     }
   }
 }
 
 .label-right {
   grid-area: label-right;
-  background: #eee;
+  background: $label-bg;
 
   grid-template-columns: repeat(auto-fill, minmax(50%, 1fr));
 
@@ -50,7 +58,7 @@ body {
 
 .label-bottom {
   grid-area: label-bottom;
-  background: #eee;
+  background: $label-bg;
 
   display: flex;
   align-items: center;
@@ -60,7 +68,7 @@ body {
 
 .label-top {
   grid-area: label-top;
-  background: #E94858;
+  //background: #E94858;
   position: relative;
 
   display: grid;
@@ -69,50 +77,36 @@ body {
 
 .label-left {
   grid-area: label-left;
-  background: #F3A32A;
+  //background: #F3A32A;
   position: relative;
 
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
 }
-
-.matrix-wrapper {
-  grid-area: matrix;
-  background: #82BF6E;
-
-  position: relative;
-	width: 100%; /* <-- just a default, can be anything. */
-}
-
 .chart-right {
   grid-area: chart-right;
-  background: #3CB4CB;
+  //background: #3CB4CB;
   position: relative;
 
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(50%, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(50%, 1fr)); // 100% for one column, 50% for 2 columns, ...
 }
 
 .chart-bottom {
   grid-area: chart-bottom;
-  background: #16434B;
+  //background: #16434B;
   position: relative;
 
   display: grid;
-  grid-template-rows: repeat(auto-fill, minmax(50%, 1fr));
+  grid-template-rows: repeat(auto-fill, minmax(100%, 1fr)); // 100% for one row, 50% for 2 rows, ...
 }
 
-
-
-.one-by-one.aspect-ratio { padding-bottom: 100% }
-.three-by-two.aspect-ratio { padding-bottom: 66.666% }
-.four-by-three.aspect-ratio { padding-bottom: 75% }
-.sixteen-by-nine.aspect-ratio { padding-bottom: 56.25% }
+.matrix-wrapper {
+  grid-area: matrix;
+  //background: #82BF6E;
+}
 
 .matrix {
-  position: absolute;
-  top: 0;  bottom: 0;  left: 0;  right: 0;
-
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(10, 1fr);
@@ -141,12 +135,12 @@ body {
 
 .cell {
   position: relative;
-  border: 1px solid black;
+  border: 1px solid #fff;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  svg {
+  > svg {
     position: absolute;
     height: 100%;
     width: 100%;
