@@ -58,14 +58,14 @@ export class App implements IAppView {
     },
     {
       view: 'ConfusionMatrix',
-      parent: 'comparison',
+      parent: 'conf-matrix-wrapper',
       options: {
         eventName: ''
       }
     },
     {
       view: 'Timeline',
-      parent: 'selector-timepoint',
+      parent: 'timeline-wrapper',
       options: {
         eventName: ''
       }
@@ -75,8 +75,9 @@ export class App implements IAppView {
   constructor(parent:Element) {
     this.$node = d3.select(parent);
 
-    this.$node.append('div').classed('selector-timepoint', true);
-    this.$node.append('div').classed('comparison', true);
+    this.$node.append('div').classed('timeline-wrapper', true);
+    this.$node.append('div').classed('conf-matrix-wrapper', true);
+    this.$node.append('div').classed('details-wrapper', true);
   }
 
   /**

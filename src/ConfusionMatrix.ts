@@ -2,25 +2,29 @@ import {IAppView} from './app';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
-import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './MalevoDataset';
+import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
-import {text} from 'd3';
-import {IDecorator} from 'typedoc/dist/lib/models';
-import {Barchart} from './Barchart';
-
-type Matrix = [[number, number]];
+import {ChartColumn} from './ChartColumn';
+import {NumberMatrix, SquareMatrix, maxValue, transform} from './DataStructures';
+import {BarChartCellRenderer, HeatCellRenderer} from './CellRenderer';
+import {adaptTextColorToBgColor} from './utils';
+import {Language} from './language';
 
 export class ConfusionMatrix implements IAppView {
+
   private readonly $node: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
-  private panelRight: BarchartColumn;
-  private panelBottom: BarchartColumn;
+  private $labelsTop: d3.Selection<any>;
+  private $labelsLeft: d3.Selection<any>;
+  private fpColumn: ChartColumn;
+  private fnColumn: ChartColumn;
+  private accuracyColumn: ChartColumn;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
       .append('div')
-      .classed('matrix-wrapper', true);
+      .classed('grid', true);
   }
 
   /**
@@ -37,46 +41,55 @@ export class ConfusionMatrix implements IAppView {
 
   private setupLayout() {
     this.$node.append('div')
-      .classed('button', true);
+      .classed('axis', true)
+      .classed('axis-top', true)
+      .text(Language.PREDICTED);
 
     this.$node.append('div')
-      .classed('header', true)
-      .classed('barstyle', true)
-      .text('Predicted');
+      .classed('axis', true)
+      .classed('axis-left', true)
+      .append('span')
+      .text(Language.GROUND_TRUTH);
+
+    const $labelRight = this.$node.append('div')
+      .classed('malevo-label', true)
+      .classed('label-right', true);
+
+    $labelRight.append('div')
+      .text(Language.FP);
+
+    $labelRight.append('div')
+      .text(Language.ACCURACY);
 
     this.$node.append('div')
-      .classed('cell-empty', true);
+      .classed('malevo-label', true)
+      .classed('label-bottom', true)
+      .text(Language.FN);
 
-    this.$node.append('div')
-      .classed('left', true)
-      .classed('barstyle', true)
-      .text('Actual');
+    this.$labelsTop = this.$node.append('div')
+      .classed('malevo-label', true)
+      .classed('label-top', true)
+      .append('div')
+      .classed('labels', true);
 
-    let $n =this.$node.append('div')
-      .classed('bars-right', true)
-      .classed('r-col', true);
-    $n.append('div')
-      .text('FP');
+    this.$labelsLeft = this.$node.append('div')
+      .classed('malevo-label', true)
+      .classed('label-left', true)
+      .append('div')
+      .classed('labels', true);
 
-    this.panelRight = new BarchartColumn($n, {top:5, bottom:0, left:0, right:0});
+    const $mwrapper = this.$node.append('div')
+      .classed('matrix-wrapper', true)
+      .attr('data-aspect-ratio','one-by-one');
 
-    $n =this.$node.append('div')
-      .classed('bars-bottom', true)
-      .classed('b-col', true);
-    $n.append('div')
-      .text('FN');
+    this.$confusionMatrix = $mwrapper.append('div').classed('matrix', true);
 
-    this.panelBottom = new BarchartColumn($n, {top:0, bottom:0, left:5, right:0});
+    const $chartRight = this.$node.append('div').classed('chart-right', true);
+    this.fpColumn = new ChartColumn($chartRight.append('div'));
+    this.accuracyColumn = new ChartColumn($chartRight.append('div'));
 
-
-    this.$confusionMatrix = this.$node.append('div')
-      .classed('confusion-matrix', true);
-
-    this.$node.append('div')
-      .classed('cell-empty2', true);
-
-    this.$node.append('div')
-      .classed('cell-empty3', true);
+    const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
+    this.fnColumn = new ChartColumn($chartBottom.append('div'));
   }
 
   private attachListeners() {
@@ -88,14 +101,16 @@ export class ConfusionMatrix implements IAppView {
       } else {
         // rendering epoch ranges goes here
       }
-
     });
   }
 
-  private loadConfusionData(matrix: INumericalMatrix) : Promise<any> {
+  private loadConfusionData(matrix: INumericalMatrix) : Promise<NumberMatrix> {
     return matrix.data()
-      .then((x) => {
-        return x;
+      .then((x: number[][]) => {
+        const m = new SquareMatrix<number>(x.length);
+        m.init(x);
+        m.setDiagonal(new Array(m.order()).fill(0));
+        return m;
       });
   }
 
@@ -103,28 +118,21 @@ export class ConfusionMatrix implements IAppView {
     return table.data()
       .then((x) => {
         return x;
-    });
+      });
   }
 
-  private renderPanels(data: Matrix) {
-    const rowData = [];
-    for(let c = 0; c < data.length; c++) {
-      rowData[c] = [];
-      for(let r = 0; r < data.length; r++) {
-        rowData[c][r] = data[c][r];
-      }
-    }
+  private renderPanels(data: NumberMatrix, labels: [number, string]) {
+    const combined0 = transform(data, (r, c, matrix) => {return {count: matrix.values[r][c], label: labels[c][1]};});
+    const combined1 = transform(data, (r, c, matrix) => {return {count: matrix.values[c][r], label: labels[c][1]};});
 
-    const colData = data[0].map(function (_, c) { return data.map(function (r) { return r[c]; }); }); // transpose matrix
+    //todo use real data!
+    const accuracy = [0.4, 0.7, 0.2, 0.6, 0.3, 0.6, 0.8, 0.9, 0.2, 1];
 
-    this.panelRight.render(rowData);
-    this.panelBottom.render(colData);
-  }
+    this.fpColumn.render(new BarChartCellRenderer(combined0));
 
-  private setTP(val: number, data: Matrix) {
-    for(let i = 0; i < data.length; i++) {
-      data[i][i] = val;
-    }
+    this.accuracyColumn.render(new HeatCellRenderer(accuracy));
+
+    this.fnColumn.render(new BarChartCellRenderer(combined1));
   }
 
   private updateSingleEpoch(item:INumericalMatrix, classLabels: ITable) {
@@ -132,120 +140,67 @@ export class ConfusionMatrix implements IAppView {
     const labels = this.loadLabels(classLabels);
 
     Promise.all([confusionData, labels]).then((x:any) => {
-      this.setTP(0, x[0]);
-      this.renderSingleEpoch(x[0], x[1]);
-      this.renderPanels(x[0]);
+      this.checkDataSanity(x[0], x[1]);
+      this.addRowAndColumnLabels(x[1]);
+      this.renderSingleEpoch(x[0]);
+      this.renderPanels(x[0], x[1]);
     });
   }
 
-  private addRowAndColHeader(data: Matrix, labels: [number, String]):Matrix {
-    const size = data.length + 1;
-    const res = [];
-    for(let i = 0; i < size; i++) {
-        res[i] = [];
-      for(let j = 0; j < size; j++) {
-        if(i === 0 && j === 0) {
-          continue;
-        }
-        if(i === 0 && j < size) {
-          res[0][j] = labels[j-1][1];
-          continue;
-        }
-        if(j === 0 && i < size) {
-          res[i][0] = labels[i-1][1];
-          continue;
-        }
-        res[i][j] = data[i-1][j-1];
-      }
-    }
-    return <Matrix>res;
-  }
-
-  private renderSingleEpoch(data: Matrix, labels: [number, String]) {
-    if(!data) {
-      return;
-    }
-    const ROW_COUNT = data.length;
-    const rowHeaderPredicate = (datum: any, index: number) => {return index > 0 && index <= ROW_COUNT;};
-    const colHeaderPredicate = (datum: any, index: number) => {return index > 0 && index % (ROW_COUNT + 1) === 0;};
-    if(ROW_COUNT !== labels.length) {
+  checkDataSanity(data: NumberMatrix, labels: [number, String]) {
+    if(data.order() !== labels.length) {
       throw new TypeError('The length of the labels does not fit with the matrix length');
     }
+  }
 
-    const matrix = this.addRowAndColHeader(data, labels);
-    const data1D = [].concat(...matrix);
+  private addRowAndColumnLabels(labels: [number, string]) {
+    this.renderLabels(this.$labelsLeft, labels);
+    this.renderLabels(this.$labelsTop, labels);
+  }
 
-    const heatmapColorScale = d3.scale.linear().domain([0, this.findMaxValue(data)])
-      .range((<any>['white', 'yellow']))
-      .interpolate(<any>d3.interpolateHcl);
-
+  private renderLabels($node: d3.Selection<any>, labels: [number, string]) {
     const classColors = d3.scale.category10();
 
-    const $cells = this.$confusionMatrix.selectAll('div')
-      .data(data1D);
-    $cells.enter().append('div')
-      .classed('row-header', rowHeaderPredicate)
-      .classed('col-header', colHeaderPredicate);
+    const $cells = $node.selectAll('div')
+      .data(labels);
+
+    $cells.enter()
+      .append('div')
+      .classed('cell', true);
+
     $cells
-      .text((datum: any, index: number, outerIndex: number) => {
-        return datum;
-      })
-      .style('background-color', ((datum: any, index: number) => {
-        if(rowHeaderPredicate(datum, index) || colHeaderPredicate(datum, index)) {
-          return classColors(String(index));
-        } else {
-          return heatmapColorScale(datum);
-        }
-      }));
+      .text((datum: any) => datum[1])
+      .style('background-color', (datum: any) => classColors(datum))
+      .style('color', (datum: any) => adaptTextColorToBgColor(classColors(datum)));
 
     $cells.exit().remove();
   }
 
-  findMaxValue(matrix: Matrix):number {
-    const aggrCols = new Array(10).fill(0);
-    for(let i = 0; i < matrix.length; i++) {
-      aggrCols[i] = Math.max(...matrix[i]);
+  private renderSingleEpoch(data: NumberMatrix) {
+    if(!data) {
+      return;
     }
-    return Math.max(...aggrCols);
-  }
-}
 
-interface IRightDecorator {
-  render();
-}
+    const data1D = data.to1DArray();
 
-class BarchartColumn {
-  readonly barcharts: Barchart[] = [];
-  readonly CHART_COUNT = 10;
+    const heatmapColorScale = d3.scale.linear().domain([0, maxValue(data)])
+      .range(<any>AppConstants.BW_COLOR_SCALE)
+      .interpolate(<any>d3.interpolateHcl);
 
-  constructor(private $node: d3.Selection<any>, margin: {top, bottom, left, right} = {top:0, bottom:0, left:0, right:0}) {
-    for(let i = 0; i < this.CHART_COUNT; i++) {
-      const $div = this.$node.append('div');
-      this.barcharts.push(new Barchart($div, margin));
-    }
-  }
-
-  render(data: number[][]) {
-    data.unshift([0, 0]); // add dummy data for label
-    const $cells = this.$node
+    const $cells = this.$confusionMatrix
       .selectAll('div')
-      .data(data);
+      .data(data1D);
+
+    $cells.enter()
+      .append('div')
+      .classed('cell', true);
 
     $cells
-      .enter()
-      .append('div');
+      .text((datum: any) => datum)
+      .style('background-color', (datum: number) => heatmapColorScale(datum))
+      .style('color', (datum: number) => adaptTextColorToBgColor(heatmapColorScale(datum).toString()));
 
-    $cells.each((d, i) => {
-        if(i === 0) {
-          return;
-        }
-        d[i-1] = 0;
-        this.barcharts[i-1].render(d);
-      });
-
-    $cells
-      .exit()
-      .remove();
+    $cells.exit().remove();
   }
 }
 

@@ -1,106 +1,149 @@
-.confusion-matrix {
+@import "vars";
+
+.grid {
   display: grid;
-  grid-template-rows: 30px repeat(10, 50px);
-  grid-template-columns: 30px repeat(10, 50px);
-  grid-gap: 1px;
+  grid-template-areas:
+    ". axis-top axis-top ."
+    "axis-left . label-top label-right"
+    "axis-left label-left matrix chart-right"
+    ". label-bottom chart-bottom .";
+  grid-template-columns: 40px 50px auto minmax(100px, 200px);
+  grid-template-rows: 40px 50px auto minmax(60px, 1fr);
 }
 
-.confusion-matrix > div {
+.axis,
+.malevo-label {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+
+.axis {
+  background: $label-bg;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.axis-top {
+    grid-area: axis-top;
+  }
+
+  &.axis-left {
+    grid-area: axis-left;
+
+    > span {
+      display: block;
+      transform: rotate(-180deg);
+      writing-mode: vertical-lr;
+      white-space: nowrap;
+    }
+  }
+}
+
+.label-right {
+  grid-area: label-right;
+  background: $label-bg;
+
+  grid-template-columns: repeat(auto-fill, minmax(50%, 1fr));
+
+  display: grid;
+
+  div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.label-bottom {
+  grid-area: label-bottom;
+  background: $label-bg;
+
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.confusion-matrix > div:first-child {
-  visibility: hidden;
+
+.label-top {
+  grid-area: label-top;
+  //background: #E94858;
+  position: relative;
+
+  display: grid;
+  grid-template-rows: repeat(auto-fill, minmax(100%, 1fr));
 }
 
-.confusion-matrix > .col-header {
-  transform: rotate(-180deg);
-  writing-mode: vertical-lr;
+.label-left {
+  grid-area: label-left;
+  //background: #F3A32A;
+  position: relative;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+}
+.chart-right {
+  grid-area: chart-right;
+  //background: #3CB4CB;
+  position: relative;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50%, 1fr)); // 100% for one column, 50% for 2 columns, ...
+}
+
+.chart-bottom {
+  grid-area: chart-bottom;
+  //background: #16434B;
+  position: relative;
+
+  display: grid;
+  grid-template-rows: repeat(auto-fill, minmax(100%, 1fr)); // 100% for one row, 50% for 2 rows, ...
 }
 
 .matrix-wrapper {
+  grid-area: matrix;
+  //background: #82BF6E;
+}
+
+.matrix {
   display: grid;
-  width: 60px;
-  height: 60px;
-  grid-template-areas: "bt head empty2"
-                       "bar-left  heatmap bars-right"
-                        "empty3 bars-bottom empty";
-  grid-template-rows: 30px auto 30px;
-  grid-template-columns: 30px auto 30px;
-  padding: 20px;
-  grid-gap: 10px;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
 }
 
-.barstyle {
-  text-align: center;
-  vertical-align: middle;
-  font: 30px arial, sans-serif;
-  background-color: lightgray;
-}
-
-.matrix-wrapper > .header.barstyle {
-  grid-area: head;
-}
-
-.matrix-wrapper > .left.barstyle {
-  grid-area: bar-left;
-  transform: rotate(-180deg);
-  writing-mode: vertical-rl;
-}
-
-.matrix-wrapper > .button {
-  grid-area: bt;
-}
-
-.matrix-wrapper > .confusion-matrix {
-  grid-area: heatmap;
-}
-
-.matrix-wrapper > .bars-right {
-  grid-area: bars-right
-}
-
-.matrix-wrapper > .bars-bottom {
-  grid-area: bars-bottom
-}
-
-.matrix-wrapper > .cell-empty {
-  grid-area: empty
-}
-
-.matrix-wrapper > .cell-empty2 {
-  grid-area: empty2
-}
-
-.r-col {
+.labels,
+.chart {
   display: grid;
-  grid-template-rows: 30px repeat(10, 50px);
-  grid-template-columns: 50px;
-  rid-gap: 1px;
+
+  .bar-tooltip {
+    rect {
+      opacity: 0.5;
+    }
+  }
 }
 
+.label-left > .labels,
+.chart-right > .chart {
+  grid-template-rows: repeat(10, 1fr);
+}
 
-.r-col > div:first-child {
-  background-color: lightgray;
+.label-top > .labels,
+.chart-bottom > .chart {
+  grid-template-columns: repeat(10, 1fr);
+}
+
+.cell {
+  position: relative;
+  border: 1px solid #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  > svg {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+  }
 }
 
-.b-col {
-  display: grid;
-  grid-template-rows: 50px;
-  grid-template-columns: 30px repeat(10, 50px);
-}
-
-.b-col > div:first-child {
-  background-color: lightgray;
-  display: flex;
-  transform: rotate(-180deg);
-  writing-mode: vertical-lr;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}

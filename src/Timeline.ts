@@ -16,9 +16,7 @@ export default class Timeline implements IDragSelection, IAppView {
   private $circles:d3.Selection<any>;
   private $rangeband: d3.Selection<any>;
   private isDragging = false;
-  private readonly ELEMENT_WIDTH = 25; // adapt in _timeline.scss if necessary
   private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interpreted as click until it switches to drag
-  private readonly OFFSET = 10; // Offset from the left border
   private rangeSelector: TimelineRangeSelector;
   private malevoDataset: MalevoDataset;
 
@@ -32,6 +30,7 @@ export default class Timeline implements IDragSelection, IAppView {
   private attachListener() {
     events.on(AppConstants.EVENT_DATA_COLLECTION_SELECTED, (evt, items:MalevoDataset) => {
      this.updateItems(items);
+     this.selectLast();
     });
   }
 
@@ -48,11 +47,8 @@ export default class Timeline implements IDragSelection, IAppView {
     return Promise.resolve(this);
   }
 
-  private loadConfusionData(malevoData: INumericalMatrix) : Promise<any> {
-    return malevoData.data()
-      .then((x) => {
-        console.log(x);
-      });
+  private selectLast() {
+    this.dragEnd(d3.select(this.$circles[0][this.$circles[0].length - 1]));
   }
 
   private createRangeband() {
@@ -72,8 +68,7 @@ export default class Timeline implements IDragSelection, IAppView {
       .each(function(epochInfo: IMalevoEpochInfo, i: number) {
         const $epochDiv = d3.select(this);
             $epochDiv.classed('loading', false);
-            $epochDiv.html(`<div class="point"></div>
-                            <div class="label">${epochInfo.name}</div>`);
+            $epochDiv.html(`<div class="point"></div><span class="epoch-label">${epochInfo.name}</span>`);
       });
     $circles.exit().remove();
     this.$circles = $circles;
@@ -112,12 +107,12 @@ export default class Timeline implements IDragSelection, IAppView {
     }
   }
 
-  snapBand(sel: d3.Selection<any>) {
+  private snapBand(sel: d3.Selection<any>) {
     console.assert(sel[0].length > 1);
-    const first = sel[0][0];
-    const last = sel[0][sel[0].length - 1];
-    const start = (<any>first).offsetLeft + this.OFFSET;
-    const width = ((<any>last).offsetLeft + this.OFFSET - start) + this.ELEMENT_WIDTH;
+    const first = <HTMLElement>sel[0][0];
+    const last = <HTMLElement>sel[0][sel.size() - 1];
+    const start = first.offsetLeft;
+    const width = (last.offsetLeft - start) + last.offsetWidth;
     this.$rangeband.style('left',start + 'px');
     this.$rangeband.style('width', width + 'px');
   }
