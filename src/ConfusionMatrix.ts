@@ -11,7 +11,7 @@ import {adaptTextColorToBgColor} from './utils';
 import {LineChartCalculator} from './MatrixCellCalculation';
 import * as confmeasures from './ConfusionMeasures';
 import {Language} from './language';
-import {IClassEvolution, NumberMatrix, SquareMatrix, maxValue, transform, setDiagonal} from './DataStructures';
+import {IClassEvolution, NumberMatrix, SquareMatrix, transform, setDiagonal, max} from './DataStructures';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -121,7 +121,11 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  private renderPanels(data: NumberMatrix, labels: [number, string]) {
+  private renderPanelsRange(data: NumberMatrix, labels: [number, string]) {
+    console.log('oisjdfp');
+  }
+
+  private renderPanelsSingleEpoch(data: NumberMatrix, labels: [number, string]) {
     const combined0 = transform(data, (r, c, value) => {return {count: value, label: labels[c][1]};});
     setDiagonal(combined0, (r) => {return {count: 0, label: labels[r][1]};});
 
@@ -147,6 +151,7 @@ export class ConfusionMatrix implements IAppView {
       this.checkDataSanity(x, labels);
       this.addRowAndColumnLabels(labels);
       this.renderEpochRange(x);
+      this.renderPanelsRange(x, labels);
     });
   }
 
@@ -158,7 +163,7 @@ export class ConfusionMatrix implements IAppView {
       this.checkDataSanity([x[0]], x[1]);
       this.addRowAndColumnLabels(x[1]);
       this.renderSingleEpoch(x[0]);
-      this.renderPanels(x[0], x[1]);
+      this.renderPanelsSingleEpoch(x[0], x[1]);
     });
   }
 
@@ -210,9 +215,9 @@ export class ConfusionMatrix implements IAppView {
     const calculator = new LineChartCalculator();
     const cellContent = calculator.calculate(data);
     console.assert(cellContent.order() === data[0].order());
-    const transRes = transform<number[], IClassEvolution>(cellContent, (r, c, value) => {return {values: value, label: ''};});
+    const transformedResult = transform<number[], IClassEvolution>(cellContent, (r, c, value) => {return {values: value, label: ''};});
 
-    new LineChartCellRenderer(transRes).renderCells(this.$confusionMatrix);
+    new LineChartCellRenderer(transformedResult).renderCells(this.$confusionMatrix);
   }
 
   private renderSingleEpoch(data: NumberMatrix) {
@@ -223,7 +228,7 @@ export class ConfusionMatrix implements IAppView {
     setDiagonal(data, (r) => {return 0;});
     const data1D = data.to1DArray();
 
-    const heatmapColorScale = d3.scale.linear().domain([0, maxValue(data)])
+    const heatmapColorScale = d3.scale.linear().domain([0, max<number>(data, (d) => d)])
       .range(<any>AppConstants.BW_COLOR_SCALE)
       .interpolate(<any>d3.interpolateHcl);
 

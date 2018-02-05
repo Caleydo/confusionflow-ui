@@ -76,14 +76,6 @@ export class SquareMatrix<U> implements Iterable<U> {
 
 export type NumberMatrix = SquareMatrix<number>;
 
-export function maxValue(matrix: NumberMatrix): number {
-    const aggrCols = new Array(matrix.order()).fill(0);
-    for(let i = 0; i < matrix.order(); i++) {
-      aggrCols[i] = Math.max(...matrix.values[i]);
-    }
-    return Math.max(...aggrCols);
-}
-
 export function matrixSum(matrix: NumberMatrix): number {
     return matrix.values.reduce((acc, val) => {
       return acc + val.reduce((acc2, val2) => {
