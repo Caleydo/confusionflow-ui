@@ -11,7 +11,7 @@ export interface ICellRenderer {
   renderCells($parent: d3.Selection<any>);
 }
 
-export class LinechartCellRenderer implements ICellRenderer {
+export class LineChartCellRenderer implements ICellRenderer {
   maxVal: number;
   minVal: number;
 
