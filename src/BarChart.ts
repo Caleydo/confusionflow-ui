@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import {IClassAffiliation} from './DataStructures';
 
-export class Barchart {
+export class BarChart {
   private readonly $node: d3.Selection<any>;
   private readonly width: number;
   private readonly height: number;

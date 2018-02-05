@@ -1,8 +1,54 @@
 body, html {
   font-family: Yantramanav, 'Helvetica Neue', Helvetica, sans-serif;
   font-weight: 400;
+  margin: 0;
+  padding: 0;
 }
 
 th, label, strong, b, .label {
   font-weight: 500 !important;
+}
+
+#app {
+  display: grid;
+  grid-template-areas:
+    "timeline timeline"
+    "matrix details";
+  grid-template-columns: minmax(auto, 98vh) minmax(40%, auto);
+  grid-template-rows: minmax(min-content, 70px) minmax(min-content, 85vh);
+}
+
+.timeline-wrapper {
+  grid-area: timeline;
+  display: flex;
+  align-items: center;
+}
+
+.conf-matrix-wrapper {
+  grid-area: matrix;
+}
+
+.details-wrapper {
+  grid-area: details;
+}
+
+
+[data-aspect-ratio='one-by-one'] {
+  display: grid;
+
+  // @see https://cssence.com/code/2018-01-21-maintaining-aspect-ratio-with-css-grid
+  &:before {
+    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E");
+    display: block;
+    line-height: 0; // needed for certain browsers
+  }
+
+  &:before,
+  > div {
+    grid-area: 1 / 1 / 2 / 2;
+  }
+}
+
+.dataSelector label {
+  margin-right: 10px;
 }

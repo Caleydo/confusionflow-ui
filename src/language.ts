@@ -5,7 +5,9 @@
 export class Language {
   static APP_NAME = 'Malevo';
   static DATA_SET = 'Dataset';
-  static ROWS = 'Rows';
-  static COLUMNS = 'Columns';
-  static LOAD_DETAILS = 'Load Detail View';
+  static GROUND_TRUTH = 'Ground Truth';
+  static PREDICTED = 'Predicted';
+  static FN = 'FN';
+  static FP = 'FP';
+  static PRECISION = 'Precision';
 }
