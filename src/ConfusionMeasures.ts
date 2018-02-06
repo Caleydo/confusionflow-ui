@@ -1,5 +1,5 @@
 // measures are from https://en.wikipedia.org/wiki/Confusion_matrix
-import {NumberMatrix, matrixSum} from './DataStructures';
+import {NumberMatrix, matrixSum, SquareMatrix} from './DataStructures';
 
 export function TP(matrix: NumberMatrix, index: number): number {
   if(index >= matrix.order()) {
@@ -20,7 +20,7 @@ export function FN(matrix: NumberMatrix, index: number): number {
   if(index >= matrix.order()) {
     throw new Error('Invalid index');
   }
-  matrix = matrix.transpose();
+  matrix = <SquareMatrix<number>> matrix.transpose();
   return matrix.values[index].reduce((acc, val) => acc + val, 0) - matrix.values[index][index];
 }
 

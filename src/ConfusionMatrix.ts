@@ -6,12 +6,12 @@ import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
-import {BarChartCellRenderer, HeatCellRenderer, LineChartCellRenderer} from './CellRenderer';
+import {BarChartCellRenderer, HeatCellRenderer, LineChartCellRenderer, MultilineChartCellRenderer} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
-import {LineChartCalculator} from './MatrixCellCalculation';
+import {LineChartCalculator, MultilineChartCalculator} from './MatrixCellCalculation';
 import * as confmeasures from './ConfusionMeasures';
 import {Language} from './language';
-import {IClassEvolution, NumberMatrix, SquareMatrix, transform, setDiagonal, max} from './DataStructures';
+import {IClassEvolution, NumberMatrix, SquareMatrix, transform, transformSq, setDiagonal, getDiagonal, max, IClassAffiliation} from './DataStructures';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -121,15 +121,25 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  private renderPanelsRange(data: NumberMatrix, labels: [number, string]) {
-    console.log('oisjdfp');
+  private renderPanelsRange(data: NumberMatrix[], labels: [number, string]) {
+    if(data.length === 0) {
+      return;
+    }
+
+    const calculator = new LineChartCalculator();
+    const cellContent = calculator.calculate(data);
+    console.assert(cellContent.order() === data[0].order());
+    const transformedResult = transformSq<number[], IClassEvolution>(cellContent, (r, c, value) => {return {values: value, label: ''};});
+    this.fpColumn.render(new MultilineChartCellRenderer(transformedResult));
   }
 
   private renderPanelsSingleEpoch(data: NumberMatrix, labels: [number, string]) {
-    const combined0 = transform(data, (r, c, value) => {return {count: value, label: labels[c][1]};});
+    // todo single line chart calculator and set diagonal to zero in there
+    // todo get rid of this ugly method but the casting does not work from matrix to squarematrix
+    const combined0 = transformSq(data, (r, c, value) => {return {count: value, label: labels[c][1]};});
     setDiagonal(combined0, (r) => {return {count: 0, label: labels[r][1]};});
 
-    const combined1 = transform(data, (r, c, value) => {return {count: value, label: labels[c][1]};});
+    const combined1 = transformSq(data, (r, c, value) => {return {count: value, label: labels[c][1]};});
     setDiagonal(combined1, (r) => {return {count: 0, label: labels[r][1]};});
 
     this.fpColumn.render(new BarChartCellRenderer(combined0));
@@ -217,7 +227,7 @@ export class ConfusionMatrix implements IAppView {
     console.assert(cellContent.order() === data[0].order());
     const transformedResult = transform<number[], IClassEvolution>(cellContent, (r, c, value) => {return {values: value, label: ''};});
 
-    new LineChartCellRenderer(transformedResult).renderCells(this.$confusionMatrix);
+    new LineChartCellRenderer(<SquareMatrix<IClassEvolution>> transformedResult).renderCells(this.$confusionMatrix);
   }
 
   private renderSingleEpoch(data: NumberMatrix) {

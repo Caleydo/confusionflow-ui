@@ -1,4 +1,4 @@
-import {SquareMatrix, IClassEvolution} from './DataStructures';
+import {SquareMatrix} from './DataStructures';
 interface ICellCalculator {
   calculate(sm: SquareMatrix<number>[]): SquareMatrix<number[]>;
 }
@@ -27,5 +27,13 @@ export class LineChartCalculator implements ICellCalculator {
     const newMatrix = new SquareMatrix<number[]>(order);
     newMatrix.init(vals);
     return newMatrix;
+  }
+}
+
+export class MultilineChartCalculator implements ICellCalculator {
+  calculate(sm: SquareMatrix<number>[]): SquareMatrix<number[]> {
+    if(sm.length === 0) {
+      return null;
+    }
   }
 }

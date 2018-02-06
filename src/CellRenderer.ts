@@ -4,7 +4,7 @@
 
 import {IClassAffiliation, IClassEvolution, SquareMatrix, max, min} from './DataStructures';
 import {BarChart} from './BarChart';
-import {LineChart} from './LineChart';
+import {LineChart, MultilineChart} from './LineChart';
 import * as d3 from 'd3';
 import {adaptTextColorToBgColor} from './utils';
 import {AppConstants} from './AppConstants';
@@ -36,17 +36,27 @@ export class LineChartCellRenderer implements ICellRenderer {
       new LineChart(d3.select(this)).render(d, that.maxVal, that.minVal);
     });
   }
+}
 
-  private createKey(d: IClassEvolution | number , index: number): string {
-    if(typeof d === 'number') {
-      return String(d);
-    }
-    const res = d.values.reduce((acc, cur) => {
-      acc += String(cur);
-      return acc;
-    }, '');
-    console.log('Index: ' + index + ' Val ' + res);
-    return res;
+export class MultilineChartCellRenderer implements ICellRenderer {
+  maxVal: number;
+  minVal: number;
+
+  constructor(private data: SquareMatrix<IClassEvolution>) {
+    this.maxVal = max(data, (d) => Math.max(...d.values));
+    this.minVal = min(data, (d) => Math.min(...d.values));
+  }
+
+  renderCells($parent: d3.Selection<any>) {
+    $parent.selectAll('div').remove();
+    const $cells = $parent.selectAll('div').data(this.data.values);
+    $cells.enter().append('div')
+      .classed('cell', true);
+
+    const that = this;
+    $cells.each(function(d, i) {
+      new MultilineChart(d3.select(this)).render(d, that.maxVal, that.minVal);
+    });
   }
 }
 

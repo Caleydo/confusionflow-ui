@@ -46,3 +46,54 @@ export class LineChart {
       .attr('d', line(data.values));
   }
 }
+
+export class MultilineChart {
+  private readonly $node: d3.Selection<any>;
+  private readonly width: number;
+  private readonly height: number;
+
+  constructor($parent: d3.Selection<any>) {
+    const $svg = $parent
+      .append('svg')
+      .classed('multilinechart', true);
+
+    this.width = (<any>$parent[0][0]).clientWidth;
+    this.height = (<any>$parent[0][0]).clientHeight;
+
+    this.$node = $svg.append('g');
+  }
+
+  render(data: IClassEvolution[], maxVal: number, minVal: number) {
+    const $g = this.$node;
+
+    const x = d3.scale.linear().rangeRound([0, this.width]);
+    const y = d3.scale.linear().rangeRound([this.height, 0]);
+    const z = d3.scale.category10();
+
+    x.domain([0, data[0].values.length - 1]);
+    y.domain([minVal, maxVal]);
+    z.domain(data.map(function(c) { return c.label; }));
+
+    const line = d3_shape.line()
+      .x((d, i) => {
+        return x(i);
+      })
+      .y((d) => {
+        return y(d);
+      });
+
+    const city = $g.selectAll('.city')
+    .data(data)
+    .enter().append('g')
+      .attr('class', 'city');
+
+    city.append('path')
+      .attr('fill', 'none')
+      .attr('stroke', 'steelblue')
+      .attr('stroke-linejoin', 'round')
+      .attr('stroke-linecap', 'round')
+      .attr('stroke-width', 1.5)
+      .attr('d', (d) => line(d.values))
+      .style('stroke', (d) => z('sdf'));
+  }
+}
