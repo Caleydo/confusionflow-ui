@@ -1,33 +1,34 @@
-import {transformSq, setDiagonal, SquareMatrix, IClassAffiliation} from './DataStructures';
+import {transformSq, setDiagonal, SquareMatrix, IClassAffiliation, IClassEvolution} from './DataStructures';
 
 export class LineChartCalculator {
 
-  calculate(sm: SquareMatrix<number>[], skipDiagonal = true): SquareMatrix<number[]> {
+  calculate(sm: SquareMatrix<number>[], labels: [number, string], skipDiagonal = true): SquareMatrix<IClassEvolution> {
     if(sm.length === 0) {
       return null;
     }
     const order = sm[0].order();
 
-    const vals:number[][][] = [];
+    const vals:IClassEvolution[][] = [];
 
     for(let r = 0; r < order; r++) {
       vals[r] = [];
       for(let c = 0; c < order; c++) {
-        const acc = [];
+        vals[r].push({values: [], label: labels[c][1]});
         for(const matrix of sm) {
-          acc.push(matrix.values[r][c]);
+          vals[r][c].values.push(matrix.values[r][c]);
         }
-        vals[r][c] = acc;
       }
     }
 
-    const newMatrix = new SquareMatrix<number[]>(order);
-    newMatrix.init(vals);
+    const transformed = new SquareMatrix<IClassEvolution>(order);
+    transformed.init(vals);
 
     if(skipDiagonal) {
-      setDiagonal(newMatrix, (r) => {return [];});
+      setDiagonal<IClassEvolution>(transformed, (r) => {
+        return {values: transformed.values[r][r].values.map((v) => 0), label: labels[r][1]};
+      });
     }
-    return newMatrix;
+    return transformed;
   }
 }
 

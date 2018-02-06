@@ -127,10 +127,10 @@ export class ConfusionMatrix implements IAppView {
     }
 
     const calculator = new LineChartCalculator();
-    const cellContent = calculator.calculate(data);
+    const cellContent = calculator.calculate(data, labels);
     console.assert(cellContent.order() === data[0].order());
-    const transformedResult = transformSq<number[], IClassEvolution>(cellContent, (r, c, matrix) => {return {values: matrix.values[r][c], label: ''};});
-    this.fpColumn.render(new MultilineChartCellRenderer(transformedResult));
+    //const transformedResult = transformSq<number[], IClassEvolution>(cellContent, (r, c, matrix) => {return {values: matrix.values[r][c], label: labels[r][1]};});
+    this.fpColumn.render(new MultilineChartCellRenderer(cellContent));
   }
 
   private renderPanelsSingleEpoch(data: NumberMatrix, labels: [number, string]) {
@@ -158,7 +158,7 @@ export class ConfusionMatrix implements IAppView {
       const labels = x.splice(-1, 1)[0];
       this.checkDataSanity(x, labels);
       this.addRowAndColumnLabels(labels);
-      this.renderEpochRange(x);
+      this.renderEpochRange(x, labels);
       this.renderPanelsRange(x, labels);
     });
   }
@@ -215,17 +215,17 @@ export class ConfusionMatrix implements IAppView {
     $cells.exit().remove();
   }
 
-  private renderEpochRange(data: NumberMatrix[]) {
+  private renderEpochRange(data: NumberMatrix[], labels: [number, string]) {
     if(!data || data.length === 0) {
       return;
     }
 
     const calculator = new LineChartCalculator();
-    const cellContent = calculator.calculate(data);
+    const cellContent = calculator.calculate(data, labels);
     console.assert(cellContent.order() === data[0].order());
-    const transformedResult = transform<number[], IClassEvolution>(cellContent, (r, c, matrix) => {return {values: matrix[r][c], label: ''};});
+    //const transformedResult = transform<number[], IClassEvolution>(cellContent, (r, c, matrix) => {return {values: matrix.values[r][c], label: ''};});
 
-    new LineChartCellRenderer(<SquareMatrix<IClassEvolution>> transformedResult).renderCells(this.$confusionMatrix);
+    new LineChartCellRenderer(cellContent).renderCells(this.$confusionMatrix);
   }
 
   private renderSingleEpoch(data: NumberMatrix) {

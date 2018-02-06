@@ -94,6 +94,6 @@ export class MultilineChart {
       .attr('stroke-linecap', 'round')
       .attr('stroke-width', 1.5)
       .attr('d', (d) => line(d.values))
-      .style('stroke', (d) => z('sdf'));
+      .style('stroke', (d) => z(d.label));
   }
 }
