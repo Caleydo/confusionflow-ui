@@ -132,13 +132,13 @@ export function getDiagonal<U>(matrix: SquareMatrix<U>): U[] {
   return arr;
 }
 
-export function transform<U,V>(matrix: Matrix<U>, funct: (r: number, c: number, value: U) => V): Matrix<V> {
+export function transform<U,V>(matrix: Matrix<U>, funct: (r: number, c: number, matrix: Matrix<U>) => V): Matrix<V> {
   const nm = new Matrix<V>(matrix.ROW_COUNT, matrix.COL_COUNT);
   const ix:V[][] = [];
   for(let r = 0; r < matrix.ROW_COUNT; r++) {
       ix[r] = [];
       for(let c = 0; c < matrix.COL_COUNT; c++) {
-        const res = funct(r, c, matrix.values[r][c]);
+        const res = funct(r, c, matrix);
         ix[r][c] = res;
       }
     }
@@ -146,18 +146,18 @@ export function transform<U,V>(matrix: Matrix<U>, funct: (r: number, c: number, 
   return nm;
 }
 
-export function transformSq<U,V>(matrix: SquareMatrix<U>, funct: (r: number, c: number, value: U) => V): SquareMatrix<V> {
-  const nm = new SquareMatrix<V>(matrix.order());
+export function transformSq<U,V>(matrix: SquareMatrix<U>, funct: (r: number, c: number, matrix: SquareMatrix<U>) => V): SquareMatrix<V> {
+  const sm = new SquareMatrix<V>(matrix.order());
   const ix:V[][] = [];
-  for(let r = 0; r < matrix.ROW_COUNT; r++) {
+  for(let r = 0; r < matrix.order(); r++) {
       ix[r] = [];
-      for(let c = 0; c < matrix.COL_COUNT; c++) {
-        const res = funct(r, c, matrix.values[r][c]);
+      for(let c = 0; c < matrix.order(); c++) {
+        const res = funct(r, c, matrix);//{count: matrix.values[r][c], label: labels[c][1]};
         ix[r][c] = res;
       }
     }
-  nm.init(ix);
-  return nm;
+  sm.init(ix);
+  return sm;
 }
 
 export interface IClassAffiliation  {

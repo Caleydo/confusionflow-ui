@@ -1,11 +1,8 @@
-import {SquareMatrix} from './DataStructures';
-interface ICellCalculator {
-  calculate(sm: SquareMatrix<number>[]): SquareMatrix<number[]>;
-}
+import {transformSq, setDiagonal, SquareMatrix, IClassAffiliation} from './DataStructures';
 
-export class LineChartCalculator implements ICellCalculator {
+export class LineChartCalculator {
 
-  calculate(sm: SquareMatrix<number>[]): SquareMatrix<number[]> {
+  calculate(sm: SquareMatrix<number>[], skipDiagonal = true): SquareMatrix<number[]> {
     if(sm.length === 0) {
       return null;
     }
@@ -26,14 +23,22 @@ export class LineChartCalculator implements ICellCalculator {
 
     const newMatrix = new SquareMatrix<number[]>(order);
     newMatrix.init(vals);
+
+    if(skipDiagonal) {
+      setDiagonal(newMatrix, (r) => {return [];});
+    }
     return newMatrix;
   }
 }
 
-export class MultilineChartCalculator implements ICellCalculator {
-  calculate(sm: SquareMatrix<number>[]): SquareMatrix<number[]> {
-    if(sm.length === 0) {
-      return null;
+export class BarChartCalculator {
+  calculate(sm: SquareMatrix<number>, labels: [number, string], skipDiagonal = true): SquareMatrix<IClassAffiliation> {
+    const transformed = transformSq<number, IClassAffiliation>(sm, (r, c, matrix) => {return {count: matrix.values[r][c], label: labels[c][1]};});
+    if(skipDiagonal === true) {
+      setDiagonal<IClassAffiliation>(transformed, (r) => {
+        return {count: 0, label: labels[r][1]};
+      });
     }
+    return transformed;
   }
 }
