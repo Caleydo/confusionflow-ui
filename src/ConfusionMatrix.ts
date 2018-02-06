@@ -6,20 +6,20 @@ import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
-import {NumberMatrix, SquareMatrix, maxValue, transform} from './DataStructures';
+import {NumberMatrix, SquareMatrix, maxValue, transform, setDiagonal} from './DataStructures';
 import {BarChartCellRenderer, HeatCellRenderer} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
+import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 
 export class ConfusionMatrix implements IAppView {
-
   private readonly $node: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
   private $labelsTop: d3.Selection<any>;
   private $labelsLeft: d3.Selection<any>;
   private fpColumn: ChartColumn;
   private fnColumn: ChartColumn;
-  private accuracyColumn: ChartColumn;
+  private precisionColumn: ChartColumn;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
@@ -59,7 +59,7 @@ export class ConfusionMatrix implements IAppView {
       .text(Language.FP);
 
     $labelRight.append('div')
-      .text(Language.ACCURACY);
+      .text(Language.PRECISION);
 
     this.$node.append('div')
       .classed('malevo-label', true)
@@ -86,7 +86,7 @@ export class ConfusionMatrix implements IAppView {
 
     const $chartRight = this.$node.append('div').classed('chart-right', true);
     this.fpColumn = new ChartColumn($chartRight.append('div'));
-    this.accuracyColumn = new ChartColumn($chartRight.append('div'));
+    this.precisionColumn = new ChartColumn($chartRight.append('div'));
 
     const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
     this.fnColumn = new ChartColumn($chartBottom.append('div'));
@@ -109,7 +109,6 @@ export class ConfusionMatrix implements IAppView {
       .then((x: number[][]) => {
         const m = new SquareMatrix<number>(x.length);
         m.init(x);
-        m.setDiagonal(new Array(m.order()).fill(0));
         return m;
       });
   }
@@ -123,14 +122,14 @@ export class ConfusionMatrix implements IAppView {
 
   private renderPanels(data: NumberMatrix, labels: [number, string]) {
     const combined0 = transform(data, (r, c, matrix) => {return {count: matrix.values[r][c], label: labels[c][1]};});
-    const combined1 = transform(data, (r, c, matrix) => {return {count: matrix.values[c][r], label: labels[c][1]};});
+    setDiagonal(combined0, (r) => {return {count: 0, label: labels[r][1]};});
 
-    //todo use real data!
-    const accuracy = [0.4, 0.7, 0.2, 0.6, 0.3, 0.6, 0.8, 0.9, 0.2, 1];
+    const combined1 = transform(data, (r, c, matrix) => {return {count: matrix.values[c][r], label: labels[c][1]};});
+    setDiagonal(combined1, (r) => {return {count: 0, label: labels[r][1]};});
 
     this.fpColumn.render(new BarChartCellRenderer(combined0));
 
-    this.accuracyColumn.render(new HeatCellRenderer(accuracy));
+    this.precisionColumn.render(new HeatCellRenderer(confMeasures.calcForMultipleClasses(data, confMeasures.PPV)));
 
     this.fnColumn.render(new BarChartCellRenderer(combined1));
   }
@@ -180,7 +179,8 @@ export class ConfusionMatrix implements IAppView {
     if(!data) {
       return;
     }
-
+    data = data.clone();
+    setDiagonal(data, (r) => {return 0;});
     const data1D = data.to1DArray();
 
     const heatmapColorScale = d3.scale.linear().domain([0, maxValue(data)])

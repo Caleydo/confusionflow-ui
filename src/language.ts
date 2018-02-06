@@ -9,5 +9,5 @@ export class Language {
   static PREDICTED = 'Predicted';
   static FN = 'FN';
   static FP = 'FP';
-  static ACCURACY = 'Accuracy';
+  static PRECISION = 'Precision';
 }
