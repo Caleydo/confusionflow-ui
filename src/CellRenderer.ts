@@ -2,7 +2,7 @@
  * Created by Martin on 29.01.2018.
  */
 
-import {IClassAffiliation, IClassEvolution, SquareMatrix, max, min} from './DataStructures';
+import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, min} from './DataStructures';
 import {BarChart} from './BarChart';
 import {LineChart, MultilineChart} from './LineChart';
 import * as d3 from 'd3';
@@ -34,6 +34,28 @@ export class LineChartCellRenderer implements ICellRenderer {
     const that = this;
     $cells.each(function(d, i) {
       new LineChart(d3.select(this)).render(d, that.maxVal, that.minVal);
+    });
+  }
+}
+
+export class SingleLineChartCellRenderer implements ICellRenderer {
+  maxVal: number;
+  minVal: number;
+
+  constructor(private data: Matrix<IClassEvolution>) {
+    this.maxVal = max(data, (d) => Math.max(...d.values));
+    this.minVal = min(data, (d) => Math.min(...d.values));
+  }
+
+  renderCells($parent: d3.Selection<any>) {
+    $parent.selectAll('div').remove();
+    const $cells = $parent.selectAll('div').data(this.data.values);
+    $cells.enter().append('div')
+      .classed('cell', true);
+
+    const that = this;
+    $cells.each(function(d, i) {
+      new LineChart(d3.select(this)).render(d[0], that.maxVal, that.minVal);
     });
   }
 }

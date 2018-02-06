@@ -6,12 +6,12 @@ import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
-import {BarChartCellRenderer, HeatCellRenderer, LineChartCellRenderer, MultilineChartCellRenderer} from './CellRenderer';
+import {BarChartCellRenderer, HeatCellRenderer, LineChartCellRenderer, MultilineChartCellRenderer, SingleLineChartCellRenderer} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confmeasures from './ConfusionMeasures';
 import {Language} from './language';
-import {IClassEvolution, NumberMatrix, SquareMatrix, transform, transformSq, setDiagonal, getDiagonal, max, IClassAffiliation} from './DataStructures';
+import {NumberMatrix, SquareMatrix, transform, transformSq, setDiagonal, getDiagonal, max, IClassAffiliation} from './DataStructures';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -133,6 +133,8 @@ export class ConfusionMatrix implements IAppView {
     console.assert(fpData.order() === data[0].order());
 
     this.fpColumn.render(new MultilineChartCellRenderer(fpData));
+
+    this.precisionColumn.render(new SingleLineChartCellRenderer(confmeasures.calcEvolution(data, confmeasures.PPV)));
 
     this.fnColumn.render(new MultilineChartCellRenderer(fnData));
   }
