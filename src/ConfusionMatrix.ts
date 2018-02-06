@@ -126,11 +126,15 @@ export class ConfusionMatrix implements IAppView {
       return;
     }
 
+
     const calculator = new LineChartCalculator();
-    const cellContent = calculator.calculate(data, labels);
-    console.assert(cellContent.order() === data[0].order());
-    //const transformedResult = transformSq<number[], IClassEvolution>(cellContent, (r, c, matrix) => {return {values: matrix.values[r][c], label: labels[r][1]};});
-    this.fpColumn.render(new MultilineChartCellRenderer(cellContent));
+    const fpData = calculator.calculate(data, labels);
+    const fnData = transformSq(fpData, (r, c, matrix) => {return {values: matrix.values[c][r].values, label: matrix.values[r][c].label};});
+    console.assert(fpData.order() === data[0].order());
+
+    this.fpColumn.render(new MultilineChartCellRenderer(fpData));
+
+    this.fnColumn.render(new MultilineChartCellRenderer(fnData));
   }
 
   private renderPanelsSingleEpoch(data: NumberMatrix, labels: [number, string]) {
@@ -223,7 +227,6 @@ export class ConfusionMatrix implements IAppView {
     const calculator = new LineChartCalculator();
     const cellContent = calculator.calculate(data, labels);
     console.assert(cellContent.order() === data[0].order());
-    //const transformedResult = transform<number[], IClassEvolution>(cellContent, (r, c, matrix) => {return {values: matrix.values[r][c], label: ''};});
 
     new LineChartCellRenderer(cellContent).renderCells(this.$confusionMatrix);
   }

@@ -4,6 +4,7 @@
 import {IClassEvolution} from './DataStructures';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
+import {createTooltip} from './utils';
 
 export class LineChart {
   private readonly $node: d3.Selection<any>;
@@ -82,12 +83,14 @@ export class MultilineChart {
         return y(d);
       });
 
-    const city = $g.selectAll('.city')
+    const $epochLine = $g.selectAll('.line')
     .data(data)
     .enter().append('g')
-      .attr('class', 'city');
+      .attr('class', 'line');
 
-    city.append('path')
+    createTooltip(this.$node, $epochLine, (d) => d.label);
+
+    $epochLine.append('path')
       .attr('fill', 'none')
       .attr('stroke', 'steelblue')
       .attr('stroke-linejoin', 'round')
