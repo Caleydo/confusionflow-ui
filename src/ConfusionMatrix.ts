@@ -9,7 +9,7 @@ import {ChartColumn} from './ChartColumn';
 import {NumberMatrix, SquareMatrix, maxValue, transform, setDiagonal} from './DataStructures';
 import {BarChartCellRenderer, HeatCellRenderer} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
-import * as confmeasures from './ConfusionMeasures';
+import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 
 export class ConfusionMatrix implements IAppView {
@@ -129,7 +129,7 @@ export class ConfusionMatrix implements IAppView {
 
     this.fpColumn.render(new BarChartCellRenderer(combined0));
 
-    this.precisionColumn.render(new HeatCellRenderer(confmeasures.calcForMultipleClasses(data, confmeasures.PPV)));
+    this.precisionColumn.render(new HeatCellRenderer(confMeasures.calcForMultipleClasses(data, confMeasures.PPV)));
 
     this.fnColumn.render(new BarChartCellRenderer(combined1));
   }
