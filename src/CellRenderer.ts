@@ -13,50 +13,36 @@ export interface ICellRenderer {
   renderCells($parent: d3.Selection<any>);
 }
 
-export class LineChartCellRenderer implements ICellRenderer {
+export class SingleLineChartCellRenderer implements ICellRenderer {
   maxVal: number;
   minVal: number;
 
-  constructor(private data: SquareMatrix<IClassEvolution>) {
+  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines = true) {
     this.maxVal = max(data, (d) => Math.max(...d.values));
     this.minVal = min(data, (d) => Math.min(...d.values));
   }
 
   renderCells($parent: d3.Selection<any>) {
     const r = this.data.to1DArray();
-    //todo ask holger if this is the best way
-    $parent.selectAll('div').remove();
-    const $cells = $parent.selectAll('div').data(r);
+    const $cells = $parent.selectAll('div').data(r, (datum) => this.createKey(datum));
+
+    $cells.exit().remove();
 
     $cells.enter().append('div')
       .classed('cell', true);
 
     const that = this;
     $cells.each(function(d, i) {
+       // if we want to filter zero lines and the the line has just 0 values => continue
+      if(that.filterZeroLines && !d.values.find((val) => val !== 0)) {
+        return;
+      }
       new LineChart(d3.select(this)).render(d, that.maxVal, that.minVal);
     });
   }
-}
 
-export class SingleLineChartCellRenderer implements ICellRenderer {
-  maxVal: number;
-  minVal: number;
-
-  constructor(private data: Matrix<IClassEvolution>) {
-    this.maxVal = max(data, (d) => Math.max(...d.values));
-    this.minVal = min(data, (d) => Math.min(...d.values));
-  }
-
-  renderCells($parent: d3.Selection<any>) {
-    $parent.selectAll('div').remove();
-    const $cells = $parent.selectAll('div').data(this.data.values);
-    $cells.enter().append('div')
-      .classed('cell', true);
-
-    const that = this;
-    $cells.each(function(d, i) {
-      new LineChart(d3.select(this)).render(d[0], that.maxVal, that.minVal);
-    });
+  private createKey(cur: IClassEvolution) {
+    return cur.values + cur.label;
   }
 }
 
@@ -77,7 +63,8 @@ export class MultilineChartCellRenderer implements ICellRenderer {
 
     const that = this;
     $cells.each(function(d, i) {
-      new MultilineChart(d3.select(this)).render(d, that.maxVal, that.minVal);
+      const lineCount = d[0].values.length - 1;
+      new MultilineChart(d3.select(this), lineCount).render(d, that.maxVal, that.minVal);
     });
   }
 }

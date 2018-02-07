@@ -6,14 +6,13 @@ import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
-import {BarChartCellRenderer, HeatCellRenderer, LineChartCellRenderer, MultilineChartCellRenderer, SingleLineChartCellRenderer} from './CellRenderer';
+import {BarChartCellRenderer, HeatCellRenderer, MultilineChartCellRenderer, SingleLineChartCellRenderer} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
-import {NumberMatrix, SquareMatrix, transform, transformSq, setDiagonal, getDiagonal, max, IClassAffiliation} from './DataStructures';
+import {NumberMatrix, SquareMatrix, transformMatrix, transformSq, setDiagonal, getDiagonal, max, IClassAffiliation} from './DataStructures';
 
-//todo ask Holger regarding performance (measure performance)
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
@@ -141,7 +140,6 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private renderPanelsSingleEpoch(data: NumberMatrix, labels: [number, string]) {
-    // todo get rid of this ugly method but the casting does not work from matrix to squarematrix (ask holger)
     const bcCalculator = new BarChartCalculator();
 
     const fpData = bcCalculator.calculate(data, labels);
@@ -194,7 +192,7 @@ export class ConfusionMatrix implements IAppView {
       }
     }
     if(order !== labels.length) {
-      //todo handle correctly (ask holger)
+      //todo handle correctly
       throw new TypeError('The length of the labels does not fit with the matrix length');
     }
   }
@@ -231,7 +229,7 @@ export class ConfusionMatrix implements IAppView {
     const cellContent = calculator.calculate(data, labels);
     console.assert(cellContent.order() === data[0].order());
 
-    new LineChartCellRenderer(cellContent).renderCells(this.$confusionMatrix);
+    new SingleLineChartCellRenderer(cellContent).renderCells(this.$confusionMatrix);
   }
 
   private renderSingleEpoch(data: NumberMatrix) {
@@ -241,10 +239,14 @@ export class ConfusionMatrix implements IAppView {
     data = data.clone();
     setDiagonal(data, (r) => {return 0;});
     const data1D = data.to1DArray();
+    const maxVal = Math.max(...data1D);
 
-    const heatmapColorScale = d3.scale.linear().domain([0, max<number>(data, (d) => d)])
-      .range(<any>AppConstants.BW_COLOR_SCALE)
+    const dataValueScale = d3.scale.linear().domain([0, maxVal]);
+
+    const heatmapColorScale = dataValueScale.range(<any>AppConstants.BW_COLOR_SCALE)
       .interpolate(<any>d3.interpolateHcl);
+
+    //const cellSizeScale = dataValueScale.range([10, 100]);
 
     const $cells = this.$confusionMatrix
       .selectAll('div')
@@ -254,13 +256,11 @@ export class ConfusionMatrix implements IAppView {
       .append('div')
       .classed('cell', true);
 
-    const maxVal = Math.max(...data1D);
-
     $cells
-      .style('align-self', 'center')
-      .style('justify-self', 'center')
-      .style('height', (datum: any) => String(10 + datum / maxVal * 80) + '%')
-      .style('width', (datum: any) => String(10 + datum / maxVal * 80) + '%')
+      //.style('align-self', 'center')
+      //.style('justify-self', 'center')
+      //.style('height', (height: number) => cellSizeScale(height) + '%')
+      //.style('width', (width: number) => cellSizeScale(width) + '%')
       .text((datum: any) => datum)
       .style('background-color', (datum: number) => heatmapColorScale(datum))
       .style('color', (datum: number) => adaptTextColorToBgColor(heatmapColorScale(datum).toString()));

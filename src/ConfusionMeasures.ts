@@ -5,7 +5,6 @@ export function TP(matrix: NumberMatrix, index: number): number {
   if(index >= matrix.order()) {
     throw new Error('Invalid index');
   }
-  //todo try to get rid of this matrix.values[][] ugliness! (ask Holger)
   return matrix.values[index][index];
 }
 

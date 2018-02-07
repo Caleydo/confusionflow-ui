@@ -41,9 +41,7 @@ export class LineChart {
     $g.append('path')
       .attr('fill', 'none')
       .attr('stroke', 'steelblue')
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-linecap', 'round')
-      .attr('stroke-width', 1.5)
+      .attr('stroke-width', 1)
       .attr('d', line(data.values));
   }
 }
@@ -53,7 +51,7 @@ export class MultilineChart {
   private readonly width: number;
   private readonly height: number;
 
-  constructor($parent: d3.Selection<any>) {
+  constructor($parent: d3.Selection<any>, private lineCount: number) {
     const $svg = $parent
       .append('svg')
       .classed('multilinechart', true);
@@ -71,7 +69,7 @@ export class MultilineChart {
     const y = d3.scale.linear().rangeRound([this.height, 0]);
     const z = d3.scale.category10();
 
-    x.domain([0, data[0].values.length - 1]);
+    x.domain([0, this.lineCount]);
     y.domain([minVal, maxVal]);
     z.domain(data.map(function(c) { return c.label; }));
 
@@ -92,9 +90,7 @@ export class MultilineChart {
 
     $epochLine.append('path')
       .attr('fill', 'none')
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-linecap', 'round')
-      .attr('stroke-width', 1.5)
+      .attr('stroke-width', 1)
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d) => z(d.label));
   }

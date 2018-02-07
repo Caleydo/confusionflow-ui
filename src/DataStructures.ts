@@ -9,7 +9,6 @@ export class Matrix<U> implements Iterable<U> {
   constructor(readonly ROW_COUNT, readonly COL_COUNT) {
   }
 
-  // todo ask holger why this cannot be invoked
   [Symbol.iterator]() {
     let pointer = 0;
     const components = this.to1DArray();
@@ -132,32 +131,30 @@ export function getDiagonal<U>(matrix: SquareMatrix<U>): U[] {
   return arr;
 }
 
-export function transform<U,V>(matrix: Matrix<U>, funct: (r: number, c: number, matrix: Matrix<U>) => V): Matrix<V> {
+export function transformMatrix<U,V>(matrix: Matrix<U>, funct: (r: number, c: number, matrix: Matrix<U>) => V): Matrix<V> {
   const nm = new Matrix<V>(matrix.ROW_COUNT, matrix.COL_COUNT);
-  const ix:V[][] = [];
-  for(let r = 0; r < matrix.ROW_COUNT; r++) {
-      ix[r] = [];
-      for(let c = 0; c < matrix.COL_COUNT; c++) {
-        const res = funct(r, c, matrix);
-        ix[r][c] = res;
-      }
-    }
+  const ix:V[][] = transform(matrix, funct);
   nm.init(ix);
   return nm;
 }
 
 export function transformSq<U,V>(matrix: SquareMatrix<U>, funct: (r: number, c: number, matrix: SquareMatrix<U>) => V): SquareMatrix<V> {
   const sm = new SquareMatrix<V>(matrix.order());
-  const ix:V[][] = [];
-  for(let r = 0; r < matrix.order(); r++) {
-      ix[r] = [];
-      for(let c = 0; c < matrix.order(); c++) {
-        const res = funct(r, c, matrix);//{count: matrix.values[r][c], label: labels[c][1]};
-        ix[r][c] = res;
-      }
-    }
+  const ix:V[][] = transform(matrix, funct);
   sm.init(ix);
   return sm;
+}
+
+function transform<U, V>(matrix: Matrix<U>, funct: (r: number, c: number, matrix: Matrix<U>) => V): V[][] {
+  const ix:V[][] = [];
+  for(let r = 0; r < matrix.ROW_COUNT; r++) {
+    ix[r] = [];
+    for(let c = 0; c < matrix.COL_COUNT; c++) {
+      const res = funct(r, c, matrix);//{count: matrix.values[r][c], label: labels[c][1]};
+      ix[r][c] = res;
+    }
+  }
+  return ix;
 }
 
 export interface IClassAffiliation  {
