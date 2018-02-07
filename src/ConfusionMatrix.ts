@@ -11,6 +11,8 @@ import {BarChartCellRenderer, HeatCellRenderer} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
+import {rampColormap} from './color/ramp';
+import {mplInferno, mplViridis} from './color/colormaps/mplColormaps';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -175,6 +177,7 @@ export class ConfusionMatrix implements IAppView {
     $cells.exit().remove();
   }
 
+
   private renderSingleEpoch(data: NumberMatrix) {
     if(!data) {
       return;
@@ -200,10 +203,17 @@ export class ConfusionMatrix implements IAppView {
     $cells
       .style('align-self', 'center')
       .style('justify-self', 'center')
-      .style('height', (datum: any) => String(10 + datum / maxVal * 80) + '%')
-      .style('width', (datum: any) => String(10 + datum / maxVal * 80) + '%')
+      // perceptual scaling
+      .style('height', (datum: any) => String(10 + Math.sqrt(datum / maxVal) * 80) + '%')
+      .style('width', (datum: any) => String(10 + Math.sqrt(datum / maxVal) * 80) + '%')
+      // linear scaling
+      //.style('height', (datum: any) => String(10 + datum / maxVal * 80) + '%')
+      //.style('width', (datum: any) => String(10 + datum / maxVal * 80) + '%')
       .text((datum: any) => datum)
-      .style('background-color', (datum: number) => heatmapColorScale(datum))
+      // classic colormap
+      //.style('background-color', (datum: number) => heatmapColorScale(datum))
+      // mpl colormaps
+      .style('background-color', (datum: number) => rampColormap(datum / maxVal, mplViridis))
       .style('color', (datum: number) => adaptTextColorToBgColor(heatmapColorScale(datum).toString()));
 
     $cells.exit().remove();
