@@ -13,6 +13,7 @@ import * as confmeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transform, transformSq, setDiagonal, getDiagonal, max, IClassAffiliation} from './DataStructures';
 
+//todo ask Holger regarding performance (measure performance)
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
