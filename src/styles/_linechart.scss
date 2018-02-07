@@ -1,0 +1,12 @@
+@import "vars";
+
+.multilinechart path,
+.linechart path {
+  fill: none;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke; // prevent stroke scaling on resize
+}
+
+.linechart path {
+  stroke: steelblue;
+}

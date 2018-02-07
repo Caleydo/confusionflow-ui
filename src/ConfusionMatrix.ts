@@ -11,7 +11,7 @@ import {adaptTextColorToBgColor} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
-import {NumberMatrix, SquareMatrix, transformMatrix, transformSq, setDiagonal, getDiagonal, max, IClassAffiliation} from './DataStructures';
+import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;

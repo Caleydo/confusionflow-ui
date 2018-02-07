@@ -12,12 +12,13 @@ export class LineChart {
   private readonly height: number;
 
   constructor($parent: d3.Selection<any>) {
-    const $svg = $parent
-      .append('svg')
-      .classed('linechart', true);
-
     this.width = (<any>$parent[0][0]).clientWidth;
     this.height = (<any>$parent[0][0]).clientHeight;
+
+    const $svg = $parent
+      .append('svg')
+      .attr('viewBox', `0 0 ${this.width} ${this.height}`)
+      .classed('linechart', true);
 
     this.$node = $svg.append('g');
   }
@@ -38,11 +39,7 @@ export class LineChart {
         return y(d);
       });
 
-    $g.append('path')
-      .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-width', 1)
-      .attr('d', line(data.values));
+    $g.append('path').attr('d', line(data.values));
   }
 }
 
@@ -52,12 +49,13 @@ export class MultilineChart {
   private readonly height: number;
 
   constructor($parent: d3.Selection<any>, private lineCount: number) {
-    const $svg = $parent
-      .append('svg')
-      .classed('multilinechart', true);
-
     this.width = (<any>$parent[0][0]).clientWidth;
     this.height = (<any>$parent[0][0]).clientHeight;
+
+    const $svg = $parent
+      .append('svg')
+      .attr('viewBox', `0 0 ${this.width} ${this.height}`)
+      .classed('multilinechart', true);
 
     this.$node = $svg.append('g');
   }
@@ -81,17 +79,13 @@ export class MultilineChart {
         return y(d);
       });
 
-    const $epochLine = $g.selectAll('.line')
+    const $epochLine = $g.selectAll('path.line')
     .data(data)
-    .enter().append('g')
-      .attr('class', 'line');
-
-    createTooltip(this.$node, $epochLine, (d) => d.label);
-
-    $epochLine.append('path')
-      .attr('fill', 'none')
-      .attr('stroke-width', 1)
+    .enter().append('path')
+      .attr('class', 'line')
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d) => z(d.label));
+
+    createTooltip(this.$node, $epochLine, (d) => d.label);
   }
 }

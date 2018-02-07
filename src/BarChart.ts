@@ -13,6 +13,7 @@ export class BarChart {
 
     const $svg = $parent
       .append('svg')
+      .attr('viewBox', `0 0 ${this.width} ${this.height}`)
       .classed('barchart', true);
 
     this.$node = $svg.append('g');
