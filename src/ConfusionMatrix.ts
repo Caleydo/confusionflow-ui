@@ -9,7 +9,7 @@ import {ChartColumn} from './ChartColumn';
 import {BarChartCellRenderer, HeatCellRenderer, LineChartCellRenderer, MultilineChartCellRenderer, SingleLineChartCellRenderer} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
-import * as confmeasures from './ConfusionMeasures';
+import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transform, transformSq, setDiagonal, getDiagonal, max, IClassAffiliation} from './DataStructures';
 
@@ -135,7 +135,7 @@ export class ConfusionMatrix implements IAppView {
 
     this.fpColumn.render(new MultilineChartCellRenderer(fpData));
 
-    this.precisionColumn.render(new SingleLineChartCellRenderer(confmeasures.calcEvolution(data, confmeasures.PPV)));
+    this.precisionColumn.render(new SingleLineChartCellRenderer(confMeasures.calcEvolution(data, confMeasures.PPV)));
 
     this.fnColumn.render(new MultilineChartCellRenderer(fnData));
   }
@@ -149,7 +149,7 @@ export class ConfusionMatrix implements IAppView {
 
     this.fpColumn.render(new BarChartCellRenderer(fpData));
 
-    this.precisionColumn.render(new HeatCellRenderer(confmeasures.calcForMultipleClasses(data, confmeasures.PPV)));
+    this.precisionColumn.render(new HeatCellRenderer(confMeasures.calcForMultipleClasses(data, confMeasures.PPV)));
 
     this.fnColumn.render(new BarChartCellRenderer(fnData));
   }
@@ -254,7 +254,13 @@ export class ConfusionMatrix implements IAppView {
       .append('div')
       .classed('cell', true);
 
+    const maxVal = Math.max(...data1D);
+
     $cells
+      .style('align-self', 'center')
+      .style('justify-self', 'center')
+      .style('height', (datum: any) => String(10 + datum / maxVal * 80) + '%')
+      .style('width', (datum: any) => String(10 + datum / maxVal * 80) + '%')
       .text((datum: any) => datum)
       .style('background-color', (datum: number) => heatmapColorScale(datum))
       .style('color', (datum: number) => adaptTextColorToBgColor(heatmapColorScale(datum).toString()));
