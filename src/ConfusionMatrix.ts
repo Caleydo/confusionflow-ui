@@ -6,11 +6,12 @@ import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
-import {NumberMatrix, SquareMatrix, maxValue, transform, setDiagonal} from './DataStructures';
-import {BarChartCellRenderer, HeatCellRenderer} from './CellRenderer';
+import {BarChartCellRenderer, HeatCellRenderer, MultilineChartCellRenderer, SingleLineChartCellRenderer} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
+import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
+import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -99,7 +100,7 @@ export class ConfusionMatrix implements IAppView {
       } else if(items.length === 1) {
         this.updateSingleEpoch(items[0].confusionInfo, dataset.classLabels);
       } else {
-        // rendering epoch ranges goes here
+        this.updateEpochRange(items, dataset.classLabels);
       }
     });
   }
@@ -120,18 +121,51 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  private renderPanels(data: NumberMatrix, labels: [number, string]) {
-    const combined0 = transform(data, (r, c, matrix) => {return {count: matrix.values[r][c], label: labels[c][1]};});
-    setDiagonal(combined0, (r) => {return {count: 0, label: labels[r][1]};});
+  private renderPanelsRange(data: NumberMatrix[], labels: [number, string]) {
+    if(data.length === 0) {
+      return;
+    }
 
-    const combined1 = transform(data, (r, c, matrix) => {return {count: matrix.values[c][r], label: labels[c][1]};});
-    setDiagonal(combined1, (r) => {return {count: 0, label: labels[r][1]};});
 
-    this.fpColumn.render(new BarChartCellRenderer(combined0));
+    const calculator = new LineChartCalculator();
+    const fpData = calculator.calculate(data, labels);
+    const fnData = transformSq(fpData, (r, c, matrix) => {return {values: matrix.values[c][r].values, label: matrix.values[r][c].label};});
+    console.assert(fpData.order() === data[0].order());
+
+    this.fpColumn.render(new MultilineChartCellRenderer(fpData));
+
+    this.precisionColumn.render(new SingleLineChartCellRenderer(confMeasures.calcEvolution(data, confMeasures.PPV)));
+
+    this.fnColumn.render(new MultilineChartCellRenderer(fnData));
+  }
+
+  private renderPanelsSingleEpoch(data: NumberMatrix, labels: [number, string]) {
+    const bcCalculator = new BarChartCalculator();
+
+    const fpData = bcCalculator.calculate(data, labels);
+    const fnData = transformSq(fpData, (r, c, matrix) => {return {count: matrix.values[c][r].count, label: matrix.values[r][c].label};});
+
+    this.fpColumn.render(new BarChartCellRenderer(fpData));
 
     this.precisionColumn.render(new HeatCellRenderer(confMeasures.calcForMultipleClasses(data, confMeasures.PPV)));
 
-    this.fnColumn.render(new BarChartCellRenderer(combined1));
+    this.fnColumn.render(new BarChartCellRenderer(fnData));
+  }
+
+  private updateEpochRange(items:IMalevoEpochInfo[], classLabels: ITable) {
+    const dataPromises = [];
+    for(const item of items) {
+      dataPromises.push(this.loadConfusionData(item.confusionInfo));
+    }
+    dataPromises.push(this.loadLabels(classLabels));
+
+    Promise.all(dataPromises).then((x: any) => {
+      const labels = x.splice(-1, 1)[0];
+      this.checkDataSanity(x, labels);
+      this.addRowAndColumnLabels(labels);
+      this.renderEpochRange(x, labels);
+      this.renderPanelsRange(x, labels);
+    });
   }
 
   private updateSingleEpoch(item:INumericalMatrix, classLabels: ITable) {
@@ -139,15 +173,26 @@ export class ConfusionMatrix implements IAppView {
     const labels = this.loadLabels(classLabels);
 
     Promise.all([confusionData, labels]).then((x:any) => {
-      this.checkDataSanity(x[0], x[1]);
+      this.checkDataSanity([x[0]], x[1]);
       this.addRowAndColumnLabels(x[1]);
       this.renderSingleEpoch(x[0]);
-      this.renderPanels(x[0], x[1]);
+      this.renderPanelsSingleEpoch(x[0], x[1]);
     });
   }
 
-  checkDataSanity(data: NumberMatrix, labels: [number, String]) {
-    if(data.order() !== labels.length) {
+  checkDataSanity(data: NumberMatrix[], labels: [number, String]) {
+    if(data.length === 0) {
+      throw new TypeError('No confusion matrix was found');
+    }
+    const order = data[0].order();
+
+    for(let i = 1; i < data.length; i++) {
+      if(order !== data[i].order()) {
+        throw new TypeError('The loaded confusion matrix is not valid');
+      }
+    }
+    if(order !== labels.length) {
+      //todo handle correctly
       throw new TypeError('The length of the labels does not fit with the matrix length');
     }
   }
@@ -175,6 +220,18 @@ export class ConfusionMatrix implements IAppView {
     $cells.exit().remove();
   }
 
+  private renderEpochRange(data: NumberMatrix[], labels: [number, string]) {
+    if(!data || data.length === 0) {
+      return;
+    }
+
+    const calculator = new LineChartCalculator();
+    const cellContent = calculator.calculate(data, labels);
+    console.assert(cellContent.order() === data[0].order());
+
+    new SingleLineChartCellRenderer(cellContent).renderCells(this.$confusionMatrix);
+  }
+
   private renderSingleEpoch(data: NumberMatrix) {
     if(!data) {
       return;
@@ -182,10 +239,14 @@ export class ConfusionMatrix implements IAppView {
     data = data.clone();
     setDiagonal(data, (r) => {return 0;});
     const data1D = data.to1DArray();
+    const maxVal = Math.max(...data1D);
 
-    const heatmapColorScale = d3.scale.linear().domain([0, maxValue(data)])
-      .range(<any>AppConstants.BW_COLOR_SCALE)
+    const dataValueScale = d3.scale.linear().domain([0, maxVal]);
+
+    const heatmapColorScale = dataValueScale.range(<any>AppConstants.BW_COLOR_SCALE)
       .interpolate(<any>d3.interpolateHcl);
+
+    //const cellSizeScale = dataValueScale.range([10, 100]);
 
     const $cells = this.$confusionMatrix
       .selectAll('div')
@@ -195,13 +256,11 @@ export class ConfusionMatrix implements IAppView {
       .append('div')
       .classed('cell', true);
 
-    const maxVal = Math.max(...data1D);
-
     $cells
-      .style('align-self', 'center')
-      .style('justify-self', 'center')
-      .style('height', (datum: any) => String(10 + datum / maxVal * 80) + '%')
-      .style('width', (datum: any) => String(10 + datum / maxVal * 80) + '%')
+      //.style('align-self', 'center')
+      //.style('justify-self', 'center')
+      //.style('height', (height: number) => cellSizeScale(height) + '%')
+      //.style('width', (width: number) => cellSizeScale(width) + '%')
       .text((datum: any) => datum)
       .style('background-color', (datum: number) => heatmapColorScale(datum))
       .style('color', (datum: number) => adaptTextColorToBgColor(heatmapColorScale(datum).toString()));
