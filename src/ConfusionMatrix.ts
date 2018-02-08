@@ -121,7 +121,7 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  private renderPanels(data: NumberMatrix, labels: string[]) {
+  private renderPanels(data: NumberMatrix, labels: [number, string]) {
     const combined0 = transform(data, (r, c, matrix) => {return {count: matrix.values[r][c], label: labels[c][1]};});
     const combined1 = transform(data, (r, c, matrix) => {return {count: matrix.values[c][r], label: labels[c][1]};});
 
@@ -147,18 +147,18 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
-  checkDataSanity(data: NumberMatrix, labels: string[]) {
+  checkDataSanity(data: NumberMatrix, labels: [number, string]) {
     if(data.order() !== labels.length) {
       throw new TypeError('The length of the labels does not fit with the matrix length');
     }
   }
 
-  private addRowAndColumnLabels(labels: string[]) {
+  private addRowAndColumnLabels(labels: [number, string]) {
     this.renderLabels(this.$labelsLeft, labels);
     this.renderLabels(this.$labelsTop, labels);
   }
 
-  private renderLabels($node: d3.Selection<any>, labels: string[]) {
+  private renderLabels($node: d3.Selection<any>, labels: [number, string]) {
     const classColors = d3.scale.category10();
 
     const $cells = $node.selectAll('div')
@@ -176,7 +176,7 @@ export class ConfusionMatrix implements IAppView {
     $cells.exit().remove();
   }
 
-  private renderSingleEpoch(data: NumberMatrix, labels: string[]) {
+  private renderSingleEpoch(data: NumberMatrix, labels: [number, string]) {
     if(!data) {
       return;
     }
