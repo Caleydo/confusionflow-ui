@@ -11,7 +11,7 @@ import {BarChartCellRenderer, HeatCellRenderer} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
-import {rampColormap} from './color/ramp';
+import {createColorRamp} from './color/ramp';
 import {mplInferno, mplViridis} from './color/colormaps/mplColormaps';
 
 export class ConfusionMatrix implements IAppView {
@@ -200,6 +200,8 @@ export class ConfusionMatrix implements IAppView {
 
     const maxVal = Math.max(...data1D);
 
+    const viridisColormap = createColorRamp(mplViridis);
+
     $cells
       .style('align-self', 'center')
       .style('justify-self', 'center')
@@ -213,7 +215,7 @@ export class ConfusionMatrix implements IAppView {
       // classic colormap
       //.style('background-color', (datum: number) => heatmapColorScale(datum))
       // mpl colormaps
-      .style('background-color', (datum: number) => rampColormap(datum / maxVal, mplViridis))
+      .style('background-color', (datum: number) => viridisColormap(datum / maxVal))
       .style('color', (datum: number) => adaptTextColorToBgColor(heatmapColorScale(datum).toString()));
 
     $cells.exit().remove();
