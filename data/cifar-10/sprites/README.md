@@ -1,5 +1,5 @@
 # CIFAR-10 Training Set Sprites
-Each sprite file contains the `100x100` training images from the corresponding batch files from [CIFAR-10 python version](https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz).
+Each sprite file contains the `10000` training images from the corresponding batch files from [CIFAR-10 python version](https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz). The images are arranged in an `100x100` grid.
 
 ## Data Layout
 The data layout is row-major (i.e. the images are arranged consecutively row-by-row).
