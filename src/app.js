@@ -8,7 +8,7 @@ import { AppConstants } from './AppConstants';
 /**
  * The main class for the app
  */
-var App = (function () {
+var App = /** @class */ (function () {
     function App(parent) {
         this.views = [
             {
@@ -18,22 +18,23 @@ var App = (function () {
             },
             {
                 view: 'ConfusionMatrix',
-                parent: 'comparison',
+                parent: 'conf-matrix-wrapper',
                 options: {
                     eventName: ''
                 }
             },
             {
                 view: 'Timeline',
-                parent: 'selector-timepoint',
+                parent: 'timeline-wrapper',
                 options: {
                     eventName: ''
                 }
             }
         ];
         this.$node = d3.select(parent);
-        this.$node.append('div').classed('selector-timepoint', true);
-        this.$node.append('div').classed('comparison', true);
+        this.$node.append('div').classed('timeline-wrapper', true);
+        this.$node.append('div').classed('conf-matrix-wrapper', true);
+        this.$node.append('div').classed('details-wrapper', true);
     }
     /**
      * Initialize the view and return a promise

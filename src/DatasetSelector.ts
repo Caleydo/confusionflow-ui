@@ -76,9 +76,7 @@ class DataSetSelector implements IAppView {
     const dataprovider = new DataProvider();
     return dataprovider.load()
       .then((data:IMalevoDatasetCollection) => {
-        const resultArray = Object.keys(data).map(function(index){
-          return data[index];
-        });
+        const resultArray = Object.keys(data).map((index) => data[index]);
 
         const $options = this.$select.selectAll('option').data(resultArray);
 
@@ -180,7 +178,7 @@ class DataProvider {
       throw new Error('The received filename is not valid');
     }
     return parts;
-  };
+  }
 }
 
 /**
