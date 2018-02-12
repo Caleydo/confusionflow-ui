@@ -49,7 +49,9 @@ export default class Timeline implements IDragSelection, IAppView {
   }
 
   private selectLast() {
-    this.dragEnd(d3.select(this.$epochs[0][this.$epochs[0].length - 1]));
+    const $lastNode = d3.select(this.$epochs[0][this.$epochs[0].length - 1]);
+    this.dragEnd($lastNode);
+    (<HTMLElement>$lastNode.node()).scrollIntoView();
   }
 
   updateItems(malevoData: MalevoDataset) {
