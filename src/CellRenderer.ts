@@ -147,7 +147,7 @@ export class HeatCellRenderer extends ICellRenderer {
   }
 }
 
-export class ConfusionMatrixCellRenderer extends HeatCellRenderer {
+export class ConfusionMatrixHeatCellRenderer extends HeatCellRenderer {
   constructor(private cmdata: NumberMatrix, version1D: number[], private labels: [number, string]) {
     super(version1D);
   }
