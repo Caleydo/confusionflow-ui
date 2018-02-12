@@ -69,6 +69,13 @@ export class App implements IAppView {
       options: {
         eventName: ''
       }
+    },
+    {
+      view: 'DummyDetailView',
+      parent: 'details-wrapper',
+      options: {
+        eventName: ''
+      }
     }
   ];
 
@@ -76,8 +83,9 @@ export class App implements IAppView {
     this.$node = d3.select(parent);
 
     this.$node.append('div').classed('timeline-wrapper', true);
-    this.$node.append('div').classed('conf-matrix-wrapper', true);
-    this.$node.append('div').classed('details-wrapper', true);
+    const $main = this.$node.append('main').classed('main-wrapper', true);
+    $main.append('div').classed('conf-matrix-wrapper', true);
+    $main.append('div').classed('details-wrapper', true);
   }
 
   /**

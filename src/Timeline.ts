@@ -13,7 +13,7 @@ import {IAppView} from './app';
 
 export default class Timeline implements IDragSelection, IAppView {
   private readonly $node:d3.Selection<any>;
-  private $circles:d3.Selection<any>;
+  private $epochs:d3.Selection<any>;
   private $rangeband: d3.Selection<any>;
   private isDragging = false;
   private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interpreted as click until it switches to drag
@@ -25,6 +25,7 @@ export default class Timeline implements IDragSelection, IAppView {
       .append('div')
       .classed('timeline', true);
     this.rangeSelector = new TimelineRangeSelector(this.$node);
+    this.$rangeband = this.$node.append('div').classed('selection', true);
   }
 
   private attachListener() {
@@ -48,41 +49,34 @@ export default class Timeline implements IDragSelection, IAppView {
   }
 
   private selectLast() {
-    this.dragEnd(d3.select(this.$circles[0][this.$circles[0].length - 1]));
-  }
-
-  private createRangeband() {
-    this.$rangeband = this.$node.append('div').classed('selection', true);
+    const $lastNode = d3.select(this.$epochs[0][this.$epochs[0].length - 1]);
+    this.dragEnd($lastNode);
+    (<HTMLElement>$lastNode.node()).scrollIntoView();
   }
 
   updateItems(malevoData: MalevoDataset) {
-    const that = this;
     this.malevoDataset = malevoData;
-    this.createRangeband();
-    const $circles = this.$node.selectAll('div.epochs')
-      .data(malevoData.epochInfos);
+    const $epochs = this.$node.selectAll('div.epochs').data(malevoData.epochInfos);
 
-    $circles.enter().append('div')
-      .classed('epochs', true)
-      .classed('loading', true)
-      .each(function(epochInfo: IMalevoEpochInfo, i: number) {
-        const $epochDiv = d3.select(this);
-            $epochDiv.classed('loading', false);
-            $epochDiv.html(`<div class="point"></div><span class="epoch-label">${epochInfo.name}</span>`);
-      });
-    $circles.exit().remove();
-    this.$circles = $circles;
+    const enter = $epochs.enter().append('div').classed('epochs', true);
+    enter.append('div').classed('point', true);
+    enter.append('span').classed('epoch-label', true);
+
+    $epochs.select('.epoch-label').html((d) => d.name);
+
+    $epochs.exit().remove();
+    this.$epochs = $epochs;
     this.rangeSelector.updateCandidateList(this.$node.selectAll('div.epochs'));
   }
 
   dragEnd(sel: d3.Selection<any>) {
     console.assert(sel.length === 1);
     if(sel[0].length > 1) {
-      this.$circles.classed('range-selected', false);
+      this.$epochs.classed('range-selected', false);
       this.snapBand(sel);
       sel.classed('range-selected', true);
     } else {
-      this.$circles.classed('single-selected', false);
+      this.$epochs.classed('single-selected', false);
       sel.classed('single-selected', true);
       if(this.isDragging) { // if one point was selected by dragging => hide the band
         this.$rangeband.style('visibility', 'hidden');
