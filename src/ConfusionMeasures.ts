@@ -1,11 +1,10 @@
 // measures are from https://en.wikipedia.org/wiki/Confusion_matrix
-import {NumberMatrix, matrixSum} from './DataStructures';
+import {NumberMatrix, Matrix, matrixSum, SquareMatrix, IClassEvolution} from './DataStructures';
 
 export function TP(matrix: NumberMatrix, index: number): number {
   if(index >= matrix.order()) {
     throw new Error('Invalid index');
   }
-  //todo try to get rid of this matrix.values[][] ugliness!
   return matrix.values[index][index];
 }
 
@@ -20,7 +19,7 @@ export function FN(matrix: NumberMatrix, index: number): number {
   if(index >= matrix.order()) {
     throw new Error('Invalid index');
   }
-  matrix = matrix.transpose();
+  matrix = <SquareMatrix<number>> matrix.transpose();
   return matrix.values[index].reduce((acc, val) => acc + val, 0) - matrix.values[index][index];
 }
 
@@ -53,4 +52,24 @@ export function calcForMultipleClasses(matrix: NumberMatrix, funct: (matrix: Num
     result.push(funct(matrix, i));
   }
   return result;
+}
+
+export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMatrix, index: number) => number): Matrix<IClassEvolution> {
+  const order = matrices[0].order();
+  if(matrices.length === 0) {
+    return new Matrix<IClassEvolution>(0, 0);
+  }
+  const matrix = new Matrix<IClassEvolution>(order, 1);
+  const arr:IClassEvolution[][] = [];
+  for(let i = 0; i < order; i++) {
+    arr[i] = [];
+    arr[i][0] = {values: [], label: ''};
+  }
+  matrix.init(arr);
+
+  for(const m of matrices) {
+    const res = calcForMultipleClasses(m, funct);
+    matrix.values.map((c, i) => c[0].values.push(res[i]));
+  }
+  return matrix;
 }

@@ -16,6 +16,7 @@ th, label, strong, b, .label {
     "matrix details";
   grid-template-columns: minmax(auto, 98vh) minmax(40%, auto);
   grid-template-rows: minmax(min-content, 70px) minmax(min-content, 85vh);
+  grid-gap: 20px;
 }
 
 .timeline-wrapper {
