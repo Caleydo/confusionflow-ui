@@ -16,6 +16,25 @@ import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
 
+
+class DataStore {
+  static singleSelected: IMalevoEpochInfo = null;
+  static multiSelected: IMalevoEpochInfo[] = [];
+  static labels:ITable;
+
+  static justOneEpochSelected() {
+    return DataStore.singleSelected !== null && DataStore.multiSelected.length === 0;
+  }
+
+  static rangeSelected() {
+    return DataStore.singleSelected === null && DataStore.multiSelected.length !== 0;
+  }
+
+  static singleAndRangeSelected() {
+    return DataStore.singleSelected !== null && DataStore.multiSelected.length !== 0;
+  }
+}
+
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
@@ -101,11 +120,25 @@ export class ConfusionMatrix implements IAppView {
       if(items.length === 0) {
         return;
       } else if(items.length === 1) {
-        this.updateSingleEpoch(items[0].confusionInfo, dataset.classLabels);
+        DataStore.singleSelected = items[0];
       } else {
-        this.updateEpochRange(items, dataset.classLabels);
+        DataStore.multiSelected = items;
       }
+      DataStore.labels = dataset.classLabels;
+      this.updateViews(items, dataset);
     });
+  }
+
+  updateViews(items:IMalevoEpochInfo[], dataset:MalevoDataset) {
+    if(DataStore.justOneEpochSelected() === true) {
+      this.updateSingleEpoch();
+    } else if(DataStore.rangeSelected() === true) {
+      this.updateEpochRange();
+    } else if(DataStore.singleAndRangeSelected() === true) {
+      this.updateSingleAndEpochRange();
+    } else {
+      // nothing selected
+    }
   }
 
   private loadConfusionData(matrix: INumericalMatrix) : Promise<NumberMatrix> {
@@ -155,12 +188,12 @@ export class ConfusionMatrix implements IAppView {
     this.fnColumn.render(new BarChartCellRenderer(fnData));
   }
 
-  private updateEpochRange(items:IMalevoEpochInfo[], classLabels: ITable) {
+  private updateEpochRange() {
     const dataPromises = [];
-    for(const item of items) {
+    for(const item of DataStore.multiSelected) {
       dataPromises.push(this.loadConfusionData(item.confusionInfo));
     }
-    dataPromises.push(this.loadLabels(classLabels));
+    dataPromises.push(this.loadLabels(DataStore.labels));
 
     Promise.all(dataPromises).then((x: any) => {
       const labels = x.splice(-1, 1)[0];
@@ -171,15 +204,32 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
-  private updateSingleEpoch(item:INumericalMatrix, classLabels: ITable) {
-    const confusionData = this.loadConfusionData(item);
-    const labels = this.loadLabels(classLabels);
+  private updateSingleEpoch() {
+    const confusionData = this.loadConfusionData(DataStore.singleSelected.confusionInfo);
+    const labels = this.loadLabels(DataStore.labels);
 
     Promise.all([confusionData, labels]).then((x:any) => {
       this.checkDataSanity([x[0]], x[1]);
       this.addRowAndColumnLabels(x[1]);
       this.renderSingleEpoch(x[0], x[1]);
       this.renderPanelsSingleEpoch(x[0], x[1]);
+    });
+  }
+
+  private updateSingleAndEpochRange() {
+    const dataPromises = [];
+    for(const item of DataStore.multiSelected) {
+      dataPromises.push(this.loadConfusionData(item.confusionInfo));
+    }
+    dataPromises.push(this.loadConfusionData(DataStore.singleSelected.confusionInfo));
+    dataPromises.push(this.loadLabels(DataStore.labels));
+
+    Promise.all(dataPromises).then((x: any) => {
+      const labels = x.splice(-1, 1)[0];
+      this.checkDataSanity(x, labels);
+      this.addRowAndColumnLabels(labels);
+      this.renderEpochRange(x, labels);
+      this.renderPanelsRange(x, labels);
     });
   }
 
