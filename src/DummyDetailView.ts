@@ -29,7 +29,7 @@ export class DummyDetailView implements IAppView {
   }
 
   private attachListeners() {
-    events.on(AppConstants.EVENT_CELL_SELECTED, (evt, predicted, groundTruth, labels) => {
+    events.on(AppConstants.EVENT_CELL_SELECTED, (evt, src, predicted, groundTruth, labels) => {
       this.$node.select('.title')
         .html(`<strong>${labels[groundTruth][1]}</strong> ${Language.PREDICTED_AS} <strong>${labels[predicted][1]}</strong>`);
     });

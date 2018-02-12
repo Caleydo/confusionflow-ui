@@ -35,4 +35,8 @@ export class AppConstants {
 
 
   static BW_COLOR_SCALE = ['white', 'gray'];
+
+  static CONFUSION_MATRIX_CELL = 'confusion_matrix_cell';
+
+  static BAR = 'bar';
 }

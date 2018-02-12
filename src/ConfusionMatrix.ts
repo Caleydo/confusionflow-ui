@@ -6,7 +6,10 @@ import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
-import {BarChartCellRenderer, HeatCellRenderer, MultilineChartCellRenderer, SingleLineChartCellRenderer} from './CellRenderer';
+import {
+  BarChartCellRenderer, ConfusionMatrixCellRenderer, HeatCellRenderer, MultilineChartCellRenderer,
+  SingleLineChartCellRenderer
+} from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
@@ -175,7 +178,7 @@ export class ConfusionMatrix implements IAppView {
     Promise.all([confusionData, labels]).then((x:any) => {
       this.checkDataSanity([x[0]], x[1]);
       this.addRowAndColumnLabels(x[1]);
-      this.renderSingleEpoch(x[0]);
+      this.renderSingleEpoch(x[0], x[1]);
       this.renderPanelsSingleEpoch(x[0], x[1]);
     });
   }
@@ -232,40 +235,13 @@ export class ConfusionMatrix implements IAppView {
     new SingleLineChartCellRenderer(cellContent).renderCells(this.$confusionMatrix);
   }
 
-  private renderSingleEpoch(data: NumberMatrix) {
+  private renderSingleEpoch(data: NumberMatrix, labels: [number, string]) {
     if(!data) {
       return;
     }
     data = data.clone();
     setDiagonal(data, (r) => {return 0;});
-    const data1D = data.to1DArray();
-    const maxVal = Math.max(...data1D);
-
-    const dataValueScale = d3.scale.linear().domain([0, maxVal]);
-
-    const heatmapColorScale = dataValueScale.range(<any>AppConstants.BW_COLOR_SCALE)
-      .interpolate(<any>d3.interpolateHcl);
-
-    //const cellSizeScale = dataValueScale.range([10, 100]);
-
-    const $cells = this.$confusionMatrix
-      .selectAll('div')
-      .data(data1D);
-
-    $cells.enter()
-      .append('div')
-      .classed('cell', true);
-
-    $cells
-      //.style('align-self', 'center')
-      //.style('justify-self', 'center')
-      //.style('height', (height: number) => cellSizeScale(height) + '%')
-      //.style('width', (width: number) => cellSizeScale(width) + '%')
-      .text((datum: any) => datum)
-      .style('background-color', (datum: number) => heatmapColorScale(datum))
-      .style('color', (datum: number) => adaptTextColorToBgColor(heatmapColorScale(datum).toString()));
-
-    $cells.exit().remove();
+    new ConfusionMatrixCellRenderer(data, data.to1DArray(), labels).renderCells(this.$confusionMatrix);
   }
 }
 

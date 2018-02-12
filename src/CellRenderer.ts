@@ -2,22 +2,31 @@
  * Created by Martin on 29.01.2018.
  */
 
-import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, min} from './DataStructures';
+import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, min, NumberMatrix} from './DataStructures';
 import {BarChart} from './BarChart';
 import {LineChart, MultilineChart} from './LineChart';
 import * as d3 from 'd3';
 import {adaptTextColorToBgColor} from './utils';
 import {AppConstants} from './AppConstants';
+import * as events from 'phovea_core/src/event';
 
-export interface ICellRenderer {
-  renderCells($parent: d3.Selection<any>);
+export abstract class ICellRenderer {
+  abstract renderCells($parent: d3.Selection<any>);
+  ID: string = '';
+
+  protected installListener($cells: d3.Selection<any>) {
+    const x = 0; // just to get rid of linter error
+  }
 }
 
-export class SingleLineChartCellRenderer implements ICellRenderer {
+
+
+export class SingleLineChartCellRenderer extends ICellRenderer {
   maxVal: number;
   minVal: number;
 
   constructor(private data: Matrix<IClassEvolution>, private filterZeroLines = true) {
+    super();
     this.maxVal = max(data, (d) => Math.max(...d.values));
     this.minVal = min(data, (d) => Math.min(...d.values));
   }
@@ -30,7 +39,7 @@ export class SingleLineChartCellRenderer implements ICellRenderer {
 
     $cells.enter().append('div')
       .classed('cell', true);
-
+    this.installListener($cells);
     const that = this;
     $cells.each(function(d, i) {
        // if we want to filter zero lines and the the line has just 0 values => continue
@@ -46,11 +55,12 @@ export class SingleLineChartCellRenderer implements ICellRenderer {
   }
 }
 
-export class MultilineChartCellRenderer implements ICellRenderer {
+export class MultilineChartCellRenderer extends ICellRenderer {
   maxVal: number;
   minVal: number;
 
   constructor(private data: SquareMatrix<IClassEvolution>) {
+    super();
     this.maxVal = max(data, (d) => Math.max(...d.values));
     this.minVal = min(data, (d) => Math.min(...d.values));
   }
@@ -60,7 +70,7 @@ export class MultilineChartCellRenderer implements ICellRenderer {
     const $cells = $parent.selectAll('div').data(this.data.values);
     $cells.enter().append('div')
       .classed('cell', true);
-
+    this.installListener($cells);
     const that = this;
     $cells.each(function(d, i) {
       const lineCount = d[0].values.length - 1;
@@ -69,9 +79,10 @@ export class MultilineChartCellRenderer implements ICellRenderer {
   }
 }
 
-export class BarChartCellRenderer implements ICellRenderer {
+export class BarChartCellRenderer extends ICellRenderer {
 
   constructor(private data: SquareMatrix<IClassAffiliation>) {
+      super();
   }
 
   renderCells($parent: d3.Selection<any>) {
@@ -88,6 +99,7 @@ export class BarChartCellRenderer implements ICellRenderer {
       .enter()
       .append('div')
       .classed('cell', true);
+    this.installListener($enterSelection);
 
     $enterSelection.each(function(d, i) {
         new BarChart(d3.select(this), {top:0, bottom:0, left:0, right:0}).render(d);
@@ -102,10 +114,11 @@ export class BarChartCellRenderer implements ICellRenderer {
   }
 }
 
-export class HeatCellRenderer implements ICellRenderer {
+export class HeatCellRenderer extends ICellRenderer {
   private readonly heatmapColorScale: any;
 
   constructor(private data: number[]) {
+    super();
     this.heatmapColorScale = d3.scale.linear()
       .domain([0, Math.max(...data)])
       .range(<any>AppConstants.BW_COLOR_SCALE)
@@ -121,6 +134,7 @@ export class HeatCellRenderer implements ICellRenderer {
       .enter()
       .append('div')
       .classed('cell', true);
+    this.installListener($cells);
 
     $cells
       .style('background-color', (datum: any) => this.heatmapColorScale(datum))
@@ -130,5 +144,23 @@ export class HeatCellRenderer implements ICellRenderer {
     $cells
       .exit()
       .remove();
+  }
+}
+
+export class ConfusionMatrixCellRenderer extends HeatCellRenderer {
+  constructor(private cmdata: NumberMatrix, private version1D: number[], private labels: [number, string]) {
+    super(version1D);
+  }
+
+  protected installListener($cells: d3.Selection<any>) {
+    const that = this;
+    $cells.on('click', function (d, i) {
+      $cells.classed('selected', false);
+      d3.select(this).classed('selected', true);
+
+      const predicted = i % that.cmdata.order();
+      const groundTruth = Math.floor(i / that.cmdata.order());
+      events.fire(AppConstants.EVENT_CELL_SELECTED, AppConstants.CONFUSION_MATRIX_CELL, predicted, groundTruth, that.labels);
+    });
   }
 }
