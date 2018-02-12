@@ -9,20 +9,21 @@ th, label, strong, b, .label {
   font-weight: 500 !important;
 }
 
-#app {
-  display: grid;
-  grid-template-areas:
-    "timeline timeline"
-    "matrix details";
-  grid-template-columns: minmax(auto, 98vh) minmax(40%, auto);
-  grid-template-rows: minmax(min-content, 70px) minmax(min-content, 85vh);
-  grid-gap: 20px;
+.timeline-wrapper {
+  width: 100%;
+  height: 60px;
+  margin: 10px 0;
+  display: flex;
+  align-items: flex-start;
+  overflow-x: auto;
 }
 
-.timeline-wrapper {
-  grid-area: timeline;
-  display: flex;
-  align-items: center;
+.main-wrapper {
+  display: grid;
+  grid-template-areas: "matrix details";
+  grid-template-columns: minmax(auto, 98vh) minmax(40%, auto);
+  grid-template-rows: minmax(min-content, 85vh);
+  grid-gap: 20px;
 }
 
 .conf-matrix-wrapper {
