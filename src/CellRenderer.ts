@@ -148,8 +148,26 @@ export class HeatCellRenderer extends ICellRenderer {
 }
 
 export class ConfusionMatrixCellRenderer extends HeatCellRenderer {
-  constructor(private cmdata: NumberMatrix, private version1D: number[], private labels: [number, string]) {
+  constructor(private cmdata: NumberMatrix, version1D: number[], private labels: [number, string]) {
     super(version1D);
+  }
+
+  protected installListener($cells: d3.Selection<any>) {
+    const that = this;
+    $cells.on('click', function (d, i) {
+      $cells.classed('selected', false);
+      d3.select(this).classed('selected', true);
+
+      const predicted = i % that.cmdata.order();
+      const groundTruth = Math.floor(i / that.cmdata.order());
+      events.fire(AppConstants.EVENT_CELL_SELECTED, AppConstants.CONFUSION_MATRIX_CELL, predicted, groundTruth, that.labels);
+    });
+  }
+}
+
+export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRenderer {
+  constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines = true, private labels: [number, string]) {
+    super(cmdata, filterZeroLines);
   }
 
   protected installListener($cells: d3.Selection<any>) {

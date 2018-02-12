@@ -8,7 +8,7 @@ import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {
   BarChartCellRenderer, ConfusionMatrixCellRenderer, HeatCellRenderer, MultilineChartCellRenderer,
-  SingleLineChartCellRenderer
+  SingleLineChartCellRenderer, ConfusionMatrixLineChartCellRenderer
 } from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
@@ -232,7 +232,7 @@ export class ConfusionMatrix implements IAppView {
     const cellContent = calculator.calculate(data, labels);
     console.assert(cellContent.order() === data[0].order());
 
-    new SingleLineChartCellRenderer(cellContent).renderCells(this.$confusionMatrix);
+    new ConfusionMatrixLineChartCellRenderer(cellContent, true, labels).renderCells(this.$confusionMatrix);
   }
 
   private renderSingleEpoch(data: NumberMatrix, labels: [number, string]) {
