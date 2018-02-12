@@ -23,6 +23,7 @@ th, label, strong, b, .label {
   grid-area: timeline;
   display: flex;
   align-items: center;
+  overflow-x: auto;
 }
 
 .conf-matrix-wrapper {
