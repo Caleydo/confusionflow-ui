@@ -1,0 +1,174 @@
+swagger: '2.0'
+info:
+  description: Malevo API
+  version: 0.1.0
+  title: Malevo API
+#host: localhost
+basePath: /api/malevo
+tags:
+  - name: class
+    description: Everything about predicted and ground truth classes
+  - name: images
+    description: Everything about images
+schemes:
+  - http
+paths:
+  /class/sampleImages:
+    get:
+      tags:
+        - class
+      summary: Representative sample of images
+      description: >-
+        Returns a list of representative images for that matches all given class
+        ids
+      produces:
+        - application/json
+      parameters:
+        - name: dataset
+          in: query
+          description: Phovea dataset id
+          required: true
+          type: string
+        - name: epoch
+          in: query
+          description: Selected epoch id
+          required: true
+          type: integer
+        - name: groundTruthClassId
+          in: query
+          description: Ground truth class id
+          required: true
+          type: integer
+        - name: predictedClassId
+          in: query
+          description: Predicted class id
+          required: true
+          type: integer
+        - name: numCount
+          in: query
+          description: Number of images
+          required: false
+          default: 100
+          minimum: 1
+          type: integer
+      responses:
+        '200':
+          description: >-
+            Successful operation returns a list of image ids
+          schema:
+            type: array
+            items:
+              type: integer
+        '400':
+          description: Invalid input value
+
+  /class/crossEntropy:
+    get:
+      tags:
+        - class
+      summary: Cross-entropy values
+      description: >-
+        Returns the cross-entropy values for a list of given image ids and epochs
+      produces:
+        - application/json
+      parameters:
+        - name: dataset
+          in: query
+          description: Phovea dataset id
+          required: true
+          type: string
+        - name: epochs
+          in: query
+          description: List of epochs
+          required: true
+          type: array
+          items:
+            type: integer
+        - name: imageIds
+          in: query
+          description: List of image ids
+          required: true
+          type: array
+          items:
+            type: integer
+      responses:
+        '200':
+          description: >-
+            Successful operation returns a matrix of cross-entropy values
+            with image ids as rows and epochs as columns.
+          schema:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+        '400':
+          description: Invalid input value
+
+  /images/imageSprite:
+    get:
+      tags:
+        - images
+      summary: Generate an image sprite
+      description: >-
+        Returns an image sprite for all given image ids
+      produces:
+        - image/png
+      parameters:
+        - name: dataset
+          in: query
+          description: Phovea dataset id
+          required: true
+          type: string
+        - name: imageIds
+          in: query
+          description: List of image ids
+          required: true
+          type: array
+          items:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation returns an image sprite
+          schema:
+            type: file
+          headers:
+            Content-type:
+              type: string
+              description: image/png; charset=utf-8
+        '400':
+          description: Invalid input value
+
+  /images/softmaxSprite:
+    get:
+      tags:
+        - images
+      summary: Generate a softmax heatmap as sprite
+      description: >-
+        Returns a sprite of softmax heatmapes for all given image ids
+      produces:
+        - image/png
+      parameters:
+        - name: dataset
+          in: query
+          description: Phovea dataset id
+          required: true
+          type: string
+        - name: imageIds
+          in: query
+          description: List of image ids
+          required: true
+          type: array
+          items:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation returns an image sprite
+          schema:
+            type: file
+          headers:
+            Content-type:
+              type: string
+              description: image/png; charset=utf-8
+        '400':
+          description: Invalid input value
