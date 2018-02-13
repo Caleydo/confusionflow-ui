@@ -1870,5 +1870,869 @@
         }
       }
     ]
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch0-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch0_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch5-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch5_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch10-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch10_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch15-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch15_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch20-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch20_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch25-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch25_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch30-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch30_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch35-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch35_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch40-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch40_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch45-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch45_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch50-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch50_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch55-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch55_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch60-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch60_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch65-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch65_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch70-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch70_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch75-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch75_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch80-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch80_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch85-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch85_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch90-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch90_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch95-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch95_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch100-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch100_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch105-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch105_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch110-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch110_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch115-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch115_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch120-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch120_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch125-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch125_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch130-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch130_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch135-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch135_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch140-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch140_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch145-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch145_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch150-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch150_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch155-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch155_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch160-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch160_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch165-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch165_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch170-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch170_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch175-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch175_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch180-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch180_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch185-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch185_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch190-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch190_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-resnet50-epoch195-confusion",
+    "description": "DNN dataset that learned CIFAR10 images",
+    "path": "cifar-10/resnet50/epoch195_confusion.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [
+      10,
+      10
+    ],
+    "idtype": "Epochs",
+    "rowtype": "ground_truth",
+    "coltype": "predicted",
+    "value": {
+      "type": "int",
+      "range": [
+        0,
+        50000
+      ]
+    }
+  },
+  {
+    "name": "cifar10_resnet50-classlabels",
+    "description": "Some user attributes",
+    "path": "cifar-10/labels.csv",
+    "separator": ",",
+    "type": "table",
+    "size": [10, 3],
+    "idtype": "Labels",
+    "columns": [
+      {
+        "name": "class_id",
+        "value": {
+          "type": "int",
+          "range": [0, 9]
+        }
+      },
+      {
+        "name": "class_labels",
+        "value": {
+          "type": "string"
+        }
+      }
+    ]
   }
 ]
