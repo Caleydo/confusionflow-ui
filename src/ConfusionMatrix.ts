@@ -131,7 +131,7 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  private renderPanelsRange(data: NumberMatrix[], labels: [number, string]) {
+  private renderPanelsRange(data: NumberMatrix[], labels: [number, string], singleEpochIndex: number) {
     if(data.length === 0) {
       return;
     }
@@ -141,11 +141,11 @@ export class ConfusionMatrix implements IAppView {
     const fnData = transformSq(fpData, (r, c, matrix) => {return {values: matrix.values[c][r].values, label: matrix.values[r][c].label};});
     console.assert(fpData.order() === data[0].order());
 
-    this.fpColumn.render(new MultilineChartCellRenderer(fpData));
+    this.fpColumn.render(new MultilineChartCellRenderer(fpData, singleEpochIndex));
 
-    this.precisionColumn.render(new SingleLineChartCellRenderer(confMeasures.calcEvolution(data, confMeasures.PPV)));
+    this.precisionColumn.render(new SingleLineChartCellRenderer(confMeasures.calcEvolution(data, confMeasures.PPV), true, singleEpochIndex));
 
-    this.fnColumn.render(new MultilineChartCellRenderer(fnData));
+    this.fnColumn.render(new MultilineChartCellRenderer(fnData, singleEpochIndex));
   }
 
   private renderPanelsSingleEpoch(data: NumberMatrix, labels: [number, string]) {
@@ -167,12 +167,14 @@ export class ConfusionMatrix implements IAppView {
       promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
     }
     const promLabels = this.loadLabels(DataStore.labels);
+    promMultiEpoch.push(promLabels);
 
-    Promise.all([promMultiEpoch, promLabels]).then((x: any) => {
-      this.checkDataSanity(x, x[1]);
-      this.addRowAndColumnLabels(x[1]);
-      this.renderEpochRange(x, x[1]);
-      this.renderPanelsRange(x, x[1]);
+    Promise.all(promMultiEpoch).then((x: any) => {
+      const labels = x.splice(-1, 1)[0];
+      this.checkDataSanity(x, labels);
+      this.addRowAndColumnLabels(labels);
+      this.renderEpochRange(x, labels);
+      this.renderPanelsRange(x, labels, -1);
     });
   }
 
@@ -199,13 +201,16 @@ export class ConfusionMatrix implements IAppView {
     promMultiEpoch.push(promSingleEpoch);
     promMultiEpoch.push(promLabels);
 
+    console.log(DataStore.singleSelected, DataStore.multiSelected);
+    const singleEpochIndex = DataStore.multiSelected.findIndex((x) => x === DataStore.singleSelected);
+
     Promise.all(promMultiEpoch).then((x: any) => {
       const labels = x.splice(-1,1)[0];
       const single = x.splice(-1,1);
       this.checkDataSanity(single, labels);
       this.addRowAndColumnLabels(labels);
-      this.renderCombined(x, single[0],labels);
-      this.renderPanelsCombined(x, labels);
+      this.renderCombined(x, single[0],labels, singleEpochIndex);
+      this.renderPanelsRange(x, labels, singleEpochIndex);
     });
   }
 
@@ -258,7 +263,7 @@ export class ConfusionMatrix implements IAppView {
     const cellContent = calculator.calculate(data, labels);
     console.assert(cellContent.order() === data[0].order());
 
-    new ConfusionMatrixLineChartCellRenderer(cellContent, true, labels).renderCells(this.$confusionMatrix);
+    new ConfusionMatrixLineChartCellRenderer(cellContent, true, -1, labels).renderCells(this.$confusionMatrix);
   }
 
   private renderSingleEpoch(data: NumberMatrix, labels: [number, string]) {
@@ -270,7 +275,7 @@ export class ConfusionMatrix implements IAppView {
     new ConfusionMatrixHeatCellRenderer(data, data.to1DArray(), labels).renderCells(this.$confusionMatrix);
   }
 
-  private renderCombined(multiEpochData: NumberMatrix[], singleEpochData: NumberMatrix, labels: [number, string]) {
+  private renderCombined(multiEpochData: NumberMatrix[], singleEpochData: NumberMatrix, labels: [number, string], singleEpochIndex: number) {
     if(!multiEpochData || multiEpochData.length === 0 || !singleEpochData) {
       return;
     }
@@ -280,11 +285,7 @@ export class ConfusionMatrix implements IAppView {
     const calculator = new LineChartCalculator();
     const lineData = calculator.calculate(multiEpochData, labels);
 
-    new MultiEpochCellRenderer(lineData, singleEpochData, true, labels).renderCells(this.$confusionMatrix);
-  }
-
-  private renderPanelsCombined(data: NumberMatrix[], labels: [number, string]) {
-
+    new MultiEpochCellRenderer(lineData, singleEpochData, true, labels, singleEpochIndex).renderCells(this.$confusionMatrix);
   }
 
 }

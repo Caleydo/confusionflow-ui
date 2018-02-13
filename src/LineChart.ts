@@ -23,7 +23,7 @@ export class LineChart {
     this.$node = $svg.append('g');
   }
 
-  render(data: IClassEvolution, maxVal: number, minVal: number) {
+  render(data: IClassEvolution, maxVal: number, minVal: number, singleEpochIndex: number) {
     const $g = this.$node;
 
     const x = d3.scale.linear().rangeRound([0, this.width]);
@@ -40,6 +40,11 @@ export class LineChart {
       });
 
     $g.append('path').attr('d', line(data.values));
+    if(singleEpochIndex > -1) {
+      console.log(x(singleEpochIndex));
+      const $line = $g.append('line').attr('x1', x(singleEpochIndex)).attr('x2', x(singleEpochIndex)).attr('y1', 0).attr('y2', this.height);
+      $line.classed('dashed-lines', true);
+    }
   }
 }
 
@@ -60,7 +65,7 @@ export class MultilineChart {
     this.$node = $svg.append('g');
   }
 
-  render(data: IClassEvolution[], maxVal: number, minVal: number) {
+  render(data: IClassEvolution[], maxVal: number, minVal: number, singleEpochIndex: number) {
     const $g = this.$node;
 
     const x = d3.scale.linear().rangeRound([0, this.width]);
@@ -85,6 +90,12 @@ export class MultilineChart {
       .attr('class', 'line')
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d) => z(d.label));
+
+    if(singleEpochIndex > -1) {
+      console.log(x(singleEpochIndex));
+      const $line = $g.append('line').attr('x1', x(singleEpochIndex)).attr('x2', x(singleEpochIndex)).attr('y1', 0).attr('y2', this.height);
+      $line.classed('dashed-lines', true);//style('stroke', 'black').style('stroke-width', '2').style('stroke-dasharray', '5, 5');
+    }
 
     createTooltip(this.$node, $epochLine, (d) => d.label);
   }

@@ -24,7 +24,7 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
   maxVal: number;
   minVal: number;
 
-  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines = true) {
+  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, private singleEpochIndex: number) {
     super();
     this.maxVal = max(data, (d) => Math.max(...d.values));
     this.minVal = min(data, (d) => Math.min(...d.values));
@@ -40,12 +40,12 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
       .classed('cell', true);
     this.installListener($cells);
     const that = this;
-    $cells.each(function(d, i) {
+    $cells.each(function(d) {
        // if we want to filter zero lines and the the line has just 0 values => continue
       if(that.filterZeroLines && !d.values.find((val) => val !== 0)) {
         return;
       }
-      new LineChart(d3.select(this)).render(d, that.maxVal, that.minVal);
+      new LineChart(d3.select(this)).render(d, that.maxVal, that.minVal, that.singleEpochIndex);
     });
   }
 
@@ -56,7 +56,7 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
 
 export class MultilineChartCellRenderer extends ACellRenderer {
 
-  constructor(private data: SquareMatrix<IClassEvolution>) {
+  constructor(private data: SquareMatrix<IClassEvolution>, private singleEpochIndex: number) {
     super();
   }
 
@@ -68,9 +68,10 @@ export class MultilineChartCellRenderer extends ACellRenderer {
     $cells.enter().append('div')
       .classed('cell', true);
     this.installListener($cells);
+    const that = this;
     $cells.each(function(d, i) {
       const lineCount = d[0].values.length - 1;
-      new MultilineChart(d3.select(this), lineCount).render(d, maxVal, minVal);
+      new MultilineChart(d3.select(this), lineCount).render(d, maxVal, minVal, that.singleEpochIndex);
     });
   }
 }
@@ -163,8 +164,8 @@ export class ConfusionMatrixHeatCellRenderer extends HeatCellRenderer {
 }
 
 export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRenderer {
-  constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines = true, private labels: [number, string]) {
-    super(cmdata, filterZeroLines);
+  constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines, singleEpochIndex: number, private labels: [number, string]) {
+    super(cmdata, filterZeroLines, singleEpochIndex);
   }
 
   // todo extract to function
@@ -181,8 +182,11 @@ export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRen
   }
 }
 
+//todo try to make a private type
+class CombinedType {linedata: IClassEvolution; hmdata: number; }
+
 export class MultiEpochCellRenderer extends ACellRenderer {
-  constructor(private lineData: SquareMatrix<IClassEvolution>, private singleEpochData: SquareMatrix<number>, private filterZeroLines = true, private labels: [number, string]) {
+  constructor(private lineData: SquareMatrix<IClassEvolution>, private singleEpochData: SquareMatrix<number>, private filterZeroLines = true, private labels: [number, string], private singleEpochIndex: number) {
     super();
   }
   renderCells($parent: d3.Selection<any>) {
@@ -194,7 +198,7 @@ export class MultiEpochCellRenderer extends ACellRenderer {
     const maxVal = max(this.lineData, (d) => Math.max(...d.values));
     const minVal = min(this.lineData, (d) => Math.min(...d.values));
 
-    const transformedData = [];
+    const transformedData:CombinedType[] = [];
     for(let i = 0; i < hmData1D.length; i++) {
       transformedData.push({'linedata': lineData1D[i], 'hmdata': hmData1D[i]});
     }
@@ -207,7 +211,11 @@ export class MultiEpochCellRenderer extends ACellRenderer {
 
     const $cells = $parent
       .selectAll('div')
-      .data(transformedData, (datum) => this.createKey(datum));
+      .data(transformedData, (datum: CombinedType) => this.createKey(datum));
+
+    $cells
+      .exit()
+      .remove();
 
     $cells
       .enter()
@@ -215,18 +223,23 @@ export class MultiEpochCellRenderer extends ACellRenderer {
       .classed('cell', true);
     this.installListener($cells);
 
+    const that = this;
     $cells
-      .style('background-color', (datum: any, index: number) => heatmapColorScale(datum.hmdata))
-      .each((datum: any, index: number) => {
-        console.log('called');
-      });
-
-    $cells
-      .exit()
-      .remove();
+      .style('background-color', (datum: CombinedType, index: number) => heatmapColorScale(datum.hmdata))
+      .each(function(datum) {
+       // if we want to filter zero lines and the the line has just 0 values => continue
+      if(that.filterZeroLines && !datum.linedata.values.find((val) => val !== 0)) {
+        return;
+      }
+      new LineChart(d3.select(this)).render(datum.linedata, maxVal, minVal, that.singleEpochIndex);
+    });
   }
 
-  createKey(cur: any) {
-    return cur.hmdata + cur.linedata.values + cur.linedata.label;
+  createKey(cur: CombinedType) {
+    if(!(cur.hasOwnProperty('hmdata'))) {
+      return null;
+    }
+    const res = String(cur.hmdata) + cur.linedata.values + cur.linedata.label;
+    return res;
   }
 }
