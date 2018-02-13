@@ -40,6 +40,10 @@ export class TimelineRangeSelector {
 
   constructor($node: d3.Selection<any>, ) {
     this.setup($node);
+    this.resetSelectionRect();
+  }
+
+  resetSelectionRect() {
     this.selectionRect = new SelectionRect();
   }
 

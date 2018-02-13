@@ -15,25 +15,7 @@ import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
-
-
-class DataStore {
-  static singleSelected: IMalevoEpochInfo = null;
-  static multiSelected: IMalevoEpochInfo[] = [];
-  static labels:ITable;
-
-  static justOneEpochSelected() {
-    return DataStore.singleSelected !== null && DataStore.multiSelected.length === 0;
-  }
-
-  static rangeSelected() {
-    return DataStore.singleSelected === null && DataStore.multiSelected.length !== 0;
-  }
-
-  static singleAndRangeSelected() {
-    return DataStore.singleSelected !== null && DataStore.multiSelected.length !== 0;
-  }
-}
+import {DataStore} from './DataStore';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -116,20 +98,12 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private attachListeners() {
-    events.on(AppConstants.EVENT_EPOCH_SELECTED, (evt, items:IMalevoEpochInfo[], dataset:MalevoDataset) => {
-      if(items.length === 0) {
-        return;
-      } else if(items.length === 1) {
-        DataStore.singleSelected = items[0];
-      } else {
-        DataStore.multiSelected = items;
-      }
-      DataStore.labels = dataset.classLabels;
-      this.updateViews(items, dataset);
+    events.on(AppConstants.EVENT_EPOCH_SELECTED, (evt) => {
+      this.updateViews();
     });
   }
 
-  updateViews(items:IMalevoEpochInfo[], dataset:MalevoDataset) {
+  updateViews() {
     if(DataStore.justOneEpochSelected() === true) {
       this.updateSingleEpoch();
     } else if(DataStore.rangeSelected() === true) {

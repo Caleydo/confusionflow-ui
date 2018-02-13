@@ -10,6 +10,7 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {IDragSelection} from './RangeSelector';
 import {TimelineRangeSelector} from './RangeSelector';
 import {IAppView} from './app';
+import {DataStore} from './DataStore';
 
 export default class Timeline implements IDragSelection, IAppView {
   private readonly $node:d3.Selection<any>;
@@ -30,8 +31,10 @@ export default class Timeline implements IDragSelection, IAppView {
 
   private attachListener() {
     events.on(AppConstants.EVENT_DATA_COLLECTION_SELECTED, (evt, items:MalevoDataset) => {
-     this.updateItems(items);
-     this.selectLast();
+      DataStore.clearSelection();
+      this.resetSelection();
+      this.updateItems(items);
+      this.selectLast();
     });
   }
 
@@ -48,6 +51,11 @@ export default class Timeline implements IDragSelection, IAppView {
     return Promise.resolve(this);
   }
 
+  private resetSelection() {
+    this.rangeSelector.resetSelectionRect();
+    this.$rangeband.style('visibility', 'hidden');
+  }
+
   private selectLast() {
     const $lastNode = d3.select(this.$epochs[0][this.$epochs[0].length - 1]);
     this.dragEnd($lastNode);
@@ -55,7 +63,9 @@ export default class Timeline implements IDragSelection, IAppView {
   }
 
   updateItems(malevoData: MalevoDataset) {
-    this.malevoDataset = malevoData;
+    DataStore.selectedDataset = malevoData;
+    DataStore.labels = malevoData.classLabels;
+
     const $epochs = this.$node.selectAll('div.epochs').data(malevoData.epochInfos);
 
     const enter = $epochs.enter().append('div').classed('epochs', true);
@@ -75,14 +85,16 @@ export default class Timeline implements IDragSelection, IAppView {
       this.$epochs.classed('range-selected', false);
       this.snapBand(sel);
       sel.classed('range-selected', true);
+      DataStore.multiSelected = sel.data();
     } else {
       this.$epochs.classed('single-selected', false);
       sel.classed('single-selected', true);
+      DataStore.singleSelected = sel.data()[0];
       if(this.isDragging) { // if one point was selected by dragging => hide the band
         this.$rangeband.style('visibility', 'hidden');
       }
     }
-    events.fire(AppConstants.EVENT_EPOCH_SELECTED, sel.data(), this.malevoDataset);
+    events.fire(AppConstants.EVENT_EPOCH_SELECTED);
     sel.style('border-color', 'red');
     this.isDragging = false;
   }
@@ -94,6 +106,7 @@ export default class Timeline implements IDragSelection, IAppView {
   dragging(start: [number, number], end: [number, number]) {
     console.assert(start[0] <= end[0]);
     if(end[0] - start[0] > this.MAX_DRAG_TOLERANCE) {
+      DataStore.clearMultiSelection(); // we start a new multi selection here so the old one is obsolete
       this.isDragging = true;
       this.$rangeband.style('visibility', 'visible');
       this.$rangeband.style('left', start[0] + 'px');
