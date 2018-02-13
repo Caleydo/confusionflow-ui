@@ -80,19 +80,20 @@ export default class Timeline implements IDragSelection, IAppView {
   }
 
   dragEnd(sel: d3.Selection<any>) {
-    console.assert(sel.length === 1);
     if(sel[0].length > 1) {
       this.$epochs.classed('range-selected', false);
       this.snapBand(sel);
       sel.classed('range-selected', true);
       DataStore.multiSelected = sel.data();
-    } else {
+    } else if(sel[0].length === 1) {
       this.$epochs.classed('single-selected', false);
       sel.classed('single-selected', true);
       DataStore.singleSelected = sel.data()[0];
-      if(this.isDragging) { // if one point was selected by dragging => hide the band
+    }
+
+    // corner case: if the selection range is just one node or no node at all => don't show rangeband
+    if(this.isDragging && (sel[0].length === 1 || sel[0].length === 0)) {
         this.$rangeband.style('visibility', 'hidden');
-      }
     }
     events.fire(AppConstants.EVENT_EPOCH_SELECTED);
     sel.style('border-color', 'red');
