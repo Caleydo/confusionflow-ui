@@ -1,35 +1,36 @@
 swagger: '2.0'
 info:
   description: Malevo API
-  version: 0.1.0
+  version: 0.2.0
   title: Malevo API
 #host: localhost
 basePath: /api/malevo
 tags:
-  - name: class
-    description: Everything about predicted and ground truth classes
+  - name: confmat
+    description: Everything about confusion matrix (confmat)
+  - name: measures
+    description: Everything about measures
   - name: images
     description: Everything about images
 schemes:
   - http
 paths:
-  /class/sampleImages:
+  /confmat/cell/imageIds:
     get:
       tags:
-        - class
-      summary: Representative sample of images
+        - confmat
+      summary: Images for confusion confusion matrix cell
       description: >-
-        Returns a list of representative images for that matches all given class
-        ids
+        Returns a list of image ids for given confusion matrix cell and epoch
       produces:
         - application/json
       parameters:
-        - name: dataset
+        - name: runId
           in: query
-          description: Phovea dataset id
+          description: Run id
           required: true
           type: string
-        - name: epoch
+        - name: epochId
           in: query
           description: Selected epoch id
           required: true
@@ -62,22 +63,65 @@ paths:
         '400':
           description: Invalid input value
 
-  /class/crossEntropy:
+  /measures/entropy:
     get:
       tags:
-        - class
-      summary: Cross-entropy values
+        - measures
+      summary: Entropy of class probabilities
+      description: >-
+        Returns the entropy values for a list of given image ids and epochs
+      produces:
+        - application/json
+      parameters:
+        - name: runId
+          in: query
+          description: Run id
+          required: true
+          type: string
+        - name: epochIds
+          in: query
+          description: List of epochs
+          required: true
+          type: array
+          items:
+            type: integer
+        - name: imageIds
+          in: query
+          description: List of image ids
+          required: true
+          type: array
+          items:
+            type: integer
+      responses:
+        '200':
+          description: >-
+            Successful operation returns a matrix of entropy values
+            with image ids as rows and epochs as columns.
+          schema:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+        '400':
+          description: Invalid input value
+
+  /measures/crossEntropy:
+    get:
+      tags:
+        - measures
+      summary: Cross-entropy of class probabilities
       description: >-
         Returns the cross-entropy values for a list of given image ids and epochs
       produces:
         - application/json
       parameters:
-        - name: dataset
+        - name: runId
           in: query
-          description: Phovea dataset id
+          description: Run id
           required: true
           type: string
-        - name: epochs
+        - name: epochIds
           in: query
           description: List of epochs
           required: true
@@ -115,9 +159,9 @@ paths:
       produces:
         - image/png
       parameters:
-        - name: dataset
+        - name: runId
           in: query
-          description: Phovea dataset id
+          description: Run id
           required: true
           type: string
         - name: imageIds
@@ -145,15 +189,22 @@ paths:
         - images
       summary: Generate a softmax heatmap as sprite
       description: >-
-        Returns a sprite of softmax heatmapes for all given image ids
+        Returns a sprite of softmax heatmaps for all given image ids and epochs
       produces:
         - image/png
       parameters:
-        - name: dataset
+        - name: runId
           in: query
-          description: Phovea dataset id
+          description: Run id
           required: true
           type: string
+        - name: epochIds
+          in: query
+          description: List of epochs
+          required: true
+          type: array
+          items:
+            type: integer
         - name: imageIds
           in: query
           description: List of image ids
