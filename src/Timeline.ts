@@ -33,6 +33,12 @@ export default class Timeline implements IDragSelection, IAppView {
      this.updateItems(items);
      this.selectLast();
     });
+
+    this.$node.on('dblclick', () => {
+      this.snapBand(this.$epochs);
+      this.$rangeband.style('visibility', 'visible');
+      events.fire(AppConstants.EVENT_EPOCH_SELECTED, this.malevoDataset.epochInfos, this.malevoDataset);
+    });
   }
 
   /**
