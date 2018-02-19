@@ -4,7 +4,6 @@
 import {IClassEvolution} from './DataStructures';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
-import {createTooltip} from './utils';
 
 function addDashedLines($g: d3.Selection<any>, x: any, singleEpochIndex: number, height: number, width: number) {
   const $line = $g.append('line').attr('y1', 0).attr('y2', height);
@@ -104,12 +103,12 @@ export class MultilineChart {
     .enter().append('path')
       .attr('class', 'line')
       .attr('d', (d) => line(d.values))
-      .attr('stroke', (d) => z(d.label));
+      .attr('stroke', (d) => z(d.label))
+      .append('title')
+      .text((d) => d.label);
 
     if(singleEpochIndex > -1) {
       addDashedLines($g, x, singleEpochIndex, this.height, this.width);
     }
-
-    createTooltip(this.$node, $epochLine, (d) => d.label);
   }
 }

@@ -10,15 +10,15 @@ export class DataStore {
   static labels:ITable = null;
   static selectedDataset:MalevoDataset = null;
 
-  static justOneEpochSelected() {
+  static isJustOneEpochSelected(): boolean {
     return DataStore.singleSelected !== null && DataStore.multiSelected.length === 0;
   }
 
-  static rangeSelected() {
+  static isRangeSelected(): boolean {
     return DataStore.singleSelected === null && DataStore.multiSelected.length !== 0;
   }
 
-  static singleAndRangeSelected() {
+  static isSingleAndRangeSelected(): boolean {
     return DataStore.singleSelected !== null && DataStore.multiSelected.length !== 0;
   }
 

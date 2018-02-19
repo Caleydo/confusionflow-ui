@@ -104,11 +104,11 @@ export class ConfusionMatrix implements IAppView {
   }
 
   updateViews() {
-    if(DataStore.justOneEpochSelected() === true) {
+    if(DataStore.isJustOneEpochSelected() === true) {
       this.updateSingleEpoch();
-    } else if(DataStore.rangeSelected() === true) {
+    } else if(DataStore.isRangeSelected() === true) {
       this.updateEpochRange();
-    } else if(DataStore.singleAndRangeSelected() === true) {
+    } else if(DataStore.isSingleAndRangeSelected() === true) {
       this.updateSingleAndEpochRange();
     } else {
       this.clearViews();
@@ -288,7 +288,6 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private clearViews() {
-    console.log('clear');
     this.$confusionMatrix.selectAll('div').remove();
     this.fpColumn.clear();
     this.fnColumn.clear();

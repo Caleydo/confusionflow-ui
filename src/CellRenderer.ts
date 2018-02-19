@@ -13,7 +13,7 @@ import * as events from 'phovea_core/src/event';
 export abstract class ACellRenderer {
   abstract renderCells();
 
-  protected installListener($cells: d3.Selection<any>) {
+  protected attachListener($cells: d3.Selection<any>) {
     const x = 0; // just to get rid of linter error
   }
   abstract clearCells();
@@ -23,7 +23,7 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
   maxVal: number;
   minVal: number;
 
-  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, private singleEpochIndex: number, private $parent: d3.Selection<any>) {
+  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, private singleEpochIndex: number, protected $parent: d3.Selection<any>) {
     super();
     this.maxVal = max(data, (d) => Math.max(...d.values));
     this.minVal = min(data, (d) => Math.min(...d.values));
@@ -37,7 +37,7 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
 
     $cells.enter().append('div')
       .classed('cell', true);
-    this.installListener($cells);
+    this.attachListener($cells);
     const that = this;
     $cells.each(function(d) {
        // if we want to filter zero lines and the the line has just 0 values => continue
@@ -66,7 +66,7 @@ export class MultilineChartCellRenderer extends ACellRenderer {
     const $cells = this.$parent.selectAll('div').data(this.data.values);
     $cells.enter().append('div')
       .classed('cell', true);
-    this.installListener($cells);
+    this.attachListener($cells);
     const that = this;
     $cells.each(function(d, i) {
       const lineCount = d[0].values.length - 1;
@@ -99,7 +99,7 @@ export class BarChartCellRenderer extends ACellRenderer {
       .enter()
       .append('div')
       .classed('cell', true);
-    this.installListener($enterSelection);
+    this.attachListener($enterSelection);
 
     $enterSelection.each(function(d, i) {
         new BarChart(d3.select(this), {top:0, bottom:0, left:0, right:0}).render(d);
@@ -121,7 +121,7 @@ export class BarChartCellRenderer extends ACellRenderer {
 export class HeatCellRenderer extends ACellRenderer {
   private readonly heatmapColorScale: any;
 
-  constructor(private data: number[], private $parent: d3.Selection<any>) {
+  constructor(private data: number[], protected $parent: d3.Selection<any>) {
     super();
     this.heatmapColorScale = d3.scale.linear()
       .domain([0, Math.max(...data)])
@@ -138,7 +138,7 @@ export class HeatCellRenderer extends ACellRenderer {
       .enter()
       .append('div')
       .classed('cell', true);
-    this.installListener($cells);
+    this.attachListener($cells);
 
     $cells
       .style('background-color', (datum: number) => this.heatmapColorScale(datum))
@@ -156,12 +156,12 @@ export class HeatCellRenderer extends ACellRenderer {
 }
 
 export class ConfusionMatrixHeatCellRenderer extends HeatCellRenderer {
-  constructor(private cmdata: NumberMatrix, version1D: number[], private labels: [number, string], private $par: d3.Selection<any>) {
-    super(version1D, $par);
+  constructor(private cmdata: NumberMatrix, version1D: number[], private labels: [number, string], $parent: d3.Selection<any>) {
+    super(version1D, $parent);
   }
 
   // todo extract to function
-  protected installListener($cells: d3.Selection<any>) {
+  protected attachListener($cells: d3.Selection<any>) {
     const that = this;
     $cells.on('click', function (d, i) {
       $cells.classed('selected', false);
@@ -176,12 +176,12 @@ export class ConfusionMatrixHeatCellRenderer extends HeatCellRenderer {
 
 export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRenderer {
   constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines, singleEpochIndex: number, private labels: [number, string],
-              private $par: d3.Selection<any>) {
-    super(cmdata, filterZeroLines, singleEpochIndex, $par);
+              $parent: d3.Selection<any>) {
+    super(cmdata, filterZeroLines, singleEpochIndex, $parent);
   }
 
   // todo extract to function
-  protected installListener($cells: d3.Selection<any>) {
+  protected attachListener($cells: d3.Selection<any>) {
     const that = this;
     $cells.on('click', function (d, i) {
       $cells.classed('selected', false);
@@ -194,8 +194,7 @@ export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRen
   }
 }
 
-//todo try to make a private type
-class CombinedType {linedata: IClassEvolution; hmdata: number; }
+interface ICombinedType {linedata: IClassEvolution; hmdata: number; }
 
 export class MultiEpochCellRenderer extends ACellRenderer {
   constructor(private lineData: SquareMatrix<IClassEvolution>, private singleEpochData: SquareMatrix<number>, private filterZeroLines = true,
@@ -212,10 +211,9 @@ export class MultiEpochCellRenderer extends ACellRenderer {
     const maxVal = max(this.lineData, (d) => Math.max(...d.values));
     const minVal = min(this.lineData, (d) => Math.min(...d.values));
 
-    const transformedData:CombinedType[] = [];
-    for(let i = 0; i < hmData1D.length; i++) {
-      transformedData.push({'linedata': lineData1D[i], 'hmdata': hmData1D[i]});
-    }
+    const transformedData:ICombinedType[] = hmData1D.map((d, i):ICombinedType => {
+      return {'linedata': lineData1D[i], 'hmdata': hmData1D[i]};
+    });
 
     //todo extract to function
     const heatmapColorScale = d3.scale.linear()
@@ -234,11 +232,11 @@ export class MultiEpochCellRenderer extends ACellRenderer {
     const $enter = $cells.enter()
       .append('div')
       .classed('cell', true);
-    this.installListener($cells);
+    this.attachListener($cells);
 
     const that = this;
     $cells
-      .style('background-color', (datum: CombinedType, index: number) => heatmapColorScale(datum.hmdata))
+      .style('background-color', (datum: ICombinedType, index: number) => heatmapColorScale(datum.hmdata))
       .each(function(datum) {
        // if we want to filter zero lines and the the line has just 0 values => continue
       if(that.filterZeroLines && !datum.linedata.values.find((val) => val !== 0)) {
@@ -250,5 +248,18 @@ export class MultiEpochCellRenderer extends ACellRenderer {
 
   clearCells() {
     this.$parent.selectAll('div').remove();
+  }
+
+  protected attachListener($cells: d3.Selection<any>) {
+    const that = this;
+    $cells.on('click', function (d, i) {
+      $cells.classed('selected', false);
+      d3.select(this).classed('selected', true);
+
+      //todo implement
+      /*const predicted = i % that.cmdata.order();
+      const groundTruth = Math.floor(i / that.cmdata.order());
+      events.fire(AppConstants.EVENT_CELL_SELECTED, AppConstants.CONFUSION_MATRIX_CELL, predicted, groundTruth, that.labels);*/
+    });
   }
 }
