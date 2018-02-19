@@ -1,0 +1,225 @@
+swagger: '2.0'
+info:
+  description: Malevo API
+  version: 0.2.0
+  title: Malevo API
+#host: localhost
+basePath: /api/malevo
+tags:
+  - name: confmat
+    description: Everything about confusion matrix (confmat)
+  - name: measures
+    description: Everything about measures
+  - name: images
+    description: Everything about images
+schemes:
+  - http
+paths:
+  /confmat/cell/imageIds:
+    get:
+      tags:
+        - confmat
+      summary: Images for confusion confusion matrix cell
+      description: >-
+        Returns a list of image ids for given confusion matrix cell and epoch
+      produces:
+        - application/json
+      parameters:
+        - name: runId
+          in: query
+          description: Run id
+          required: true
+          type: string
+        - name: epochId
+          in: query
+          description: Selected epoch id
+          required: true
+          type: integer
+        - name: groundTruthClassId
+          in: query
+          description: Ground truth class id
+          required: true
+          type: integer
+        - name: predictedClassId
+          in: query
+          description: Predicted class id
+          required: true
+          type: integer
+        - name: numCount
+          in: query
+          description: Number of images
+          required: false
+          default: 100
+          minimum: 1
+          type: integer
+      responses:
+        '200':
+          description: >-
+            Successful operation returns a list of image ids
+          schema:
+            type: array
+            items:
+              type: integer
+        '400':
+          description: Invalid input value
+
+  /measures/entropy:
+    get:
+      tags:
+        - measures
+      summary: Entropy of class probabilities
+      description: >-
+        Returns the entropy values for a list of given image ids and epochs
+      produces:
+        - application/json
+      parameters:
+        - name: runId
+          in: query
+          description: Run id
+          required: true
+          type: string
+        - name: epochIds
+          in: query
+          description: List of epochs
+          required: true
+          type: array
+          items:
+            type: integer
+        - name: imageIds
+          in: query
+          description: List of image ids
+          required: true
+          type: array
+          items:
+            type: integer
+      responses:
+        '200':
+          description: >-
+            Successful operation returns a matrix of entropy values
+            with image ids as rows and epochs as columns.
+          schema:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+        '400':
+          description: Invalid input value
+
+  /measures/crossEntropy:
+    get:
+      tags:
+        - measures
+      summary: Cross-entropy of class probabilities
+      description: >-
+        Returns the cross-entropy values for a list of given image ids and epochs
+      produces:
+        - application/json
+      parameters:
+        - name: runId
+          in: query
+          description: Run id
+          required: true
+          type: string
+        - name: epochIds
+          in: query
+          description: List of epochs
+          required: true
+          type: array
+          items:
+            type: integer
+        - name: imageIds
+          in: query
+          description: List of image ids
+          required: true
+          type: array
+          items:
+            type: integer
+      responses:
+        '200':
+          description: >-
+            Successful operation returns a matrix of cross-entropy values
+            with image ids as rows and epochs as columns.
+          schema:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+        '400':
+          description: Invalid input value
+
+  /images/imageSprite:
+    get:
+      tags:
+        - images
+      summary: Generate an image sprite
+      description: >-
+        Returns an image sprite for all given image ids
+      produces:
+        - image/png
+      parameters:
+        - name: runId
+          in: query
+          description: Run id
+          required: true
+          type: string
+        - name: imageIds
+          in: query
+          description: List of image ids
+          required: true
+          type: array
+          items:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation returns an image sprite
+          schema:
+            type: file
+          headers:
+            Content-type:
+              type: string
+              description: image/png; charset=utf-8
+        '400':
+          description: Invalid input value
+
+  /images/softmaxSprite:
+    get:
+      tags:
+        - images
+      summary: Generate a softmax heatmap as sprite
+      description: >-
+        Returns a sprite of softmax heatmaps for all given image ids and epochs
+      produces:
+        - image/png
+      parameters:
+        - name: runId
+          in: query
+          description: Run id
+          required: true
+          type: string
+        - name: epochIds
+          in: query
+          description: List of epochs
+          required: true
+          type: array
+          items:
+            type: integer
+        - name: imageIds
+          in: query
+          description: List of image ids
+          required: true
+          type: array
+          items:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation returns an image sprite
+          schema:
+            type: file
+          headers:
+            Content-type:
+              type: string
+              description: image/png; charset=utf-8
+        '400':
+          description: Invalid input value
