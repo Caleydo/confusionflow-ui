@@ -6,6 +6,23 @@ import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 import {createTooltip} from './utils';
 
+function addDashedLines($g: d3.Selection<any>, x: any, singleEpochIndex: number, height: number, width: number) {
+  const $line = $g.append('line').attr('y1', 0).attr('y2', height);
+  $line.classed('dashed-lines', true);
+  $line.attr('x1', x(singleEpochIndex) + borderOffset($line, x(singleEpochIndex), width)).attr('x2', x(singleEpochIndex) + borderOffset($line, x(singleEpochIndex), width));
+}
+
+function borderOffset($line: d3.Selection<any>, posX: number, width: number) {
+  let sw = parseInt($line.style('stroke-width'), 10);
+  sw /= 2;
+  if(posX === 0) {
+    return sw;
+  } else if(posX === width) {
+    return -sw;
+  }
+  return 0;
+}
+
 export class LineChart {
   private readonly $node: d3.Selection<any>;
   private readonly width: number;
@@ -41,9 +58,7 @@ export class LineChart {
 
     $g.append('path').attr('d', line(data.values));
     if(singleEpochIndex > -1) {
-      console.log(x(singleEpochIndex));
-      const $line = $g.append('line').attr('x1', x(singleEpochIndex)).attr('x2', x(singleEpochIndex)).attr('y1', 0).attr('y2', this.height);
-      $line.classed('dashed-lines', true);
+      addDashedLines($g, x, singleEpochIndex, this.height, this.width);
     }
   }
 }
@@ -92,9 +107,7 @@ export class MultilineChart {
       .attr('stroke', (d) => z(d.label));
 
     if(singleEpochIndex > -1) {
-      console.log(x(singleEpochIndex));
-      const $line = $g.append('line').attr('x1', x(singleEpochIndex)).attr('x2', x(singleEpochIndex)).attr('y1', 0).attr('y2', this.height);
-      $line.classed('dashed-lines', true);//style('stroke', 'black').style('stroke-width', '2').style('stroke-dasharray', '5, 5');
+      addDashedLines($g, x, singleEpochIndex, this.height, this.width);
     }
 
     createTooltip(this.$node, $epochLine, (d) => d.label);

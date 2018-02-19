@@ -201,7 +201,6 @@ export class ConfusionMatrix implements IAppView {
     promMultiEpoch.push(promSingleEpoch);
     promMultiEpoch.push(promLabels);
 
-    console.log(DataStore.singleSelected, DataStore.multiSelected);
     const singleEpochIndex = DataStore.multiSelected.findIndex((x) => x === DataStore.singleSelected);
 
     Promise.all(promMultiEpoch).then((x: any) => {

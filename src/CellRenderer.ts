@@ -32,9 +32,9 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
 
   renderCells($parent: d3.Selection<any>) {
     const r = this.data.to1DArray();
-    const $cells = $parent.selectAll('div').data(r, (datum) => this.createKey(datum));
 
-    $cells.exit().remove();
+    $parent.selectAll('div').remove();
+    const $cells = $parent.selectAll('div').data(r);
 
     $cells.enter().append('div')
       .classed('cell', true);
@@ -47,10 +47,6 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
       }
       new LineChart(d3.select(this)).render(d, that.maxVal, that.minVal, that.singleEpochIndex);
     });
-  }
-
-  private createKey(cur: IClassEvolution) {
-    return cur.values + cur.label;
   }
 }
 
@@ -209,16 +205,15 @@ export class MultiEpochCellRenderer extends ACellRenderer {
       .range(<any>AppConstants.BW_COLOR_SCALE)
       .interpolate(<any>d3.interpolateHcl);
 
-    const $cells = $parent
+    $parent
       .selectAll('div')
-      .data(transformedData, (datum: CombinedType) => this.createKey(datum));
-
-    $cells
-      .exit()
       .remove();
 
-    $cells
-      .enter()
+    const $cells = $parent
+      .selectAll('div')
+      .data(transformedData);
+
+    const $enter = $cells.enter()
       .append('div')
       .classed('cell', true);
     this.installListener($cells);
@@ -233,13 +228,5 @@ export class MultiEpochCellRenderer extends ACellRenderer {
       }
       new LineChart(d3.select(this)).render(datum.linedata, maxVal, minVal, that.singleEpochIndex);
     });
-  }
-
-  createKey(cur: CombinedType) {
-    if(!(cur.hasOwnProperty('hmdata'))) {
-      return null;
-    }
-    const res = String(cur.hmdata) + cur.linedata.values + cur.linedata.label;
-    return res;
   }
 }
