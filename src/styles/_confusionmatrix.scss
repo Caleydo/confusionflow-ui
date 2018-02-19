@@ -158,3 +158,9 @@
     width: 100%;
   }
 }
+
+.dashed-lines {
+  stroke: $select-color;
+  stroke-width: 2;
+  stroke-dasharray: 5, 5;
+}
