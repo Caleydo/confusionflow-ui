@@ -11,30 +11,29 @@ import {AppConstants} from './AppConstants';
 import * as events from 'phovea_core/src/event';
 
 export abstract class ACellRenderer {
-  abstract renderCells($parent: d3.Selection<any>);
+  abstract renderCells();
 
   protected installListener($cells: d3.Selection<any>) {
     const x = 0; // just to get rid of linter error
   }
+  abstract clearCells();
 }
-
-
 
 export class SingleLineChartCellRenderer extends ACellRenderer {
   maxVal: number;
   minVal: number;
 
-  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, private singleEpochIndex: number) {
+  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, private singleEpochIndex: number, private $parent: d3.Selection<any>) {
     super();
     this.maxVal = max(data, (d) => Math.max(...d.values));
     this.minVal = min(data, (d) => Math.min(...d.values));
   }
 
-  renderCells($parent: d3.Selection<any>) {
+  renderCells() {
     const r = this.data.to1DArray();
 
-    $parent.selectAll('div').remove();
-    const $cells = $parent.selectAll('div').data(r);
+    this.$parent.selectAll('div').remove();
+    const $cells = this.$parent.selectAll('div').data(r);
 
     $cells.enter().append('div')
       .classed('cell', true);
@@ -48,19 +47,23 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
       new LineChart(d3.select(this)).render(d, that.maxVal, that.minVal, that.singleEpochIndex);
     });
   }
+
+  clearCells() {
+    this.$parent.selectAll('div').remove();
+  }
 }
 
 export class MultilineChartCellRenderer extends ACellRenderer {
 
-  constructor(private data: SquareMatrix<IClassEvolution>, private singleEpochIndex: number) {
+  constructor(private data: SquareMatrix<IClassEvolution>, private singleEpochIndex: number, private $parent: d3.Selection<any>) {
     super();
   }
 
-  renderCells($parent: d3.Selection<any>) {
+  renderCells() {
     const maxVal = max(this.data, (d) => Math.max(...d.values));
     const minVal = min(this.data, (d) => Math.min(...d.values));
-    $parent.selectAll('div').remove();
-    const $cells = $parent.selectAll('div').data(this.data.values);
+    this.$parent.selectAll('div').remove();
+    const $cells = this.$parent.selectAll('div').data(this.data.values);
     $cells.enter().append('div')
       .classed('cell', true);
     this.installListener($cells);
@@ -70,16 +73,20 @@ export class MultilineChartCellRenderer extends ACellRenderer {
       new MultilineChart(d3.select(this), lineCount).render(d, maxVal, minVal, that.singleEpochIndex);
     });
   }
+
+  clearCells() {
+    this.$parent.selectAll('div').remove();
+  }
 }
 
 export class BarChartCellRenderer extends ACellRenderer {
 
-  constructor(private data: SquareMatrix<IClassAffiliation>) {
+  constructor(private data: SquareMatrix<IClassAffiliation>, private $parent: d3.Selection<any>) {
       super();
   }
 
-  renderCells($parent: d3.Selection<any>) {
-    const $cells = $parent
+  renderCells() {
+    const $cells = this.$parent
       .selectAll('div')
       .data(this.data.values, (d) => this.createKey(d));
 
@@ -105,12 +112,16 @@ export class BarChartCellRenderer extends ACellRenderer {
       return acc;
     }, '');
   }
+
+  clearCells() {
+    this.$parent.selectAll('div').remove();
+  }
 }
 
 export class HeatCellRenderer extends ACellRenderer {
   private readonly heatmapColorScale: any;
 
-  constructor(private data: number[]) {
+  constructor(private data: number[], private $parent: d3.Selection<any>) {
     super();
     this.heatmapColorScale = d3.scale.linear()
       .domain([0, Math.max(...data)])
@@ -118,8 +129,8 @@ export class HeatCellRenderer extends ACellRenderer {
       .interpolate(<any>d3.interpolateHcl);
   }
 
-  renderCells($parent: d3.Selection<any>) {
-    const $cells = $parent
+  renderCells() {
+    const $cells = this.$parent
       .selectAll('div')
       .data(this.data);
 
@@ -138,11 +149,15 @@ export class HeatCellRenderer extends ACellRenderer {
       .exit()
       .remove();
   }
+
+  clearCells() {
+    this.$parent.selectAll('div').remove();
+  }
 }
 
 export class ConfusionMatrixHeatCellRenderer extends HeatCellRenderer {
-  constructor(private cmdata: NumberMatrix, version1D: number[], private labels: [number, string]) {
-    super(version1D);
+  constructor(private cmdata: NumberMatrix, version1D: number[], private labels: [number, string], private $par: d3.Selection<any>) {
+    super(version1D, $par);
   }
 
   // todo extract to function
@@ -160,8 +175,9 @@ export class ConfusionMatrixHeatCellRenderer extends HeatCellRenderer {
 }
 
 export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRenderer {
-  constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines, singleEpochIndex: number, private labels: [number, string]) {
-    super(cmdata, filterZeroLines, singleEpochIndex);
+  constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines, singleEpochIndex: number, private labels: [number, string],
+              private $par: d3.Selection<any>) {
+    super(cmdata, filterZeroLines, singleEpochIndex, $par);
   }
 
   // todo extract to function
@@ -182,10 +198,12 @@ export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRen
 class CombinedType {linedata: IClassEvolution; hmdata: number; }
 
 export class MultiEpochCellRenderer extends ACellRenderer {
-  constructor(private lineData: SquareMatrix<IClassEvolution>, private singleEpochData: SquareMatrix<number>, private filterZeroLines = true, private labels: [number, string], private singleEpochIndex: number) {
+  constructor(private lineData: SquareMatrix<IClassEvolution>, private singleEpochData: SquareMatrix<number>, private filterZeroLines = true,
+              private labels: [number, string], private singleEpochIndex: number, private $parent: d3.Selection<any>) {
     super();
   }
-  renderCells($parent: d3.Selection<any>) {
+
+  renderCells() {
     const hmData1D = this.singleEpochData.to1DArray();
     const lineData1D = this.lineData.to1DArray();
 
@@ -205,11 +223,11 @@ export class MultiEpochCellRenderer extends ACellRenderer {
       .range(<any>AppConstants.BW_COLOR_SCALE)
       .interpolate(<any>d3.interpolateHcl);
 
-    $parent
+    this.$parent
       .selectAll('div')
       .remove();
 
-    const $cells = $parent
+    const $cells = this.$parent
       .selectAll('div')
       .data(transformedData);
 
@@ -228,5 +246,9 @@ export class MultiEpochCellRenderer extends ACellRenderer {
       }
       new LineChart(d3.select(this)).render(datum.linedata, maxVal, minVal, that.singleEpochIndex);
     });
+  }
+
+  clearCells() {
+    this.$parent.selectAll('div').remove();
   }
 }
