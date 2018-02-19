@@ -86,14 +86,19 @@ export default class Timeline implements IDragSelection, IAppView {
       sel.classed('range-selected', true);
       DataStore.multiSelected = sel.data();
     } else if(sel[0].length === 1) {
+      const curSelection = DataStore.singleSelected;
       this.$epochs.classed('single-selected', false);
-      sel.classed('single-selected', true);
-      DataStore.singleSelected = sel.data()[0];
+      DataStore.clearSingleSelection();
+      if(sel.data()[0] !== curSelection) { // if sel.data()[0] === curSelection => current node will be deselected
+        sel.classed('single-selected', true);
+        DataStore.singleSelected = sel.data()[0];
+      }
     }
 
     // corner case: if the selection range is just one node or no node at all => don't show rangeband
     if(this.isDragging && (sel[0].length === 1 || sel[0].length === 0)) {
         this.$rangeband.style('visibility', 'hidden');
+        this.$epochs.classed('range-selected', false);
     }
     events.fire(AppConstants.EVENT_EPOCH_SELECTED);
     sel.style('border-color', 'red');

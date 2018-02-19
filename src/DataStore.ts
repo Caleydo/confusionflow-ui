@@ -23,11 +23,15 @@ export class DataStore {
   }
 
   static clearSelection() {
-    DataStore.singleSelected = null;
+    DataStore.clearSingleSelection();
     DataStore.clearMultiSelection();
   }
 
   static clearMultiSelection() {
     DataStore.multiSelected = [];
+  }
+
+  static clearSingleSelection() {
+    DataStore.singleSelected = null;
   }
 }
