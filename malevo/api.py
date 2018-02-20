@@ -16,6 +16,7 @@ import sqlite3
 from phovea_server.ns import Namespace
 from flask import request
 from .util import IntListConverter, serve_pil_image
+from phovea_server.util import jsonify
 
 app = Namespace(__name__)
 app.url_map.converters['integerList'] = IntListConverter
@@ -36,14 +37,14 @@ def _get_image_ids():
 
     query = (epoch_id, ground_truth_id, predicted_id)
 
-    conn = sqlite3.connect('../data/example.db')
+    conn = sqlite3.connect(os.path.join(cwd, '../data/example.db'))
     c = conn.cursor()
     c.execute("SELECT img_id FROM logs WHERE epoch_id = ? AND ground_truth = ? AND predicted = ?", query)
     img_ids_tuples = c.fetchall()[:num_count]
 
     conn.close()
 
-    return [img_id[0] for img_id in img_ids_tuples]
+    return jsonify([img_id[0] for img_id in img_ids_tuples])
 
 
 # @app.route('/images/imageSprite/<int:runId>/<integerList:imageIds>', methods=['GET'])
