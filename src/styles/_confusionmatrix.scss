@@ -1,5 +1,9 @@
 @import "vars";
 
+// number of columns placed to the right of the confusion matrix
+$num-columns-right-area: 3;
+
+
 .grid {
   display: grid;
   grid-template-areas:
@@ -45,7 +49,7 @@
   grid-area: label-right;
   background: $label-bg;
 
-  grid-template-columns: repeat(auto-fill, minmax(33%, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(100% / $num-columns-right-area, 1fr));
 
   display: grid;
 
@@ -87,7 +91,7 @@
   position: relative;
 
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(33%, 1fr)); // 100% for one column, 50% for 2 columns, 33% for 3 columns ...
+  grid-template-columns: repeat(auto-fill, minmax(100% / $num-columns-right-area, 1fr)); // 100% for one column, 50% for 2 columns, 33% for 3 columns ...
 }
 
 .chart-bottom {
