@@ -72,7 +72,7 @@ def _get_image_sprite():
     width = n_w * 32
     height = n_h * 32
 
-    master = Image.new(mode = 'RGB', size = (width, height), color = (0,0,0))  # fully transparent
+    master = Image.new(mode='RGB', size=(width, height), color=(0, 0, 0))  # fully transparent
 
     k = 0
     with env.begin() as txn:
@@ -81,7 +81,7 @@ def _get_image_sprite():
                 if k == n_imgs:
                   break
                 str_id = '{:08}'.format(img_ids[k])
-                img = Image.fromarray(np.frombuffer(txn.get(str_id), dtype = np.uint8).reshape((32, 32, 3)))
+                img = Image.fromarray(np.frombuffer(txn.get(str_id), dtype=np.uint8).reshape((32, 32, 3)))
                 master.paste(img, (j * 32, i * 32))
                 k += 1
 
