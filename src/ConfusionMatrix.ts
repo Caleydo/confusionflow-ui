@@ -8,7 +8,7 @@ import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {
   BarChartCellRenderer, ConfusionMatrixHeatCellRenderer, HeatCellRenderer, MultilineChartCellRenderer,
-  SingleLineChartCellRenderer, ConfusionMatrixLineChartCellRenderer, MultiEpochCellRenderer
+  SingleLineChartCellRenderer, ConfusionMatrixLineChartCellRenderer, MultiEpochCellRenderer, LabelCellRenderer
 } from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
@@ -25,6 +25,7 @@ export class ConfusionMatrix implements IAppView {
   private fpColumn: ChartColumn;
   private fnColumn: ChartColumn;
   private precisionColumn: ChartColumn;
+  private classSizeColumn: ChartColumn;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
@@ -66,6 +67,9 @@ export class ConfusionMatrix implements IAppView {
     $labelRight.append('div')
       .text(Language.PRECISION);
 
+    $labelRight.append('div')
+      .text(Language.CLASS_SIZE);
+
     this.$node.append('div')
       .classed('malevo-label', true)
       .classed('label-bottom', true)
@@ -92,6 +96,7 @@ export class ConfusionMatrix implements IAppView {
     const $chartRight = this.$node.append('div').classed('chart-right', true);
     this.fpColumn = new ChartColumn($chartRight.append('div'));
     this.precisionColumn = new ChartColumn($chartRight.append('div'));
+    this.classSizeColumn = new ChartColumn($chartRight.append('div'));
 
     const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
     this.fnColumn = new ChartColumn($chartBottom.append('div'));
@@ -145,6 +150,8 @@ export class ConfusionMatrix implements IAppView {
 
     this.precisionColumn.render(new SingleLineChartCellRenderer(confMeasures.calcEvolution(data, confMeasures.PPV), true, singleEpochIndex, this.precisionColumn.$node));
 
+    this.classSizeColumn.render(new LabelCellRenderer(confMeasures.calcForMultipleClasses(data[0], confMeasures.ClassSize), this.classSizeColumn.$node));
+
     this.fnColumn.render(new MultilineChartCellRenderer(fnData, singleEpochIndex, this.fnColumn.$node));
   }
 
@@ -157,6 +164,8 @@ export class ConfusionMatrix implements IAppView {
     this.fpColumn.render(new BarChartCellRenderer(fpData, this.fpColumn.$node));
 
     this.precisionColumn.render(new HeatCellRenderer(confMeasures.calcForMultipleClasses(data, confMeasures.PPV), this.precisionColumn.$node));
+
+    this.classSizeColumn.render(new LabelCellRenderer(confMeasures.calcForMultipleClasses(data, confMeasures.ClassSize), this.classSizeColumn.$node));
 
     this.fnColumn.render(new BarChartCellRenderer(fnData, this.fnColumn.$node));
   }
@@ -292,6 +301,7 @@ export class ConfusionMatrix implements IAppView {
     this.fpColumn.clear();
     this.fnColumn.clear();
     this.precisionColumn.clear();
+    this.classSizeColumn.clear();
   }
 
 }
