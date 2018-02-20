@@ -34,4 +34,11 @@ export class DataStore {
   static clearSingleSelection() {
     DataStore.singleSelected = null;
   }
+
+  static isFullRangeSelected() {
+    if(DataStore.selectedDataset === null || DataStore.multiSelected === []) {
+      return false;
+    }
+    return DataStore.selectedDataset.epochInfos.length === DataStore.multiSelected.length;
+  }
 }

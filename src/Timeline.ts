@@ -19,7 +19,6 @@ export default class Timeline implements IDragSelection, IAppView {
   private isDragging = false;
   private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interpreted as click until it switches to drag
   private rangeSelector: TimelineRangeSelector;
-  private malevoDataset: MalevoDataset;
 
   constructor(parent: Element) {
     this.$node = d3.select(parent)
@@ -32,15 +31,22 @@ export default class Timeline implements IDragSelection, IAppView {
   private attachListener() {
     events.on(AppConstants.EVENT_DATA_COLLECTION_SELECTED, (evt, items:MalevoDataset) => {
       DataStore.clearSelection();
-      this.resetSelection();
+      this.resetSelectionBand();
       this.updateItems(items);
       this.selectLast();
     });
 
     this.$node.on('dblclick', () => {
-      this.snapBand(this.$epochs);
-      this.$rangeband.style('visibility', 'visible');
-      events.fire(AppConstants.EVENT_EPOCH_SELECTED, this.malevoDataset.epochInfos, this.malevoDataset);
+      console.assert(typeof DataStore.selectedDataset !== 'undefined' && DataStore.selectedDataset !== null);
+      if(DataStore.isFullRangeSelected()) { // deselect all if everything was selected
+        DataStore.clearMultiSelection();
+        this.resetSelectionBand();
+      } else {
+        this.snapBand(this.$epochs);
+        this.$rangeband.style('visibility', 'visible');
+        DataStore.multiSelected = DataStore.selectedDataset.epochInfos;
+      }
+      events.fire(AppConstants.EVENT_EPOCH_SELECTED);
     });
   }
 
@@ -57,7 +63,7 @@ export default class Timeline implements IDragSelection, IAppView {
     return Promise.resolve(this);
   }
 
-  private resetSelection() {
+  private resetSelectionBand() {
     this.rangeSelector.resetSelectionRect();
     this.$rangeband.style('visibility', 'hidden');
   }
@@ -87,9 +93,7 @@ export default class Timeline implements IDragSelection, IAppView {
 
   dragEnd(sel: d3.Selection<any>) {
     if(sel[0].length > 1) {
-      this.$epochs.classed('range-selected', false);
       this.snapBand(sel);
-      sel.classed('range-selected', true);
       DataStore.multiSelected = sel.data();
     } else if(sel[0].length === 1) {
       const curSelection = DataStore.singleSelected;
@@ -101,13 +105,11 @@ export default class Timeline implements IDragSelection, IAppView {
       }
     }
 
-    // corner case: if the selection range is just one node or no node at all => don't show rangeband
+    // corner case: if the selection range contains just one node or no node at all => don't show rangeband
     if(this.isDragging && (sel[0].length === 1 || sel[0].length === 0)) {
-        this.$rangeband.style('visibility', 'hidden');
-        this.$epochs.classed('range-selected', false);
+        this.resetSelectionBand();
     }
     events.fire(AppConstants.EVENT_EPOCH_SELECTED);
-    sel.style('border-color', 'red');
     this.isDragging = false;
   }
 
