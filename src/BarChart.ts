@@ -19,12 +19,12 @@ export class BarChart {
   }
 
 
-  render(bins: IClassAffiliation[]) {
+  render(bins: IClassAffiliation[], minValue: number, maxValue: number) {
     const $g = this.$node;
 
     const x = d3.scale.ordinal().domain(bins.map((x) => x.label)).rangeRoundBands([0, this.width]);
     const y = d3.scale.linear().rangeRound([this.height, 0]);
-    y.domain([0, d3.max(bins, (d) => { return d.count; })]);
+    y.domain([minValue, maxValue]);
 
     const $bars = $g.selectAll('.bar')
     .data(bins);

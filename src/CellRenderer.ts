@@ -20,16 +20,14 @@ export abstract class ACellRenderer {
 }
 
 export class SingleLineChartCellRenderer extends ACellRenderer {
-  maxVal: number;
-  minVal: number;
 
   constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, private singleEpochIndex: number, protected $parent: d3.Selection<any>) {
     super();
-    this.maxVal = max(data, (d) => Math.max(...d.values));
-    this.minVal = min(data, (d) => Math.min(...d.values));
   }
 
   renderCells() {
+    const maxVal = max(this.data, (d) => Math.max(...d.values));
+    const minVal = min(this.data, (d) => Math.min(...d.values));
     const r = this.data.to1DArray();
 
     this.$parent.selectAll('div').remove();
@@ -44,7 +42,7 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
       if(that.filterZeroLines && !d.values.find((val) => val !== 0)) {
         return;
       }
-      new LineChart(d3.select(this)).render(d, that.maxVal, that.minVal, that.singleEpochIndex);
+      new LineChart(d3.select(this)).render(d, maxVal, minVal, that.singleEpochIndex);
     });
   }
 
@@ -86,6 +84,10 @@ export class BarChartCellRenderer extends ACellRenderer {
   }
 
   renderCells() {
+
+    const maxVal = max(this.data, (d) => d.count);
+    const minVal = 0;
+
     const $cells = this.$parent
       .selectAll('div')
       .data(this.data.values, (d) => this.createKey(d));
@@ -102,7 +104,7 @@ export class BarChartCellRenderer extends ACellRenderer {
     this.attachListener($enterSelection);
 
     $enterSelection.each(function(d, i) {
-        new BarChart(d3.select(this), {top:0, bottom:0, left:0, right:0}).render(d);
+        new BarChart(d3.select(this), {top:0, bottom:0, left:0, right:0}).render(d, minVal, maxVal);
       });
   }
 
