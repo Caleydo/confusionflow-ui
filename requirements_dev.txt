@@ -6,4 +6,4 @@ Sphinx==1.5.2
 recommonmark==0.4.0
 numpy==1.14.0
 lmdb==0.93
-PIL==5.0.0
+pillow==5.0.0
