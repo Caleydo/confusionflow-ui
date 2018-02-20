@@ -110,7 +110,6 @@ export default class Timeline implements IDragSelection, IAppView {
         this.resetSelectionBand();
     }
     events.fire(AppConstants.EVENT_EPOCH_SELECTED);
-    sel.style('border-color', 'red');
     this.isDragging = false;
   }
 
