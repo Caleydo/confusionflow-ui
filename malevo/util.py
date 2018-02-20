@@ -12,6 +12,7 @@ class IntListConverter(BaseConverter):
         return ','.join(BaseConverter.to_url(value)
                         for value in values)
 
+
 # from https://stackoverflow.com/questions/7877282/how-to-send-image-generated-by-pil-to-browser
 def serve_pil_image(pil_img):
     img_io = StringIO.StringIO()

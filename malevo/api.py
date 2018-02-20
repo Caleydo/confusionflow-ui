@@ -14,9 +14,10 @@ import os.path
 import math
 import sqlite3
 from phovea_server.ns import Namespace
-app = Namespace(__name__)
 from flask import request
 from .util import IntListConverter, serve_pil_image
+
+app = Namespace(__name__)
 app.url_map.converters['integerList'] = IntListConverter
 
 os.environ['SQLITE_TMPDIR'] = '/tmp'
@@ -27,7 +28,7 @@ root = os.path.join(cwd, '../data/images')
 
 @app.route("/confmat/cell/imageIds", methods=['GET'])
 def _get_image_ids():
-    run_id = request.args.get('runId', '')
+    # run_id = request.args.get('runId', '')
     epoch_id = request.args.get('epochId', 0)
     ground_truth_id = request.args.get('groundTruthClassId', 0)
     predicted_id = request.args.get('predictedId', 0)
@@ -45,13 +46,14 @@ def _get_image_ids():
     return [img_id[0] for img_id in img_ids_tuples]
 
 
-#@app.route('/images/imageSprite/<int:runId>/<integerList:imageIds>', methods=['GET'])
-#def _get_image_sprite(runId, imageIds):
-    #run_id = runId
-    #img_ids = imageIds
+# @app.route('/images/imageSprite/<int:runId>/<integerList:imageIds>', methods=['GET'])
+# def _get_image_sprite(runId, imageIds):
+    # run_id = runId
+    # img_ids = imageIds
+
 @app.route('/images/imageSprite', methods=['GET'])
 def _get_image_sprite():
-    run_id = request.args.get('runId', '')
+    # run_id = request.args.get('runId', '')
     img_ids = request.args.get('imageIds', [])
     img_ids = map(int, img_ids.split(','))
 
@@ -70,10 +72,7 @@ def _get_image_sprite():
     width = n_w * 32
     height = n_h * 32
 
-    master = Image.new(
-        mode='RGB',
-        size=(width, height),
-        color=(0,0,0))  # fully transparent
+    master = Image.new(mode = 'RGB', size = (width, height), color = (0,0,0))  # fully transparent
 
     k = 0
     with env.begin() as txn:
@@ -82,9 +81,8 @@ def _get_image_sprite():
                 if k == n_imgs:
                   break
                 str_id = '{:08}'.format(img_ids[k])
-                img = Image.fromarray(
-                    np.frombuffer(txn.get(str_id), dtype=np.uint8).reshape((32, 32, 3)))
-                master.paste(img, (j*32, i*32))
+                img = Image.fromarray(np.frombuffer(txn.get(str_id), dtype = np.uint8).reshape((32, 32, 3)))
+                master.paste(img, (j * 32, i * 32))
                 k += 1
 
     return serve_pil_image(master)
