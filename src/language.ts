@@ -11,4 +11,5 @@ export class Language {
   static FP = 'FP';
   static PRECISION = 'Precision';
   static PREDICTED_AS = 'predicted as';
+  static CLASS_SIZE = 'Class Size';
 }

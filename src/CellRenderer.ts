@@ -10,83 +10,85 @@ import {adaptTextColorToBgColor} from './utils';
 import {AppConstants} from './AppConstants';
 import * as events from 'phovea_core/src/event';
 
-export abstract class ICellRenderer {
-  abstract renderCells($parent: d3.Selection<any>);
-  ID: string = '';
+export abstract class ACellRenderer {
+  abstract renderCells();
 
-  protected installListener($cells: d3.Selection<any>) {
+  protected attachListener($cells: d3.Selection<any>) {
     const x = 0; // just to get rid of linter error
   }
+  abstract clearCells();
 }
 
+export class SingleLineChartCellRenderer extends ACellRenderer {
 
-
-export class SingleLineChartCellRenderer extends ICellRenderer {
-  maxVal: number;
-  minVal: number;
-
-  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines = true) {
+  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, private singleEpochIndex: number, protected $parent: d3.Selection<any>) {
     super();
-    this.maxVal = max(data, (d) => Math.max(...d.values));
-    this.minVal = min(data, (d) => Math.min(...d.values));
   }
 
-  renderCells($parent: d3.Selection<any>) {
+  renderCells() {
+    const maxVal = max(this.data, (d) => Math.max(...d.values));
+    const minVal = 0;
     const r = this.data.to1DArray();
-    const $cells = $parent.selectAll('div').data(r, (datum) => this.createKey(datum));
 
-    $cells.exit().remove();
+    this.$parent.selectAll('div').remove();
+    const $cells = this.$parent.selectAll('div').data(r);
 
     $cells.enter().append('div')
       .classed('cell', true);
-    this.installListener($cells);
+    this.attachListener($cells);
     const that = this;
-    $cells.each(function(d, i) {
+    $cells.each(function(d) {
        // if we want to filter zero lines and the the line has just 0 values => continue
       if(that.filterZeroLines && !d.values.find((val) => val !== 0)) {
         return;
       }
-      new LineChart(d3.select(this)).render(d, that.maxVal, that.minVal);
+      new LineChart(d3.select(this)).render(d, maxVal, minVal, that.singleEpochIndex);
     });
   }
 
-  private createKey(cur: IClassEvolution) {
-    return cur.values + cur.label;
+  clearCells() {
+    this.$parent.selectAll('div').remove();
   }
 }
 
-export class MultilineChartCellRenderer extends ICellRenderer {
-  maxVal: number;
-  minVal: number;
+export class MultilineChartCellRenderer extends ACellRenderer {
 
-  constructor(private data: SquareMatrix<IClassEvolution>) {
+  constructor(private data: SquareMatrix<IClassEvolution>, private singleEpochIndex: number, private $parent: d3.Selection<any>) {
     super();
-    this.maxVal = max(data, (d) => Math.max(...d.values));
-    this.minVal = min(data, (d) => Math.min(...d.values));
   }
 
-  renderCells($parent: d3.Selection<any>) {
-    $parent.selectAll('div').remove();
-    const $cells = $parent.selectAll('div').data(this.data.values);
+  renderCells() {
+    const maxVal = max(this.data, (d) => Math.max(...d.values));
+    const minVal = 0;
+    this.$parent.selectAll('div').remove();
+    const $cells = this.$parent.selectAll('div').data(this.data.values);
     $cells.enter().append('div')
       .classed('cell', true);
-    this.installListener($cells);
+    this.attachListener($cells);
     const that = this;
     $cells.each(function(d, i) {
       const lineCount = d[0].values.length - 1;
-      new MultilineChart(d3.select(this), lineCount).render(d, that.maxVal, that.minVal);
+      new MultilineChart(d3.select(this), lineCount).render(d, maxVal, minVal, that.singleEpochIndex);
     });
+  }
+
+  clearCells() {
+    this.$parent.selectAll('div').remove();
   }
 }
 
-export class BarChartCellRenderer extends ICellRenderer {
+export class BarChartCellRenderer extends ACellRenderer {
 
-  constructor(private data: SquareMatrix<IClassAffiliation>) {
+  constructor(private data: SquareMatrix<IClassAffiliation>, private $parent: d3.Selection<any>) {
       super();
   }
 
-  renderCells($parent: d3.Selection<any>) {
-    const $cells = $parent
+  renderCells() {
+
+    const maxVal = max(this.data, (d) => d.count);
+    const minVal = 0;
+
+    const $cells = this.$parent
       .selectAll('div')
       .data(this.data.values, (d) => this.createKey(d));
 
@@ -99,10 +101,10 @@ export class BarChartCellRenderer extends ICellRenderer {
       .enter()
       .append('div')
       .classed('cell', true);
-    this.installListener($enterSelection);
+    this.attachListener($enterSelection);
 
     $enterSelection.each(function(d, i) {
-        new BarChart(d3.select(this), {top:0, bottom:0, left:0, right:0}).render(d);
+        new BarChart(d3.select(this), {top:0, bottom:0, left:0, right:0}).render(d, minVal, maxVal);
       });
   }
 
@@ -112,21 +114,19 @@ export class BarChartCellRenderer extends ICellRenderer {
       return acc;
     }, '');
   }
+
+  clearCells() {
+    this.$parent.selectAll('div').remove();
+  }
 }
 
-export class HeatCellRenderer extends ICellRenderer {
-  private readonly heatmapColorScale: any;
-
-  constructor(private data: number[]) {
+export class LabelCellRenderer extends ACellRenderer {
+  constructor(private data: number[], protected $parent: d3.Selection<any>) {
     super();
-    this.heatmapColorScale = d3.scale.linear()
-      .domain([0, Math.max(...data)])
-      .range(<any>AppConstants.BW_COLOR_SCALE)
-      .interpolate(<any>d3.interpolateHcl);
   }
 
-  renderCells($parent: d3.Selection<any>) {
-    const $cells = $parent
+  renderCells() {
+    const $cells = this.$parent
       .selectAll('div')
       .data(this.data);
 
@@ -134,25 +134,65 @@ export class HeatCellRenderer extends ICellRenderer {
       .enter()
       .append('div')
       .classed('cell', true);
-    this.installListener($cells);
+
+    this.attachListener($cells);
+
+    $cells.text((d) => String(d));
 
     $cells
-      .style('background-color', (datum: any) => this.heatmapColorScale(datum))
-      .style('color', (datum: number) => adaptTextColorToBgColor(this.heatmapColorScale(datum).toString()))
+      .exit()
+      .remove();
+  }
+
+  clearCells() {
+    this.$parent.selectAll('div').text('0');
+  }
+}
+
+export class HeatCellRenderer extends ACellRenderer {
+
+  constructor(private data: number[], protected $parent: d3.Selection<any>) {
+    super();
+  }
+
+  renderCells() {
+    const heatmapColorScale = d3.scale.linear()
+      .domain([0, Math.max(...this.data)])
+      .range(<any>AppConstants.BW_COLOR_SCALE)
+      .interpolate(<any>d3.interpolateHcl);
+
+    const $cells = this.$parent
+      .selectAll('div')
+      .data(this.data);
+
+    $cells
+      .enter()
+      .append('div')
+      .classed('cell', true);
+    this.attachListener($cells);
+
+    $cells
+      .style('background-color', (datum: number) => heatmapColorScale(datum))
+      .style('color', (datum: number) => adaptTextColorToBgColor(heatmapColorScale(datum).toString()))
       .text((d) => String(d));
 
     $cells
       .exit()
       .remove();
   }
+
+  clearCells() {
+    this.$parent.selectAll('div').remove();
+  }
 }
 
 export class ConfusionMatrixHeatCellRenderer extends HeatCellRenderer {
-  constructor(private cmdata: NumberMatrix, version1D: number[], private labels: [number, string]) {
-    super(version1D);
+  constructor(private cmdata: NumberMatrix, version1D: number[], private labels: [number, string], $parent: d3.Selection<any>) {
+    super(version1D, $parent);
   }
 
-  protected installListener($cells: d3.Selection<any>) {
+  // todo extract to function
+  protected attachListener($cells: d3.Selection<any>) {
     const that = this;
     $cells.on('click', function (d, i) {
       $cells.classed('selected', false);
@@ -166,11 +206,13 @@ export class ConfusionMatrixHeatCellRenderer extends HeatCellRenderer {
 }
 
 export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRenderer {
-  constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines = true, private labels: [number, string]) {
-    super(cmdata, filterZeroLines);
+  constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines, singleEpochIndex: number, private labels: [number, string],
+              $parent: d3.Selection<any>) {
+    super(cmdata, filterZeroLines, singleEpochIndex, $parent);
   }
 
-  protected installListener($cells: d3.Selection<any>) {
+  // todo extract to function
+  protected attachListener($cells: d3.Selection<any>) {
     const that = this;
     $cells.on('click', function (d, i) {
       $cells.classed('selected', false);
@@ -179,6 +221,76 @@ export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRen
       const predicted = i % that.cmdata.order();
       const groundTruth = Math.floor(i / that.cmdata.order());
       events.fire(AppConstants.EVENT_CELL_SELECTED, AppConstants.CONFUSION_MATRIX_CELL, predicted, groundTruth, that.labels);
+    });
+  }
+}
+
+interface ICombinedType {linedata: IClassEvolution; hmdata: number; }
+
+export class MultiEpochCellRenderer extends ACellRenderer {
+  constructor(private lineData: SquareMatrix<IClassEvolution>, private singleEpochData: SquareMatrix<number>, private filterZeroLines = true,
+              private labels: [number, string], private singleEpochIndex: number, private $parent: d3.Selection<any>) {
+    super();
+  }
+
+  renderCells() {
+    const hmData1D = this.singleEpochData.to1DArray();
+    const lineData1D = this.lineData.to1DArray();
+
+    console.assert(hmData1D.length === lineData1D.length);
+
+    const maxVal = max(this.lineData, (d) => Math.max(...d.values));
+    const minVal = 0;
+
+    const transformedData:ICombinedType[] = hmData1D.map((d, i):ICombinedType => {
+      return {'linedata': lineData1D[i], 'hmdata': hmData1D[i]};
+    });
+
+    //todo extract to function
+    const heatmapColorScale = d3.scale.linear()
+      .domain([0, Math.max(...hmData1D)])
+      .range(<any>AppConstants.BW_COLOR_SCALE)
+      .interpolate(<any>d3.interpolateHcl);
+
+    this.$parent
+      .selectAll('div')
+      .remove();
+
+    const $cells = this.$parent
+      .selectAll('div')
+      .data(transformedData);
+
+    const $enter = $cells.enter()
+      .append('div')
+      .classed('cell', true);
+    this.attachListener($cells);
+
+    const that = this;
+    $cells
+      .style('background-color', (datum: ICombinedType, index: number) => heatmapColorScale(datum.hmdata))
+      .each(function(datum) {
+       // if we want to filter zero lines and the the line has just 0 values => continue
+      if(that.filterZeroLines && !datum.linedata.values.find((val) => val !== 0)) {
+        return;
+      }
+      new LineChart(d3.select(this)).render(datum.linedata, maxVal, minVal, that.singleEpochIndex);
+    });
+  }
+
+  clearCells() {
+    this.$parent.selectAll('div').remove();
+  }
+
+  protected attachListener($cells: d3.Selection<any>) {
+    const that = this;
+    $cells.on('click', function (d, i) {
+      $cells.classed('selected', false);
+      d3.select(this).classed('selected', true);
+
+      //todo implement
+      /*const predicted = i % that.cmdata.order();
+      const groundTruth = Math.floor(i / that.cmdata.order());
+      events.fire(AppConstants.EVENT_CELL_SELECTED, AppConstants.CONFUSION_MATRIX_CELL, predicted, groundTruth, that.labels);*/
     });
   }
 }

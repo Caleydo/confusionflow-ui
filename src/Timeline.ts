@@ -10,6 +10,7 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {IDragSelection} from './RangeSelector';
 import {TimelineRangeSelector} from './RangeSelector';
 import {IAppView} from './app';
+import {DataStore} from './DataStore';
 
 export default class Timeline implements IDragSelection, IAppView {
   private readonly $node:d3.Selection<any>;
@@ -18,7 +19,6 @@ export default class Timeline implements IDragSelection, IAppView {
   private isDragging = false;
   private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interpreted as click until it switches to drag
   private rangeSelector: TimelineRangeSelector;
-  private malevoDataset: MalevoDataset;
 
   constructor(parent: Element) {
     this.$node = d3.select(parent)
@@ -30,8 +30,23 @@ export default class Timeline implements IDragSelection, IAppView {
 
   private attachListener() {
     events.on(AppConstants.EVENT_DATA_COLLECTION_SELECTED, (evt, items:MalevoDataset) => {
-     this.updateItems(items);
-     this.selectLast();
+      DataStore.clearSelection();
+      this.resetSelectionBand();
+      this.updateItems(items);
+      this.selectLast();
+    });
+
+    this.$node.on('dblclick', () => {
+      console.assert(typeof DataStore.selectedDataset !== 'undefined' && DataStore.selectedDataset !== null);
+      if(DataStore.isFullRangeSelected()) { // deselect all if everything was selected
+        DataStore.clearMultiSelection();
+        this.resetSelectionBand();
+      } else {
+        this.snapBand(this.$epochs);
+        this.$rangeband.style('visibility', 'visible');
+        DataStore.multiSelected = DataStore.selectedDataset.epochInfos;
+      }
+      events.fire(AppConstants.EVENT_EPOCH_SELECTED);
     });
   }
 
@@ -48,6 +63,11 @@ export default class Timeline implements IDragSelection, IAppView {
     return Promise.resolve(this);
   }
 
+  private resetSelectionBand() {
+    this.rangeSelector.resetSelectionRect();
+    this.$rangeband.style('visibility', 'hidden');
+  }
+
   private selectLast() {
     const $lastNode = d3.select(this.$epochs[0][this.$epochs[0].length - 1]);
     this.dragEnd($lastNode);
@@ -55,7 +75,9 @@ export default class Timeline implements IDragSelection, IAppView {
   }
 
   updateItems(malevoData: MalevoDataset) {
-    this.malevoDataset = malevoData;
+    DataStore.selectedDataset = malevoData;
+    DataStore.labels = malevoData.classLabels;
+
     const $epochs = this.$node.selectAll('div.epochs').data(malevoData.epochInfos);
 
     const enter = $epochs.enter().append('div').classed('epochs', true);
@@ -70,20 +92,24 @@ export default class Timeline implements IDragSelection, IAppView {
   }
 
   dragEnd(sel: d3.Selection<any>) {
-    console.assert(sel.length === 1);
     if(sel[0].length > 1) {
-      this.$epochs.classed('range-selected', false);
       this.snapBand(sel);
-      sel.classed('range-selected', true);
-    } else {
+      DataStore.multiSelected = sel.data();
+    } else if(sel[0].length === 1) {
+      const curSelection = DataStore.singleSelected;
       this.$epochs.classed('single-selected', false);
-      sel.classed('single-selected', true);
-      if(this.isDragging) { // if one point was selected by dragging => hide the band
-        this.$rangeband.style('visibility', 'hidden');
+      DataStore.clearSingleSelection();
+      if(sel.data()[0] !== curSelection) { // if sel.data()[0] === curSelection => current node will be deselected
+        sel.classed('single-selected', true);
+        DataStore.singleSelected = sel.data()[0];
       }
     }
-    events.fire(AppConstants.EVENT_EPOCH_SELECTED, sel.data(), this.malevoDataset);
-    sel.style('border-color', 'red');
+
+    // corner case: if the selection range contains just one node or no node at all => don't show rangeband
+    if(this.isDragging && (sel[0].length === 1 || sel[0].length === 0)) {
+        this.resetSelectionBand();
+    }
+    events.fire(AppConstants.EVENT_EPOCH_SELECTED);
     this.isDragging = false;
   }
 
@@ -94,6 +120,7 @@ export default class Timeline implements IDragSelection, IAppView {
   dragging(start: [number, number], end: [number, number]) {
     console.assert(start[0] <= end[0]);
     if(end[0] - start[0] > this.MAX_DRAG_TOLERANCE) {
+      DataStore.clearMultiSelection(); // we start a new multi selection here so the old one is obsolete
       this.isDragging = true;
       this.$rangeband.style('visibility', 'visible');
       this.$rangeband.style('left', start[0] + 'px');

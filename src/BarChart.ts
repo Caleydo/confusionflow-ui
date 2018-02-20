@@ -1,6 +1,5 @@
 import * as d3 from 'd3';
 import {IClassAffiliation} from './DataStructures';
-import {createTooltip} from './utils';
 
 export class BarChart {
   private readonly $node: d3.Selection<any>;
@@ -20,21 +19,22 @@ export class BarChart {
   }
 
 
-  render(bins: IClassAffiliation[]) {
+  render(bins: IClassAffiliation[], minValue: number, maxValue: number) {
     const $g = this.$node;
 
     const x = d3.scale.ordinal().domain(bins.map((x) => x.label)).rangeRoundBands([0, this.width]);
     const y = d3.scale.linear().rangeRound([this.height, 0]);
-    y.domain([0, d3.max(bins, (d) => { return d.count; })]);
+    y.domain([minValue, maxValue]);
 
     const $bars = $g.selectAll('.bar')
     .data(bins);
 
     $bars.enter().append('rect')
-      .attr('class', 'bar');
+      .attr('class', 'bar')
+      .append('title')
+		    .text((d) => d.label + ': ' + d.count);
 
     const barColors = d3.scale.category10();
-    createTooltip(this.$node, $bars, (d) => d.label + ': ' + d.count);
 
     $bars.attr('x', (d, i) => { return x(d.label); })
     .attr('y', (d) => { return y(d.count); })

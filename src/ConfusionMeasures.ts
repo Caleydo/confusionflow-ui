@@ -1,6 +1,13 @@
 // measures are from https://en.wikipedia.org/wiki/Confusion_matrix
 import {NumberMatrix, Matrix, matrixSum, SquareMatrix, IClassEvolution} from './DataStructures';
 
+export function ClassSize(matrix: NumberMatrix, index: number): number {
+  if(index >= matrix.order()) {
+    throw new Error('Invalid index');
+  }
+  return TP(matrix, index) + FP(matrix, index);
+}
+
 export function TP(matrix: NumberMatrix, index: number): number {
   if(index >= matrix.order()) {
     throw new Error('Invalid index');
