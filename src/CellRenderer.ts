@@ -86,7 +86,7 @@ export class BarChartCellRenderer extends ACellRenderer {
   renderCells() {
 
     const maxVal = max(this.data, (d) => d.count);
-    const minVal = 0;
+    const minVal = min(this.data, (d) => d.count);
 
     const $cells = this.$parent
       .selectAll('div')
