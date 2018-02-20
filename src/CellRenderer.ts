@@ -27,7 +27,7 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
 
   renderCells() {
     const maxVal = max(this.data, (d) => Math.max(...d.values));
-    const minVal = min(this.data, (d) => Math.min(...d.values));
+    const minVal = 0;
     const r = this.data.to1DArray();
 
     this.$parent.selectAll('div').remove();
@@ -59,7 +59,7 @@ export class MultilineChartCellRenderer extends ACellRenderer {
 
   renderCells() {
     const maxVal = max(this.data, (d) => Math.max(...d.values));
-    const minVal = min(this.data, (d) => Math.min(...d.values));
+    const minVal = 0;
     this.$parent.selectAll('div').remove();
     const $cells = this.$parent.selectAll('div').data(this.data.values);
     $cells.enter().append('div')
@@ -86,7 +86,7 @@ export class BarChartCellRenderer extends ACellRenderer {
   renderCells() {
 
     const maxVal = max(this.data, (d) => d.count);
-    const minVal = min(this.data, (d) => d.count);
+    const minVal = 0;
 
     const $cells = this.$parent
       .selectAll('div')
@@ -211,7 +211,7 @@ export class MultiEpochCellRenderer extends ACellRenderer {
     console.assert(hmData1D.length === lineData1D.length);
 
     const maxVal = max(this.lineData, (d) => Math.max(...d.values));
-    const minVal = min(this.lineData, (d) => Math.min(...d.values));
+    const minVal = 0;
 
     const transformedData:ICombinedType[] = hmData1D.map((d, i):ICombinedType => {
       return {'linedata': lineData1D[i], 'hmdata': hmData1D[i]};
