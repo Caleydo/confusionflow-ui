@@ -21,7 +21,13 @@ module.exports = function(registry) {
   });
 
   registry.push('malevoView', 'DummyDetailView', function() { return System.import('./src/DummyDetailView'); }, {
-    'name': 'DummyDetailView'
+    'name': 'DummyDetailView',
+    'isDetailView': true
+  });
+
+  registry.push('malevoView', 'ImageDetailView', function() { return System.import('./src/ImageDetailView'); }, {
+    'name': 'ImageDetailView',
+    'isDetailView': true
   });
 
 
