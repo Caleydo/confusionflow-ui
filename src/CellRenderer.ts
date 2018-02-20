@@ -118,15 +118,9 @@ export class BarChartCellRenderer extends ACellRenderer {
   }
 }
 
-export class HeatCellRenderer extends ACellRenderer {
-  private readonly heatmapColorScale: any;
-
+export class LabelCellRenderer extends ACellRenderer {
   constructor(private data: number[], protected $parent: d3.Selection<any>) {
     super();
-    this.heatmapColorScale = d3.scale.linear()
-      .domain([0, Math.max(...data)])
-      .range(<any>AppConstants.BW_COLOR_SCALE)
-      .interpolate(<any>d3.interpolateHcl);
   }
 
   renderCells() {
@@ -138,11 +132,46 @@ export class HeatCellRenderer extends ACellRenderer {
       .enter()
       .append('div')
       .classed('cell', true);
+
+    this.attachListener($cells);
+
+    $cells.text((d) => String(d));
+
+    $cells
+      .exit()
+      .remove();
+  }
+
+  clearCells() {
+    this.$parent.selectAll('div').text('0');
+  }
+}
+
+export class HeatCellRenderer extends ACellRenderer {
+
+  constructor(private data: number[], protected $parent: d3.Selection<any>) {
+    super();
+  }
+
+  renderCells() {
+    const heatmapColorScale = d3.scale.linear()
+      .domain([0, Math.max(...this.data)])
+      .range(<any>AppConstants.BW_COLOR_SCALE)
+      .interpolate(<any>d3.interpolateHcl);
+
+    const $cells = this.$parent
+      .selectAll('div')
+      .data(this.data);
+
+    $cells
+      .enter()
+      .append('div')
+      .classed('cell', true);
     this.attachListener($cells);
 
     $cells
-      .style('background-color', (datum: number) => this.heatmapColorScale(datum))
-      .style('color', (datum: number) => adaptTextColorToBgColor(this.heatmapColorScale(datum).toString()))
+      .style('background-color', (datum: number) => heatmapColorScale(datum))
+      .style('color', (datum: number) => adaptTextColorToBgColor(heatmapColorScale(datum).toString()))
       .text((d) => String(d));
 
     $cells
