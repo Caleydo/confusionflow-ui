@@ -45,7 +45,7 @@
   grid-area: label-right;
   background: $label-bg;
 
-  grid-template-columns: repeat(auto-fill, minmax(50%, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(33%, 1fr));
 
   display: grid;
 
@@ -53,6 +53,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
   }
 }
 
@@ -86,7 +87,7 @@
   position: relative;
 
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(50%, 1fr)); // 100% for one column, 50% for 2 columns, ...
+  grid-template-columns: repeat(auto-fill, minmax(33%, 1fr)); // 100% for one column, 50% for 2 columns, 33% for 3 columns ...
 }
 
 .chart-bottom {
