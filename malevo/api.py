@@ -31,7 +31,7 @@ root = os.path.join(cwd, '../data/images')
 def _get_image_ids():
     # run_id = request.args.get('runId', '')
     epoch_id = request.args.get('epochId', 0)
-    ground_truth_id = request.args.get('groundTruthClassId', 0)
+    ground_truth_id = request.args.get('groundTruthId', 0)
     predicted_id = request.args.get('predictedId', 0)
     num_count = request.args.get('numCount', 100)
 
