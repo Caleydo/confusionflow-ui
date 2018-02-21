@@ -1,28 +1,30 @@
-.selection-panel {
-  display: flex;
-  flex-wrap: nowrap;
+.details-wrapper {
+  grid-area: details;
 
-  > .panel {
-    background-color: #f1f1f1;
-    width: 200px;
-    margin: 10px;
-    text-align: center;
-    font-size: 30px;
-    margin: 0;
+  .selection-panel {
+    display: flex;
+    flex-wrap: nowrap;
 
-    &.selected,
-    &:active,
-    &:focus,
-    &:hover {
-      cursor: pointer;
-      background-color: orange;
-      border: none;
-      z-index: 1;
-      margin: 1px;
+    > .panel {
+      background-color: #f1f1f1;
+      width: 200px;
+      text-align: center;
+      font-size: 30px;
+      margin: 0px;
+
+      &:active,
+      &:focus,
+      &:hover {
+        cursor: pointer;
+        background-color: orange;
+        border: none;
+        z-index: 1;
+        margin: 1px;
+      }
+
+      &.selected {
+        outline: 2px solid orange;
+      }
     }
   }
-}
-
-.view-panel {
-
 }

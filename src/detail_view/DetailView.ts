@@ -6,12 +6,13 @@ import * as events from 'phovea_core/src/event';
 import {DetailChartView} from './DetailChartView';
 import {ADetailView} from './ADetailView';
 
+
 export class DetailView implements IAppView {
 
   private readonly $selectionPanel: d3.Selection<any>;
   private readonly $viewbody: d3.Selection<any>;
   private panelCollection: Map<string, ADetailView> = new Map();
-  private selectedDetailView: ADetailView;
+  private selectedDetailView: ADetailView = null;
 
   constructor(parent:Element) {
     this.$selectionPanel = d3.select(parent)
@@ -38,8 +39,10 @@ export class DetailView implements IAppView {
   }
 
   private attachListeners() {
-    events.on(AppConstants.MULTI_EPOCH_CELL, () => {
-      this.selectedDetailView[AppConstants.CHARTVIEW].render();
+    events.on(AppConstants.COMBINED_EPOCH_CELL, () => {
+      if(this.selectedDetailView !== null && this.selectedDetailView.name === AppConstants.CHARTVIEW) {
+        this.selectedDetailView.render();
+      }
     });
   }
 
@@ -47,17 +50,28 @@ export class DetailView implements IAppView {
 
     const $div = this.$selectionPanel.selectAll('div').data(Array.from(this.panelCollection.values()));
 
+    const that = this;
     $div.enter().append('div')
       .classed('panel', true)
       .text((x) => x.name)
-      .on('click', (x) => {
+      .on('click', function (content) {
+        $div.classed('selected', false);
         $div.each((d) => d.shouldDisplay(false));
-        x.shouldDisplay(true);
-        this.selectedDetailView = x;
-        x.render();
-      });
+        that.selectView(content, d3.select(this));
+      })
+      .each((content) => content.shouldDisplay(false));
 
     $div.exit().remove();
+
+    // set a default view
+    const defaultView = AppConstants.TESTVIEW;
+    this.selectView(this.panelCollection.get(defaultView), $div.filter((x) => x.name === defaultView));
+  }
+
+  private selectView(content: ADetailView, $node: d3.Selection<any>) {
+    $node.classed('selected', true);
+    content.shouldDisplay(true);
+    this.selectedDetailView = content;
   }
 }
 

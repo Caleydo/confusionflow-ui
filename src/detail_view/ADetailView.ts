@@ -7,9 +7,9 @@ export abstract class ADetailView {
 
   shouldDisplay(show = true) {
     if(show) {
-      this.$node.style('visibility', 'visible');
+      this.$node.style('display', 'inline');
     } else {
-      this.$node.style('visibility', 'hidden');
+      this.$node.style('display', 'none');
     }
   }
 }

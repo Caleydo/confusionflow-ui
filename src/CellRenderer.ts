@@ -3,8 +3,8 @@
  */
 
 import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, NumberMatrix} from './DataStructures';
-import {BarChart} from './BarChart';
-import {LineChart, MultilineChart} from './LineChart';
+import {BarChart} from './cell_charts/BarChart';
+import {LineChart, MultilineChart} from './cell_charts/LineChart';
 import * as d3 from 'd3';
 import {adaptTextColorToBgColor} from './utils';
 import {AppConstants} from './AppConstants';
@@ -68,7 +68,7 @@ export class MultilineChartCellRenderer extends ACellRenderer {
     const that = this;
     $cells.each(function(d, i) {
       const lineCount = d[0].values.length - 1;
-      new MultilineChart(d3.select(this), lineCount).render(d, maxVal, minVal, that.singleEpochIndex);
+      new MultilineChart(d3.select(this)).render(d, maxVal, minVal, that.singleEpochIndex, lineCount);
     });
   }
 

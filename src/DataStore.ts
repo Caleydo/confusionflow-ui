@@ -52,6 +52,7 @@ export class DataStoreCellSelection {
   static multiEpochData: SquareMatrix<IClassEvolution>;
   static singleEpochData: SquareMatrix<number>;
   static labels: [number, string];
+  static currentCellState: string;
 
   static combinedEpochCellSelected(rowIndex: number, colIndex: number, multiEpochData: SquareMatrix<IClassEvolution>, singleEpochData: SquareMatrix<number>,
                                    labels: [number, string]) {
@@ -60,7 +61,8 @@ export class DataStoreCellSelection {
     DataStoreCellSelection.singleEpochData = singleEpochData;
     DataStoreCellSelection.multiEpochData = multiEpochData;
     DataStoreCellSelection.labels = labels;
-    events.fire(AppConstants.COMBINED_EPOCH_CELL);
+    DataStoreCellSelection.currentCellState = AppConstants.COMBINED_EPOCH_CELL;
+    events.fire(DataStoreCellSelection.currentCellState);
   }
 
   static lineChartCellSelected(rowIndex: number, colIndex: number, multiEpochData: SquareMatrix<IClassEvolution>, labels: [number, string])  {
@@ -68,7 +70,8 @@ export class DataStoreCellSelection {
     DataStoreCellSelection.colIndex = colIndex;
     DataStoreCellSelection.multiEpochData = multiEpochData;
     DataStoreCellSelection.labels = labels;
-    events.fire(AppConstants.MULTI_EPOCH_CELL);
+    DataStoreCellSelection.currentCellState = AppConstants.MULTI_EPOCH_CELL;
+    events.fire(DataStoreCellSelection.currentCellState);
   }
 
 }
