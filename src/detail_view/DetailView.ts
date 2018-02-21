@@ -3,16 +3,17 @@ import {IAppView} from '../app';
 import {ConfusionMatrix} from '../ConfusionMatrix';
 import {AppConstants} from '../AppConstants';
 import * as events from 'phovea_core/src/event';
-import {DetailChartView} from './DetailChartView';
-import {ADetailView} from './ADetailView';
+import {DetailChartWindow} from './DetailChartWindow';
+import {DetailImageWindow} from './DetailImageWindow';
+import {ADetailWindow} from './ADetailWindow';
 
 
 export class DetailView implements IAppView {
 
   private readonly $selectionPanel: d3.Selection<any>;
   private readonly $viewbody: d3.Selection<any>;
-  private panelCollection: Map<string, ADetailView> = new Map();
-  private selectedDetailView: ADetailView = null;
+  private panelCollection: Map<string, ADetailWindow> = new Map();
+  private selectedDetailView: ADetailWindow = null;
 
   constructor(parent:Element) {
     this.$selectionPanel = d3.select(parent)
@@ -22,8 +23,8 @@ export class DetailView implements IAppView {
       .append('div')
       .classed('view-body', true);
 
-    this.panelCollection.set(AppConstants.CHARTVIEW, new DetailChartView(AppConstants.CHARTVIEW, this.$viewbody));
-    this.panelCollection.set(AppConstants.TESTVIEW,  new DetailChartView(AppConstants.TESTVIEW, this.$viewbody));
+    this.panelCollection.set(AppConstants.CHARTVIEW, new DetailChartWindow(AppConstants.CHARTVIEW, this.$viewbody));
+    this.panelCollection.set(AppConstants.IMAGEVIEW,  new DetailImageWindow(AppConstants.IMAGEVIEW, this.$viewbody));
   }
 
   /**
@@ -64,14 +65,15 @@ export class DetailView implements IAppView {
     $div.exit().remove();
 
     // set a default view
-    const defaultView = AppConstants.TESTVIEW;
+    const defaultView = AppConstants.CHARTVIEW;
     this.selectView(this.panelCollection.get(defaultView), $div.filter((x) => x.name === defaultView));
   }
 
-  private selectView(content: ADetailView, $node: d3.Selection<any>) {
+  private selectView(content: ADetailWindow, $node: d3.Selection<any>) {
     $node.classed('selected', true);
     content.shouldDisplay(true);
     this.selectedDetailView = content;
+    content.render();
   }
 }
 

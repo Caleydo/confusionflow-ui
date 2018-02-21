@@ -15,7 +15,7 @@ export class AppConstants {
   static BW_COLOR_SCALE = ['white', 'gray'];
 
   static CHARTVIEW = 'Chart View';
-  static TESTVIEW = 'Test View';
+  static IMAGEVIEW = 'Image View';
 
   /**
    * Fires when the use selects a dataset from the selector

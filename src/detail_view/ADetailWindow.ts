@@ -1,4 +1,4 @@
-export abstract class ADetailView {
+export abstract class ADetailWindow {
   protected $node: d3.Selection<any>;
   constructor(public name: string, protected $parent: d3.Selection<any>) {
     this.$node = $parent.append('div').classed('viewpanel-content', true);
@@ -7,7 +7,7 @@ export abstract class ADetailView {
 
   shouldDisplay(show = true) {
     if(show) {
-      this.$node.style('display', 'inline');
+      this.$node.style('display', 'block');
     } else {
       this.$node.style('display', 'none');
     }

@@ -1,6 +1,4 @@
 .details-wrapper {
-  grid-area: details;
-
   .selection-panel {
     display: flex;
     flex-wrap: nowrap;
@@ -24,6 +22,16 @@
 
       &.selected {
         outline: 2px solid orange;
+      }
+    }
+  }
+
+  .view-body {
+    .viewpanel-content {
+      > svg {
+        position: absolute;
+        width: 800px;
+        height: 500px;
       }
     }
   }
