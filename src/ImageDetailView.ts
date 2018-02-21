@@ -4,7 +4,7 @@ import {ConfusionMatrix} from './ConfusionMatrix';
 import {AppConstants} from './AppConstants';
 import * as events from 'phovea_core/src/event';
 import {Language} from './language';
-import {getAPIData, getAPIJSON} from '../../phovea_core/src/ajax';
+import {getAPIData, getAPIJSON} from 'phovea_core/src/ajax';
 import {DataStore} from './DataStore';
 
 
