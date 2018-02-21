@@ -3,7 +3,6 @@ import {IAppView} from '../app';
 import {ConfusionMatrix} from '../ConfusionMatrix';
 import {AppConstants} from '../AppConstants';
 import * as events from 'phovea_core/src/event';
-import {Language} from '../language';
 import {DetailChartView} from './DetailChartView';
 import {ADetailView} from './ADetailView';
 
@@ -11,7 +10,8 @@ export class DetailView implements IAppView {
 
   private readonly $selectionPanel: d3.Selection<any>;
   private readonly $viewbody: d3.Selection<any>;
-  private panelCollection: ADetailView[] = [];
+  private panelCollection: Map<string, ADetailView> = new Map();
+  private selectedDetailView: ADetailView;
 
   constructor(parent:Element) {
     this.$selectionPanel = d3.select(parent)
@@ -21,8 +21,8 @@ export class DetailView implements IAppView {
       .append('div')
       .classed('view-body', true);
 
-    this.panelCollection.push(new DetailChartView(AppConstants.CHARTVIEW, this.$selectionPanel));
-    this.panelCollection.push(new DetailChartView(AppConstants.CHARTVIEW, this.$selectionPanel));
+    this.panelCollection.set(AppConstants.CHARTVIEW, new DetailChartView(AppConstants.CHARTVIEW, this.$viewbody));
+    this.panelCollection.set(AppConstants.TESTVIEW,  new DetailChartView(AppConstants.TESTVIEW, this.$viewbody));
   }
 
   /**
@@ -32,34 +32,33 @@ export class DetailView implements IAppView {
    */
   init() {
     this.attachListeners();
-    this.setupLayout();
+    this.createSelectionPanel();
     // return the promise directly as long there is no dynamical data to update
     return Promise.resolve(this);
   }
 
   private attachListeners() {
-    events.on(AppConstants.EVENT_CELL_SELECTED, (evt, src, predicted, groundTruth, labels) => {
-      this.$selectionPanel.select('.title')
-        .html(`<strong>${labels[groundTruth][1]}</strong> ${Language.PREDICTED_AS} <strong>${labels[predicted][1]}</strong>`);
+    events.on(AppConstants.MULTI_EPOCH_CELL, () => {
+      this.selectedDetailView[AppConstants.CHARTVIEW].render();
     });
   }
 
-  private setupLayout() {
+  private createSelectionPanel() {
 
-    const $div = this.$selectionPanel.selectAll('div').data(this.panelCollection);
+    const $div = this.$selectionPanel.selectAll('div').data(Array.from(this.panelCollection.values()));
 
     $div.enter().append('div')
       .classed('panel', true)
       .text((x) => x.name)
       .on('click', (x) => {
-        console.log(this);
-        x.show();
+        $div.each((d) => d.shouldDisplay(false));
+        x.shouldDisplay(true);
+        this.selectedDetailView = x;
+        x.render();
       });
 
     $div.exit().remove();
   }
-
-
 }
 
 /**

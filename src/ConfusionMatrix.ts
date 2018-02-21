@@ -8,14 +8,14 @@ import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {
   BarChartCellRenderer, ConfusionMatrixHeatCellRenderer, HeatCellRenderer, MultilineChartCellRenderer,
-  SingleLineChartCellRenderer, ConfusionMatrixLineChartCellRenderer, MultiEpochCellRenderer, LabelCellRenderer
+  SingleLineChartCellRenderer, ConfusionMatrixLineChartCellRenderer, CombinedEpochCellRenderer, LabelCellRenderer
 } from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
-import {DataStore} from './DataStore';
+import {DataStoreEpoch} from './DataStore';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -109,11 +109,11 @@ export class ConfusionMatrix implements IAppView {
   }
 
   updateViews() {
-    if(DataStore.isJustOneEpochSelected() === true) {
+    if(DataStoreEpoch.isJustOneEpochSelected() === true) {
       this.updateSingleEpoch();
-    } else if(DataStore.isRangeSelected() === true) {
+    } else if(DataStoreEpoch.isRangeSelected() === true) {
       this.updateEpochRange();
-    } else if(DataStore.isSingleAndRangeSelected() === true) {
+    } else if(DataStoreEpoch.isSingleAndRangeSelected() === true) {
       this.updateSingleAndEpochRange();
     } else {
       this.clearViews();
@@ -172,10 +172,10 @@ export class ConfusionMatrix implements IAppView {
 
   private updateEpochRange() {
     const promMultiEpoch = [];
-    for(const item of DataStore.multiSelected) {
+    for(const item of DataStoreEpoch.multiSelected) {
       promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
     }
-    const promLabels = this.loadLabels(DataStore.labels);
+    const promLabels = this.loadLabels(DataStoreEpoch.labels);
     promMultiEpoch.push(promLabels);
 
     Promise.all(promMultiEpoch).then((x: any) => {
@@ -188,8 +188,8 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private updateSingleEpoch() {
-    const confusionData = this.loadConfusionData(DataStore.singleSelected.confusionInfo);
-    const promLabels = this.loadLabels(DataStore.labels);
+    const confusionData = this.loadConfusionData(DataStoreEpoch.singleSelected.confusionInfo);
+    const promLabels = this.loadLabels(DataStoreEpoch.labels);
 
     Promise.all([confusionData, promLabels]).then((x:any) => {
       this.checkDataSanity([x[0]], x[1]);
@@ -201,16 +201,16 @@ export class ConfusionMatrix implements IAppView {
 
   private updateSingleAndEpochRange() {
     const promMultiEpoch = [];
-    for(const item of DataStore.multiSelected) {
+    for(const item of DataStoreEpoch.multiSelected) {
       promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
     }
-    const promSingleEpoch = this.loadConfusionData(DataStore.singleSelected.confusionInfo);
-    const promLabels = this.loadLabels(DataStore.labels);
+    const promSingleEpoch = this.loadConfusionData(DataStoreEpoch.singleSelected.confusionInfo);
+    const promLabels = this.loadLabels(DataStoreEpoch.labels);
 
     promMultiEpoch.push(promSingleEpoch);
     promMultiEpoch.push(promLabels);
 
-    const singleEpochIndex = DataStore.multiSelected.findIndex((x) => x === DataStore.singleSelected);
+    const singleEpochIndex = DataStoreEpoch.multiSelected.findIndex((x) => x === DataStoreEpoch.singleSelected);
 
     Promise.all(promMultiEpoch).then((x: any) => {
       const labels = x.splice(-1,1)[0];
@@ -293,7 +293,7 @@ export class ConfusionMatrix implements IAppView {
     const calculator = new LineChartCalculator();
     const lineData = calculator.calculate(multiEpochData, labels);
 
-    new MultiEpochCellRenderer(lineData, singleEpochData, true, labels, singleEpochIndex, this.$confusionMatrix).renderCells();
+    new CombinedEpochCellRenderer(lineData, singleEpochData, true, labels, singleEpochIndex, this.$confusionMatrix).renderCells();
   }
 
   private clearViews() {

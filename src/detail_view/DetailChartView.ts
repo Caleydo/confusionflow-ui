@@ -5,7 +5,7 @@ export class DetailChartView extends ADetailView {
     super(name, $parent);
   }
 
-  show() {
+  render() {
 
   }
 }

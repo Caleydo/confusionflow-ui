@@ -12,6 +12,11 @@ export class AppConstants {
 
   static EVENT_RESIZE = 'eventResize';
 
+  static BW_COLOR_SCALE = ['white', 'gray'];
+
+  static CHARTVIEW = 'Chart View';
+  static TESTVIEW = 'Test View';
+
   /**
    * Fires when the use selects a dataset from the selector
    * @type {string}
@@ -24,19 +29,14 @@ export class AppConstants {
    */
   static EVENT_EPOCH_SELECTED = 'eventEpochSelected';
 
-  /**
-   * Fires when the user selects a cell in a confusion matrix
-   * @param predicted {number}
-   * @param groundTruth {number}
-   * @param labels {string[]}
-   * @type {string}
-   */
-  static EVENT_CELL_SELECTED = 'eventCellSelected';
+   /**
+    * Fires when the user selects a cell in a confusion matrix
+    * @param predicted {number}
+    * @param groundTruth {number}
+    * @param labels {string[]}
+    * @type {string}
+    */
+  static COMBINED_EPOCH_CELL = 'combined_epoch_cell';
+  static MULTI_EPOCH_CELL = 'single_epoch_cell';
 
-
-  static BW_COLOR_SCALE = ['white', 'gray'];
-
-  static CONFUSION_MATRIX_CELL = 'confusion_matrix_cell';
-
-  static CHARTVIEW = 'Chart View';
 }
