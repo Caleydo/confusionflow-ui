@@ -71,7 +71,7 @@ export class App implements IAppView {
       }
     },
     {
-      view: 'DummyDetailView',
+      view: 'DetailView',
       parent: 'details-wrapper',
       options: {
         eventName: ''

@@ -38,5 +38,5 @@ export class AppConstants {
 
   static CONFUSION_MATRIX_CELL = 'confusion_matrix_cell';
 
-  static BAR = 'bar';
+  static CHARTVIEW = 'Chart View';
 }

@@ -1,0 +1,28 @@
+.selection-panel {
+  display: flex;
+  flex-wrap: nowrap;
+
+  > .panel {
+    background-color: #f1f1f1;
+    width: 200px;
+    margin: 10px;
+    text-align: center;
+    font-size: 30px;
+    margin: 0;
+
+    &.selected,
+    &:active,
+    &:focus,
+    &:hover {
+      cursor: pointer;
+      background-color: orange;
+      border: none;
+      z-index: 1;
+      margin: 1px;
+    }
+  }
+}
+
+.view-panel {
+
+}
