@@ -17,13 +17,14 @@ export class DetailChartWindow extends ADetailWindow {
   }
 
   render() {
+    //todo if we just need to render (multi) linecharts then we don't need this condition
     if(DataStoreCellSelection.currentCellState === AppConstants.COMBINED_EPOCH_CELL) {
       this.renderMultiEpochData();
     }
   }
 
   init() {
-    this.$svg = this.$node.append('svg');
+    this.$svg = this.$node.append('svg').classed('linechart', true);
   }
 
   renderMultiEpochData() {
@@ -44,7 +45,7 @@ export class DetailChartWindow extends ADetailWindow {
     const y = d3.scale.linear().rangeRound([this.height, 0]);
     const z = d3.scale.category10();
 
-    x.domain([0, lineData1D.values.length]);
+    x.domain([0, lineData1D.values.length - 1]);
     y.domain([0, maxVal]);
 
     const line = d3_shape.line()
@@ -56,27 +57,28 @@ export class DetailChartWindow extends ADetailWindow {
       });
 
     const xAxis = d3.svg.axis()
-      .scale(x)
-      .tickSize(-this.height);
-
-    const yAxis = d3.svg.axis()
-      .scale(y)
-      .ticks(4)
-      .orient('right');
+      .scale(x);
+      //.tickSize(-this.height)
+      //.orient('bottom');
 
     this.$g.append('g')
-      .attr('class', 'x axis')
+      .attr('class', 'chart-axis')
       .attr('transform', 'translate(0,' + this.height + ')')
       .call(xAxis);
 
+
+    const yAxis = d3.svg.axis()
+      .scale(y)
+      .orient('right');
+
     this.$g.append('g')
-      .attr('class', 'y axis')
+      .attr('class', 'chart-axis')
       .attr('transform', 'translate(' + this.width + ',0)')
       .call(yAxis);
 
     this.$g.append('path')
-      .data([lineData1D.values])
-      .attr('d', line);
+      //.data([lineData1D.values])
+      .attr('d', line(lineData1D.values));
 
     /*this.$g.append('g')
      .attr('transform', 'translate(0,' + this.height + ')')

@@ -35,4 +35,11 @@
       }
     }
   }
+
+  .chart-axis path,
+  .chart-axis line {
+    fill: none;
+    stroke: slategray;
+    shape-rendering: crispEdges;
+  }
 }

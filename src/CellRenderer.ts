@@ -214,7 +214,7 @@ export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRen
 
       const predicted = i % that.cmdata.order();
       const groundTruth = Math.floor(i / that.cmdata.order());
-      DataStoreCellSelection.lineChartCellSelected(predicted, groundTruth, that.cmdata, that.labels);
+      DataStoreCellSelection.lineChartCellSelected(groundTruth, predicted, that.cmdata, that.labels);
     });
   }
 }
@@ -283,7 +283,7 @@ export class CombinedEpochCellRenderer extends ACellRenderer {
 
       const predicted = i % that.singleEpochData.order();
       const groundTruth = Math.floor(i / that.singleEpochData.order());
-      DataStoreCellSelection.combinedEpochCellSelected(predicted, groundTruth, that.lineData, that.singleEpochData, that.labels);
+      DataStoreCellSelection.combinedEpochCellSelected(groundTruth, predicted, that.lineData, that.singleEpochData, that.labels);
     });
   }
 }
