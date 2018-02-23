@@ -40,7 +40,8 @@ export class DetailView implements IAppView {
   }
 
   private attachListeners() {
-    events.on(AppConstants.COMBINED_EPOCH_CELL, () => {
+    const e = AppConstants.SINGLE_LINE + events.EventHandler.MULTI_EVENT_SEPARATOR + AppConstants.MULTI_LINE;
+    events.on(e, () => {
       if(this.selectedDetailView !== null && this.selectedDetailView.name === AppConstants.CHARTVIEW) {
         this.selectedDetailView.render();
       }
@@ -73,7 +74,6 @@ export class DetailView implements IAppView {
     $node.classed('selected', true);
     content.shouldDisplay(true);
     this.selectedDetailView = content;
-    content.render();
   }
 }
 

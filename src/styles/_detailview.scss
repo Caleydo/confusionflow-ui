@@ -29,9 +29,7 @@
   .view-body {
     .viewpanel-content {
       > svg {
-        position: absolute;
-        width: 800px;
-        height: 500px;
+        position: relative;
       }
     }
   }

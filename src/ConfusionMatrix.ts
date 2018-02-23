@@ -15,7 +15,7 @@ import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
-import {DataStoreEpoch} from './DataStore';
+import {DataStoreCellSelection, DataStoreEpoch} from './DataStore';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -31,6 +31,7 @@ export class ConfusionMatrix implements IAppView {
     this.$node = d3.select(parent)
       .append('div')
       .classed('grid', true);
+    DataStoreCellSelection.$grid = this.$node;
   }
 
   /**
@@ -146,13 +147,13 @@ export class ConfusionMatrix implements IAppView {
     const fnData = transformSq(fpData, (r, c, matrix) => {return {values: matrix.values[c][r].values, label: matrix.values[r][c].label};});
     console.assert(fpData.order() === data[0].order());
 
-    this.fpColumn.render(new MultilineChartCellRenderer(fpData, singleEpochIndex, this.fpColumn.$node));
+    this.fpColumn.render(new MultilineChartCellRenderer(fpData, singleEpochIndex, this.fpColumn.$node, labels));
 
     this.precisionColumn.render(new SingleLineChartCellRenderer(confMeasures.calcEvolution(data, confMeasures.PPV), true, singleEpochIndex, this.precisionColumn.$node));
 
     this.classSizeColumn.render(new LabelCellRenderer(confMeasures.calcForMultipleClasses(data[0], confMeasures.ClassSize), this.classSizeColumn.$node));
 
-    this.fnColumn.render(new MultilineChartCellRenderer(fnData, singleEpochIndex, this.fnColumn.$node));
+    this.fnColumn.render(new MultilineChartCellRenderer(fnData, singleEpochIndex, this.fnColumn.$node, labels));
   }
 
   private renderPanelsSingleEpoch(data: NumberMatrix, labels: [number, string]) {

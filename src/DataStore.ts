@@ -47,31 +47,29 @@ export class DataStoreEpoch {
 }
 
 export class DataStoreCellSelection {
+  static $grid: d3.Selection<any>;
+
   static rowIndex = -1;
   static colIndex = -1;
   static multiEpochData: SquareMatrix<IClassEvolution>;
   static singleEpochData: SquareMatrix<number>;
   static labels: [number, string];
-  static currentCellState: string;
+  static lineType: string;
 
-  static combinedEpochCellSelected(rowIndex: number, colIndex: number, multiEpochData: SquareMatrix<IClassEvolution>, singleEpochData: SquareMatrix<number>,
-                                   labels: [number, string]) {
+  static lineCellSelected(rowIndex: number, colIndex: number, multiEpochData: SquareMatrix<IClassEvolution>, singleEpochData: SquareMatrix<number>,
+                          labels: [number, string], type: string) {
     DataStoreCellSelection.rowIndex = rowIndex;
     DataStoreCellSelection.colIndex = colIndex;
     DataStoreCellSelection.singleEpochData = singleEpochData;
     DataStoreCellSelection.multiEpochData = multiEpochData;
     DataStoreCellSelection.labels = labels;
-    DataStoreCellSelection.currentCellState = AppConstants.COMBINED_EPOCH_CELL;
-    events.fire(DataStoreCellSelection.currentCellState);
+    DataStoreCellSelection.lineType = type;
+    events.fire(DataStoreCellSelection.lineType);
   }
 
-  static lineChartCellSelected(rowIndex: number, colIndex: number, multiEpochData: SquareMatrix<IClassEvolution>, labels: [number, string])  {
-    DataStoreCellSelection.rowIndex = rowIndex;
-    DataStoreCellSelection.colIndex = colIndex;
-    DataStoreCellSelection.multiEpochData = multiEpochData;
-    DataStoreCellSelection.labels = labels;
-    DataStoreCellSelection.currentCellState = AppConstants.MULTI_EPOCH_CELL;
-    events.fire(DataStoreCellSelection.currentCellState);
+  static deselectAllCells() {
+    //todo just store the current selected node and deselect just this oneö
+    const $allCells = DataStoreCellSelection.$grid.selectAll('.cell');
+    $allCells.classed('selected', false);
   }
-
 }

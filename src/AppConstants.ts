@@ -36,7 +36,7 @@ export class AppConstants {
     * @param labels {string[]}
     * @type {string}
     */
-  static COMBINED_EPOCH_CELL = 'combined_epoch_cell';
-  static MULTI_EPOCH_CELL = 'single_epoch_cell';
+  static MULTI_LINE = 'multi_line';
+  static SINGLE_LINE = 'single_line';
 
 }

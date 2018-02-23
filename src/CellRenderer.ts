@@ -53,7 +53,8 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
 
 export class MultilineChartCellRenderer extends ACellRenderer {
 
-  constructor(private data: SquareMatrix<IClassEvolution>, private singleEpochIndex: number, private $parent: d3.Selection<any>) {
+  constructor(private data: SquareMatrix<IClassEvolution>, private singleEpochIndex: number, private $parent: d3.Selection<any>,
+              private labels: [number, string]) {
     super();
   }
 
@@ -67,8 +68,19 @@ export class MultilineChartCellRenderer extends ACellRenderer {
     this.attachListener($cells);
     const that = this;
     $cells.each(function(d, i) {
-      const lineCount = d[0].values.length - 1;
-      new MultilineChart(d3.select(this)).render(d, maxVal, minVal, that.singleEpochIndex, lineCount);
+      new MultilineChart(d3.select(this)).render(d, maxVal, minVal, that.singleEpochIndex);
+    });
+  }
+
+  protected attachListener($cells: d3.Selection<any>) {
+    const that = this;
+    $cells.on('click', function (d, i) {
+      DataStoreCellSelection.deselectAllCells();
+      d3.select(this).classed('selected', true);
+
+      const predicted = i % that.data.order();
+      const groundTruth = Math.floor(i / that.data.order());
+      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.data, null, that.labels, AppConstants.MULTI_LINE);
     });
   }
 
@@ -186,6 +198,7 @@ export class HeatCellRenderer extends ACellRenderer {
   }
 }
 
+//todo check if we need this renderer
 export class ConfusionMatrixHeatCellRenderer extends HeatCellRenderer {
   constructor(private cmdata: NumberMatrix, version1D: number[], private labels: [number, string], $parent: d3.Selection<any>) {
     super(version1D, $parent);
@@ -194,9 +207,6 @@ export class ConfusionMatrixHeatCellRenderer extends HeatCellRenderer {
   // todo extract to function
   protected attachListener($cells: d3.Selection<any>) {
     const that = this;
-    $cells.on('click', function (d, i) {
-      //todo check if we need this renderer
-    });
   }
 }
 
@@ -209,12 +219,12 @@ export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRen
   protected attachListener($cells: d3.Selection<any>) {
     const that = this;
     $cells.on('click', function (d, i) {
-      $cells.classed('selected', false);
+      DataStoreCellSelection.deselectAllCells();
       d3.select(this).classed('selected', true);
 
       const predicted = i % that.cmdata.order();
       const groundTruth = Math.floor(i / that.cmdata.order());
-      DataStoreCellSelection.lineChartCellSelected(groundTruth, predicted, that.cmdata, that.labels);
+      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.cmdata, null, that.labels, AppConstants.SINGLE_LINE);
     });
   }
 }
@@ -278,12 +288,12 @@ export class CombinedEpochCellRenderer extends ACellRenderer {
   protected attachListener($cells: d3.Selection<any>) {
     const that = this;
     $cells.on('click', function (d, i) {
-      $cells.classed('selected', false);
+      DataStoreCellSelection.deselectAllCells();
       d3.select(this).classed('selected', true);
 
       const predicted = i % that.singleEpochData.order();
       const groundTruth = Math.floor(i / that.singleEpochData.order());
-      DataStoreCellSelection.combinedEpochCellSelected(groundTruth, predicted, that.lineData, that.singleEpochData, that.labels);
+      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.lineData, that.singleEpochData, that.labels, AppConstants.SINGLE_LINE);
     });
   }
 }

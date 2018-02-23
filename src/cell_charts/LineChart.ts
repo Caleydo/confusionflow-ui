@@ -79,16 +79,17 @@ export class MultilineChart {
     this.$node = $svg.append('g');
   }
 
-  render(data: IClassEvolution[], maxVal: number, minVal: number, singleEpochIndex: number, lineCount: number) {
+  render(data: IClassEvolution[], maxVal: number, minVal: number, singleEpochIndex: number) {
+    console.assert(data.length > 0);
     const $g = this.$node;
 
     const x = d3.scale.linear().rangeRound([0, this.width]);
     const y = d3.scale.linear().rangeRound([this.height, 0]);
     const z = d3.scale.category10();
 
-    x.domain([0, lineCount]);
+    x.domain([0, data[0].values.length - 1]);
     y.domain([minVal, maxVal]);
-    z.domain(data.map(function(c) { return c.label; }));
+    z.domain(data.map((c) => c.label));
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -98,10 +99,9 @@ export class MultilineChart {
         return y(d);
       });
 
-    const $epochLine = $g.selectAll('path.line')
+    const $epochLine = $g.selectAll('path')
     .data(data)
     .enter().append('path')
-      .attr('class', 'line')
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d) => z(d.label))
       .append('title')
