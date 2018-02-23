@@ -46,7 +46,7 @@
     },
     "ignores": [],
     "extensions": [
-       {
+      {
         "type": "malevoView",
         "id": "ConfusionMatrix",
         "module": "ConfusionMatrix",
