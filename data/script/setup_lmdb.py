@@ -7,6 +7,7 @@ import os
 import os.path
 import pickle
 
+# The setup script checks if this directory (which contains the LMDB files) already exists
 dbname = 'lmdb_cifar10_train'
 
 
