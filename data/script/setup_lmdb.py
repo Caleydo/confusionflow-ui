@@ -1,10 +1,13 @@
 from __future__ import print_function
 
+import shutil
 import lmdb
 # import numpy as np
 import os
 import os.path
 import pickle
+
+dbname = 'lmdb_cifar10_train'
 
 
 def download_cifar10(root):
@@ -21,9 +24,9 @@ def download_cifar10(root):
     os.makedirs(root)
 
   if os.path.isfile(fpath):
-    print('Cifar10 already downloaded')
+    print('CIFAR 10 already downloaded')
   else:
-    print('Downloading CIFAR10 from ' + url + ' to ' + fpath)
+    print('Downloading CIFAR 10 from ' + url + ' to ' + fpath)
     urllib.request.urlretrieve(url, fpath)
 
   cwd = os.getcwd()
@@ -32,6 +35,7 @@ def download_cifar10(root):
   tar.extractall()
   tar.close()
   os.chdir(cwd)
+  os.remove(fpath)
 
 
 def load_cifar_batch(filename, root):
@@ -43,15 +47,16 @@ def load_cifar_batch(filename, root):
 
 
 def setup_lmdb(root):
+  print('Setup CIFAR 10 LMDB ...')
+  batches_dir = os.path.join(root, 'cifar-10-batches-py')
   batch_files = [
-    'cifar-10-batches-py/data_batch_1',
-    'cifar-10-batches-py/data_batch_2',
-    'cifar-10-batches-py/data_batch_3',
-    'cifar-10-batches-py/data_batch_4',
-    'cifar-10-batches-py/data_batch_5']
+    'data_batch_1',
+    'data_batch_2',
+    'data_batch_3',
+    'data_batch_4',
+    'data_batch_5']
 
   root = os.path.expanduser(root)
-  dbname = 'lmdb_cifar10_train'
   dbpath = os.path.join(root, dbname)
 
   map_size = 10 * 30720000
@@ -60,7 +65,7 @@ def setup_lmdb(root):
   img_id = 0
 
   for filename in batch_files:
-    batch_data = load_cifar_batch(filename, root)
+    batch_data = load_cifar_batch(filename, batches_dir)
 
     # load and reshape images [N, C, H, W] ... image, channel, height, width
     images = batch_data[b'data'].reshape([-1, 3, 32, 32])
@@ -75,10 +80,17 @@ def setup_lmdb(root):
         txn.put(str_id, data)
         img_id += 1
 
+  shutil.rmtree(batches_dir)
 
 if __name__ == "__main__":
   cwd = os.path.dirname(os.path.realpath(__file__))
   root = os.path.join(cwd, '../images')
+  dbpath = os.path.join(root, './' + dbname)
 
-  download_cifar10(root)
-  setup_lmdb(root)
+  if not os.path.exists(dbpath):
+    print('Generating CIFAR 10 LMDB ...')
+    download_cifar10(root)
+    setup_lmdb(root)
+
+  else:
+    print('CIFAR 10 LMDB already exists. Exit.')
