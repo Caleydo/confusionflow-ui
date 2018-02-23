@@ -92,12 +92,8 @@ export class MultilineChart {
     z.domain(data.map((c) => c.label));
 
     const line = d3_shape.line()
-      .x((d, i) => {
-        return x(i);
-      })
-      .y((d) => {
-        return y(d);
-      });
+      .x((d, i) => x(i))
+      .y((d) => y(d));
 
     const $epochLine = $g.selectAll('path')
     .data(data)

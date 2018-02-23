@@ -29,14 +29,14 @@ export class AppConstants {
    */
   static EVENT_EPOCH_SELECTED = 'eventEpochSelected';
 
-   /**
-    * Fires when the user selects a cell in a confusion matrix
-    * @param predicted {number}
-    * @param groundTruth {number}
-    * @param labels {string[]}
-    * @type {string}
-    */
-  static MULTI_LINE = 'multi_line';
-  static SINGLE_LINE = 'single_line';
-
+  /**
+   * Represent the different cell types
+   * @type {string}
+   */
+  static MULTI_LINE_CHART_CELL = 'multi_line_chart_cell';
+  static SINGLE_LINE_CHART_CELL = 'single_line_chart_cell';
+  static BAR_CHART_CELL = 'bar_chart_cell';
+  static LABEL_CHART_CELL = 'label_chart_cell';
+  static HEATMAP_CELL = 'heatmap_cell';
+  static COMBINED_CELL = 'combined_cell';
 }

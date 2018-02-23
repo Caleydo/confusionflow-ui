@@ -4,12 +4,15 @@ import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, NumberMatrix} from '../DataStructures';
+import {Language} from '../language';
 
 export class DetailChartWindow extends ADetailWindow {
   private width: number;
   private height: number;
   private $g: d3.Selection<any> = null;
   private $svg: d3.Selection<any> = null;
+  private $label: d3.Selection<any> = null;
+  private readonly STROKE_WIDTH = 3;
 
   constructor(name: string, $parent: d3.Selection<any>) {
     super(name, $parent);
@@ -17,12 +20,36 @@ export class DetailChartWindow extends ADetailWindow {
     this.width = (<any>$parent[0][0]).clientWidth;
     this.height = (<any>$parent[0][0]).clientHeight;
 
+    this.$label = this.$node
+      .append('div')
+      .classed('chart-name', true);
+
     this.$svg = this.$node
       .append('svg')
       .attr('viewBox', `0 0 ${this.width} 500`);
   }
 
+  createLabel() {
+    let text = '';
+    switch(DataStoreCellSelection.cellName) {
+      case Language.FP:
+        text = 'False Positive Rate';
+        break;
+      case Language.FN:
+        text = 'False Negative Rate';
+        break;
+      case Language.PREDICTED_AS:
+        const rowLabel = DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.rowIndex].label;
+        const colLabel = DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.colIndex].label;
+        text = rowLabel + ' ' + Language.PREDICTED_AS + ' ' + colLabel;
+        break;
+    }
+    this.$label.text(text);
+  }
+
   render() {
+    console.assert(DataStoreCellSelection.multiEpochData !== null);
+    this.createLabel();
     const margin = {top: 20, right: 50, bottom: 30, left: 50};
     this.width = (<any>this.$node[0][0]).clientWidth - margin.left - margin.right;
     this.height = (<any>this.$node[0][0]).clientHeight - margin.top - margin.bottom;
@@ -42,13 +69,14 @@ export class DetailChartWindow extends ADetailWindow {
       .domain([0, maxVal]);
 
     this.renderAxis(x, y);
-    if(DataStoreCellSelection.lineType === AppConstants.SINGLE_LINE) {
+
+    // combined cells will be handled like single line cells
+    if(DataStoreCellSelection.type === AppConstants.SINGLE_LINE_CHART_CELL || DataStoreCellSelection.type === AppConstants.COMBINED_CELL) {
       const lineDataOneCell = DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.rowIndex][DataStoreCellSelection.colIndex];
       this.renderSingleLine(lineDataOneCell, x, y);
-    } else if(DataStoreCellSelection.lineType === AppConstants.MULTI_LINE) {
+    } else if(DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL) {
       this.renderMultiLine(DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.colIndex], x, y);
     }
-
   }
 
   renderAxis(x, y) {
@@ -70,18 +98,17 @@ export class DetailChartWindow extends ADetailWindow {
       .call(yAxis);
   }
 
-  renderSingleLine(lineDataOneCell, x, y) {
+  //TODO types for x and y
+  renderSingleLine(lineDataOneCell: IClassEvolution, x, y) {
     this.$g.classed('linechart', true);
     const line = d3_shape.line()
-      .x((d, i) => {
-        return x(i);
-      })
-      .y((d) => {
-        return y(d);
-      });
+      .x((d, i) => x(i))
+      .y((d) => y(d));
 
     this.$g.append('path')
-      .attr('d', line(lineDataOneCell.values));
+      .classed('detail-view-line', true)
+      .attr('d', line(lineDataOneCell.values))
+      .style('stroke-width', this.STROKE_WIDTH);
   }
 
   renderMultiLine(data: IClassEvolution[], x, y) {
@@ -90,18 +117,16 @@ export class DetailChartWindow extends ADetailWindow {
       .domain(data.map((c) => c.label));
 
     const line = d3_shape.line()
-      .x((d, i) => {
-        return x(i);
-      })
-      .y((d) => {
-        return y(d);
-      });
+      .x((d, i) => x(i))
+      .y((d) => y(d));
 
-    const $epochLine = this.$g.selectAll('path')
+    const $epochLine = this.$g.selectAll('.detail-view-line')
     .data(data)
     .enter().append('path')
+      .classed('detail-view-line', true)
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d) => z(d.label))
+      .style('stroke-width', this.STROKE_WIDTH)
       .append('title')
       .text((d) => d.label);
   }
