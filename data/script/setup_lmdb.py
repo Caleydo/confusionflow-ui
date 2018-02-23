@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import lmdb
-import numpy as np
+#import numpy as np
 import os
 import os.path
 import pickle
