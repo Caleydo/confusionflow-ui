@@ -6,6 +6,7 @@ import * as events from 'phovea_core/src/event';
 import {Language} from './language';
 import {getAPIData, getAPIJSON} from 'phovea_core/src/ajax';
 import {DataStore} from './DataStore';
+import {extractEpochId} from './utils';
 
 
 export class DummyDetailView implements IAppView {
@@ -48,8 +49,9 @@ export class DummyDetailView implements IAppView {
     this.$node.select('.title')
         .html(`<strong>${labels[groundTruth][1]}</strong> ${Language.PREDICTED_AS} <strong>${labels[predicted][1]}</strong>`);
 
-    // TODO make epochId dynamical
-    getAPIJSON(`/malevo/confmat/cell/imageIds?epochId=0&groundTruthId=${groundTruth}&predictedId=${predicted}`)
+    const epochId = extractEpochId(DataStore.singleSelected);
+
+    getAPIJSON(`/malevo/confmat/cell/imageIds?epochId=${epochId}&groundTruthId=${groundTruth}&predictedId=${predicted}`)
       .then((data: number[]) => {
         const imageIds = data.join(',');
         return getAPIData(`/malevo/images/imageSprite?imageIds=${imageIds}`, {}, 'blob');
@@ -59,8 +61,6 @@ export class DummyDetailView implements IAppView {
         this.$node.select('#sprite').attr('src', imageUrl);
       });
   }
-
-
 }
 
 /**

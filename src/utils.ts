@@ -1,5 +1,6 @@
 import {hsl as d3hsl} from 'd3';
 import * as d3 from 'd3';
+import {IMalevoEpochInfo} from './MalevoDataset';
 /**
  * Adapts the text color for a given background color
  * @param {string} bgColor as `#ff0000`
@@ -36,4 +37,17 @@ export function createTooltip($parent: d3.Selection<any>, $node: d3.Selection<an
       tooltip.attr('transform', 'translate(' + xPosition + ',' + yPosition + ')');
       tooltip.select('text').text(textFunc(d));
     });
+}
+
+/**
+ * Extracts a positive integer from the epoch name string
+ * @param {IMalevoEpochInfo} epoch
+ * @returns {number} Returns -1 if no matching number found. Otherwise returns the integer.
+ */
+export function extractEpochId(epoch: IMalevoEpochInfo): number {
+  const match = epoch.name.match(/[0-9]+/gi); // get a number
+  if(match === null) {
+    return -1;
+  }
+  return parseInt(match[0], 10);
 }
