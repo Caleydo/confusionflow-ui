@@ -11,7 +11,7 @@ export class DetailChartWindow extends ADetailWindow {
   private height: number;
   private $g: d3.Selection<any> = null;
   private $svg: d3.Selection<any> = null;
-  private $label: d3.Selection<any> = null;
+  private $header: d3.Selection<any> = null;
   private readonly STROKE_WIDTH = 3;
 
   constructor(name: string, $parent: d3.Selection<any>) {
@@ -20,16 +20,16 @@ export class DetailChartWindow extends ADetailWindow {
     this.width = (<any>$parent[0][0]).clientWidth;
     this.height = (<any>$parent[0][0]).clientHeight;
 
-    this.$label = this.$node
+    this.$header = this.$node
       .append('div')
       .classed('chart-name', true);
 
     this.$svg = this.$node
       .append('svg')
-      .attr('viewBox', `0 0 ${this.width} 500`);
+      .attr('viewBox', `-30 0 ${this.width} 300`);
   }
 
-  createLabel() {
+  createHeaderText() {
     let text = '';
     switch(DataStoreCellSelection.cellName) {
       case Language.FP:
@@ -44,12 +44,12 @@ export class DetailChartWindow extends ADetailWindow {
         text = rowLabel + ' ' + Language.PREDICTED_AS + ' ' + colLabel;
         break;
     }
-    this.$label.text(text);
+    this.$header.text(text);
   }
 
   render() {
     console.assert(DataStoreCellSelection.multiEpochData !== null);
-    this.createLabel();
+    this.createHeaderText();
     const margin = {top: 20, right: 50, bottom: 30, left: 50};
     this.width = (<any>this.$node[0][0]).clientWidth - margin.left - margin.right;
     this.height = (<any>this.$node[0][0]).clientHeight - margin.top - margin.bottom;
@@ -96,6 +96,18 @@ export class DetailChartWindow extends ADetailWindow {
     this.$g.append('g')
       .attr('class', 'chart-axis')
       .call(yAxis);
+
+    const axisDistance = 100;
+    // now add titles to the axes
+    this.$g.append('text')
+        .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
+        .attr('transform', 'translate('+ (-axisDistance/2) +','+(this.height/2)+')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
+        .text('Value');
+
+    this.$g.append('text')
+        .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
+        .attr('transform', 'translate('+ (this.width/2) +','+(this.height-(-axisDistance/3))+')')  // centre below axis
+        .text('Date');
   }
 
   //TODO types for x and y
