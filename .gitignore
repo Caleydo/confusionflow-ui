@@ -17,6 +17,9 @@ __pycache__/
 # due to using tox and pytest
 .tox
 .cache
-src/**/*.js
-src/**/*.css
-/node_modules/
+node_modules/
+/src/**/*.js
+/tests/**/*.js
+*.map
+*.css
+/.cache-loader
