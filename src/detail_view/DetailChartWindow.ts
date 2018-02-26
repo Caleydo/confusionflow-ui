@@ -14,8 +14,8 @@ export class DetailChartWindow extends ADetailWindow {
   private $header: d3.Selection<any> = null;
   private readonly STROKE_WIDTH = 3;
 
-  constructor(name: string, $parent: d3.Selection<any>) {
-    super(name, $parent);
+  constructor(id: string, name: string, $parent: d3.Selection<any>) {
+    super(id, name, $parent);
 
     this.width = (<any>$parent[0][0]).clientWidth;
     this.height = (<any>$parent[0][0]).clientHeight;
@@ -33,10 +33,10 @@ export class DetailChartWindow extends ADetailWindow {
     let text = '';
     switch(DataStoreCellSelection.cellName) {
       case Language.FP:
-        text = 'False Positive Rate';
+        text = Language.FP_RATE;
         break;
       case Language.FN:
-        text = 'False Negative Rate';
+        text = Language.FN_RATE;
         break;
       case Language.PREDICTED_AS:
         const rowLabel = DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.rowIndex].label;
@@ -102,12 +102,12 @@ export class DetailChartWindow extends ADetailWindow {
     this.$g.append('text')
         .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
         .attr('transform', 'translate('+ (-axisDistance/2) +','+(this.height/2)+')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
-        .text('Value');
+        .text(Language.VALUE);
 
     this.$g.append('text')
         .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
         .attr('transform', 'translate('+ (this.width/2) +','+(this.height-(-axisDistance/3))+')')  // centre below axis
-        .text('Epoch');
+        .text(Language.EPOCH);
   }
 
   //TODO types for x and y

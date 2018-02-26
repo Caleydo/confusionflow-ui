@@ -6,6 +6,7 @@ import * as events from 'phovea_core/src/event';
 import {DetailChartWindow} from './DetailChartWindow';
 import {DetailImageWindow} from './DetailImageWindow';
 import {ADetailWindow} from './ADetailWindow';
+import {Language} from '../language';
 
 
 export class DetailView implements IAppView {
@@ -23,8 +24,8 @@ export class DetailView implements IAppView {
       .append('div')
       .classed('view-body', true);
 
-    this.panelCollection.set(AppConstants.CHARTVIEW, new DetailChartWindow(AppConstants.CHARTVIEW, this.$viewbody));
-    this.panelCollection.set(AppConstants.IMAGEVIEW,  new DetailImageWindow(AppConstants.IMAGEVIEW, this.$viewbody));
+    this.panelCollection.set(AppConstants.CHART_VIEW, new DetailChartWindow(AppConstants.CHART_VIEW, Language.CHART_VIEW, this.$viewbody));
+    this.panelCollection.set(AppConstants.IMAGE_VIEW,  new DetailImageWindow(AppConstants.IMAGE_VIEW, Language.IMAGE_VIEW, this.$viewbody));
   }
 
   /**
@@ -44,7 +45,7 @@ export class DetailView implements IAppView {
       AppConstants.MULTI_LINE_CHART_CELL + events.EventHandler.MULTI_EVENT_SEPARATOR + AppConstants.COMBINED_CELL;
 
     events.on(e, () => {
-      if(this.selectedDetailView !== null && this.selectedDetailView.name === AppConstants.CHARTVIEW) {
+      if(this.selectedDetailView !== null && this.selectedDetailView.id === AppConstants.CHART_VIEW) {
         this.selectedDetailView.render();
       }
     });
@@ -70,8 +71,8 @@ export class DetailView implements IAppView {
     $div.exit().remove();
 
     // set a default view
-    const defaultView = AppConstants.CHARTVIEW;
-    this.selectView(this.panelCollection.get(defaultView), $div.filter((x) => x.name === defaultView));
+    const defaultView = AppConstants.CHART_VIEW;
+    this.selectView(this.panelCollection.get(defaultView), $div.filter((x) => x.id === defaultView));
   }
 
   private selectView(content: ADetailWindow, $node: d3.Selection<any>) {

@@ -2,12 +2,8 @@ export abstract class ADetailWindow {
 
   protected $node: d3.Selection<any>;
 
-  constructor(public name: string, protected $parent: d3.Selection<any>) {
+  constructor(public id: string, public name: string, protected $parent: d3.Selection<any>) {
     this.$node = $parent.append('div').classed('viewpanel-content', true).attr('id', this.id);
-  }
-
-  get id(): string {
-    return this.name.replace(/[ |&;$%@"<>()+,]/g, '').toLowerCase();
   }
 
   abstract render();
