@@ -50,6 +50,16 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
     });
   }
 
+  protected attachListener($cells: d3.Selection<any>) {
+    const that = this;
+    $cells.on('click', function (d, i) {
+      DataStoreCellSelection.deselectAllCells();
+      d3.select(this).classed('selected', true);
+
+      DataStoreCellSelection.lineCellSelected(i, 0, that.data, null, null, that.type, that.name);
+    });
+  }
+
   clearCells() {
     this.$parent.selectAll('div').remove();
   }

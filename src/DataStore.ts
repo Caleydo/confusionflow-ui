@@ -51,13 +51,13 @@ export class DataStoreCellSelection {
 
   static rowIndex = -1;
   static colIndex = -1;
-  static multiEpochData: SquareMatrix<IClassEvolution> = null;
-  static singleEpochData: SquareMatrix<number> = null;
+  static multiEpochData: Matrix<IClassEvolution> = null;
+  static singleEpochData: Matrix<number> = null;
   static labels: [number, string];
   static type: string;
   static cellName: string;
 
-  static lineCellSelected(rowIndex: number, colIndex: number, multiEpochData: SquareMatrix<IClassEvolution>, singleEpochData: SquareMatrix<number>,
+  static lineCellSelected(rowIndex: number, colIndex: number, multiEpochData: Matrix<IClassEvolution>, singleEpochData: SquareMatrix<number>,
                           labels: [number, string], type: string, name: string) {
     DataStoreCellSelection.rowIndex = rowIndex;
     DataStoreCellSelection.colIndex = colIndex;
