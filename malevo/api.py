@@ -29,19 +29,18 @@ root = os.path.join(cwd, '../data/images')
 
 @app.route("/confmat/cell/imageIds", methods=['GET'])
 def _get_image_ids():
-    # run_id = request.args.get('runId', '')
+    run_id = request.args.get('runId', 'cifar10_vgg19')
     epoch_id = request.args.get('epochId', 0)
     ground_truth_id = request.args.get('groundTruthId', 0)
     predicted_id = request.args.get('predictedId', 0)
     num_count = request.args.get('numCount', 100)
 
-    query = (epoch_id, ground_truth_id, predicted_id)
+    query = (run_id, epoch_id, ground_truth_id, predicted_id)
 
-    conn = sqlite3.connect(os.path.join(cwd, '../data/example.db'))
+    conn = sqlite3.connect(os.path.join(cwd, '../data/rundata.db'))
     c = conn.cursor()
-    c.execute("SELECT img_id FROM logs WHERE epoch_id = ? AND ground_truth = ? AND predicted = ?", query)
+    c.execute("SELECT img_id FROM logs WHERE run_id = ? AND epoch_id = ? AND ground_truth = ? AND predicted = ?", query)
     img_ids_tuples = c.fetchall()[:num_count]
-
     conn.close()
 
     return jsonify([img_id[0] for img_id in img_ids_tuples])

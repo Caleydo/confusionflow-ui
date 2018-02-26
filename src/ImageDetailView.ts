@@ -9,7 +9,7 @@ import {DataStore} from './DataStore';
 import {extractEpochId} from './utils';
 
 
-export class DummyDetailView implements IAppView {
+export class ImageDetailView implements IAppView {
 
   private readonly $node: d3.Selection<any>;
 
@@ -22,7 +22,7 @@ export class DummyDetailView implements IAppView {
   /**
    * Initialize the view and return a promise
    * that is resolved as soon the view is completely initialized.
-   * @returns {Promise<DummyDetailView>}
+   * @returns {Promise<ImageDetailView>}
    */
   init() {
     this.attachListeners();
@@ -49,9 +49,10 @@ export class DummyDetailView implements IAppView {
     this.$node.select('.title')
         .html(`<strong>${labels[groundTruth][1]}</strong> ${Language.PREDICTED_AS} <strong>${labels[predicted][1]}</strong>`);
 
+    const runId = DataStore.selectedDataset.name;
     const epochId = extractEpochId(DataStore.singleSelected);
 
-    getAPIJSON(`/malevo/confmat/cell/imageIds?epochId=${epochId}&groundTruthId=${groundTruth}&predictedId=${predicted}`)
+    getAPIJSON(`/malevo/confmat/cell/imageIds?runId=${runId}&epochId=${epochId}&groundTruthId=${groundTruth}&predictedId=${predicted}`)
       .then((data: number[]) => {
         const imageIds = data.join(',');
         return getAPIData(`/malevo/images/imageSprite?imageIds=${imageIds}`, {}, 'blob');
@@ -70,5 +71,5 @@ export class DummyDetailView implements IAppView {
  * @returns {ConfusionMatrix}
  */
 export function create(parent:Element, options:any) {
-  return new DummyDetailView(parent);
+  return new ImageDetailView(parent);
 }
