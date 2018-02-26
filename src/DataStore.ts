@@ -7,6 +7,9 @@ import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
 import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, min, NumberMatrix} from './DataStructures';
 
+/**
+ * Stores selection from dataset/run selector and timeline
+ */
 export class DataStoreEpoch {
   static singleSelected: IMalevoEpochInfo = null;
   static multiSelected: IMalevoEpochInfo[] = [];
@@ -46,6 +49,9 @@ export class DataStoreEpoch {
   }
 }
 
+/**
+ * Stores confusion matrix single cell selection
+ */
 export class DataStoreCellSelection {
   static $grid: d3.Selection<any>;
 
