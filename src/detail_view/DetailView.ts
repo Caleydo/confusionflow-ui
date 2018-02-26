@@ -18,7 +18,7 @@ export class DetailView implements IAppView {
   constructor(parent:Element) {
     this.$selectionPanel = d3.select(parent)
       .append('div')
-      .classed('selection-panel', true);
+      .classed('selection-panel-wrapper', true);
     this.$viewbody = d3.select(parent)
       .append('div')
       .classed('view-body', true);
@@ -55,10 +55,12 @@ export class DetailView implements IAppView {
     const $div = this.$selectionPanel.selectAll('div').data(Array.from(this.panelCollection.values()));
 
     const that = this;
-    $div.enter().append('div')
-      .classed('panel', true)
+    $div.enter().append('a')
+      .classed('selection-panel', true)
+      .attr('href', (d) => '#' + d.id)
       .text((x) => x.name)
       .on('click', function (content) {
+        (<MouseEvent>d3.event).preventDefault();
         $div.classed('selected', false);
         $div.each((d) => d.shouldDisplay(false));
         that.selectView(content, d3.select(this));
