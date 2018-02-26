@@ -3,7 +3,7 @@ import {DataStoreCellSelection} from '../DataStore';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
-import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, NumberMatrix} from '../DataStructures';
+import {IClassEvolution, max} from '../DataStructures';
 import {Language} from '../language';
 
 export class DetailChartWindow extends ADetailWindow {
@@ -26,7 +26,7 @@ export class DetailChartWindow extends ADetailWindow {
 
     this.$svg = this.$node
       .append('svg')
-      .attr('viewBox', `-30 0 ${this.width} 300`);
+      .attr('viewBox', `0 0 ${this.width} 500`);
   }
 
   createHeaderText() {
@@ -50,7 +50,7 @@ export class DetailChartWindow extends ADetailWindow {
   render() {
     console.assert(DataStoreCellSelection.multiEpochData !== null);
     this.createHeaderText();
-    const margin = {top: 20, right: 50, bottom: 30, left: 50};
+    const margin = {top: 5, right: 10, bottom: 65, left: 65}; // set left + bottom to show axis and labels
     this.width = (<any>this.$node[0][0]).clientWidth - margin.left - margin.right;
     this.height = (<any>this.$node[0][0]).clientHeight - margin.top - margin.bottom;
     if (this.$g !== null) {
@@ -107,7 +107,7 @@ export class DetailChartWindow extends ADetailWindow {
     this.$g.append('text')
         .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
         .attr('transform', 'translate('+ (this.width/2) +','+(this.height-(-axisDistance/3))+')')  // centre below axis
-        .text('Date');
+        .text('Epoch');
   }
 
   //TODO types for x and y
