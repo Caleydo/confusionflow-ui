@@ -24,7 +24,7 @@ app.url_map.converters['integerList'] = IntListConverter
 os.environ['SQLITE_TMPDIR'] = '/tmp'
 
 cwd = os.path.dirname(os.path.realpath(__file__))
-root = os.path.join(cwd, '../data/images')
+root = os.path.join(cwd, '../../_data/images')
 
 
 @app.route("/confmat/cell/imageIds", methods=['GET'])
@@ -37,7 +37,7 @@ def _get_image_ids():
 
     query = (run_id, epoch_id, ground_truth_id, predicted_id)
 
-    conn = sqlite3.connect(os.path.join(cwd, '../data/rundata.db'))
+    conn = sqlite3.connect(os.path.join(cwd, '../data/malevo_cifar10_rundata.db'))
     c = conn.cursor()
     c.execute("SELECT img_id FROM logs WHERE run_id = ? AND epoch_id = ? AND ground_truth = ? AND predicted = ?", query)
     img_ids_tuples = c.fetchall()[:num_count]
