@@ -8,14 +8,14 @@ import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {
   BarChartCellRenderer, ConfusionMatrixHeatCellRenderer, HeatCellRenderer, MultilineChartCellRenderer,
-  SingleLineChartCellRenderer, ConfusionMatrixLineChartCellRenderer, MultiEpochCellRenderer, LabelCellRenderer
+  SingleLineChartCellRenderer, ConfusionMatrixLineChartCellRenderer, CombinedEpochCellRenderer, LabelCellRenderer
 } from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
-import {DataStore} from './DataStore';
+import {DataStoreCellSelection, DataStoreEpoch} from './DataStore';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -31,6 +31,7 @@ export class ConfusionMatrix implements IAppView {
     this.$node = d3.select(parent)
       .append('div')
       .classed('grid', true);
+    DataStoreCellSelection.$grid = this.$node;
   }
 
   /**
@@ -104,16 +105,21 @@ export class ConfusionMatrix implements IAppView {
 
   private attachListeners() {
     events.on(AppConstants.EVENT_EPOCH_SELECTED, (evt) => {
+	  this.clearDetailView();
       this.updateViews();
     });
   }
 
+  clearDetailView() {
+	  events.fire(AppConstants.CLEAR_DETAIL_VIEW);
+  }
+
   updateViews() {
-    if(DataStore.isJustOneEpochSelected() === true) {
+    if(DataStoreEpoch.isJustOneEpochSelected() === true) {
       this.updateSingleEpoch();
-    } else if(DataStore.isRangeSelected() === true) {
+    } else if(DataStoreEpoch.isRangeSelected() === true) {
       this.updateEpochRange();
-    } else if(DataStore.isSingleAndRangeSelected() === true) {
+    } else if(DataStoreEpoch.isSingleAndRangeSelected() === true) {
       this.updateSingleAndEpochRange();
     } else {
       this.clearViews();
@@ -146,13 +152,16 @@ export class ConfusionMatrix implements IAppView {
     const fnData = transformSq(fpData, (r, c, matrix) => {return {values: matrix.values[c][r].values, label: matrix.values[r][c].label};});
     console.assert(fpData.order() === data[0].order());
 
-    this.fpColumn.render(new MultilineChartCellRenderer(fpData, singleEpochIndex, this.fpColumn.$node));
+    this.fpColumn.render(new MultilineChartCellRenderer(fpData, singleEpochIndex, this.fpColumn.$node, labels, Language.FP));
 
-    this.precisionColumn.render(new SingleLineChartCellRenderer(confMeasures.calcEvolution(data, confMeasures.PPV), true, singleEpochIndex, this.precisionColumn.$node));
+    this.precisionColumn.render(new SingleLineChartCellRenderer(confMeasures.calcEvolution(data, confMeasures.PPV), true,
+      singleEpochIndex, this.precisionColumn.$node, Language.PRECISION));
 
-    this.classSizeColumn.render(new LabelCellRenderer(confMeasures.calcForMultipleClasses(data[0], confMeasures.ClassSize), this.classSizeColumn.$node));
+    this.classSizeColumn.render(new LabelCellRenderer(confMeasures.calcForMultipleClasses(data[0], confMeasures.ClassSize),
+      this.classSizeColumn.$node, Language.CLASS_SIZE));
 
-    this.fnColumn.render(new MultilineChartCellRenderer(fnData, singleEpochIndex, this.fnColumn.$node));
+    this.fnColumn.render(new MultilineChartCellRenderer(fnData, singleEpochIndex,
+      this.fnColumn.$node, labels, Language.FN));
   }
 
   private renderPanelsSingleEpoch(data: NumberMatrix, labels: [number, string]) {
@@ -161,21 +170,21 @@ export class ConfusionMatrix implements IAppView {
     const fpData = bcCalculator.calculate(data, labels);
     const fnData = transformSq(fpData, (r, c, matrix) => {return {count: matrix.values[c][r].count, label: matrix.values[r][c].label};});
 
-    this.fpColumn.render(new BarChartCellRenderer(fpData, this.fpColumn.$node));
+    this.fpColumn.render(new BarChartCellRenderer(fpData, this.fpColumn.$node, Language.FP));
 
-    this.precisionColumn.render(new HeatCellRenderer(confMeasures.calcForMultipleClasses(data, confMeasures.PPV), this.precisionColumn.$node));
+    this.precisionColumn.render(new HeatCellRenderer(confMeasures.calcForMultipleClasses(data, confMeasures.PPV), this.precisionColumn.$node, Language.PRECISION));
 
-    this.classSizeColumn.render(new LabelCellRenderer(confMeasures.calcForMultipleClasses(data, confMeasures.ClassSize), this.classSizeColumn.$node));
+    this.classSizeColumn.render(new LabelCellRenderer(confMeasures.calcForMultipleClasses(data, confMeasures.ClassSize), this.classSizeColumn.$node, Language.CLASS_SIZE));
 
-    this.fnColumn.render(new BarChartCellRenderer(fnData, this.fnColumn.$node));
+    this.fnColumn.render(new BarChartCellRenderer(fnData, this.fnColumn.$node, Language.FN));
   }
 
   private updateEpochRange() {
     const promMultiEpoch = [];
-    for(const item of DataStore.multiSelected) {
+    for(const item of DataStoreEpoch.multiSelected) {
       promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
     }
-    const promLabels = this.loadLabels(DataStore.labels);
+    const promLabels = this.loadLabels(DataStoreEpoch.labels);
     promMultiEpoch.push(promLabels);
 
     Promise.all(promMultiEpoch).then((x: any) => {
@@ -188,8 +197,8 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private updateSingleEpoch() {
-    const confusionData = this.loadConfusionData(DataStore.singleSelected.confusionInfo);
-    const promLabels = this.loadLabels(DataStore.labels);
+    const confusionData = this.loadConfusionData(DataStoreEpoch.singleSelected.confusionInfo);
+    const promLabels = this.loadLabels(DataStoreEpoch.labels);
 
     Promise.all([confusionData, promLabels]).then((x:any) => {
       this.checkDataSanity([x[0]], x[1]);
@@ -201,16 +210,16 @@ export class ConfusionMatrix implements IAppView {
 
   private updateSingleAndEpochRange() {
     const promMultiEpoch = [];
-    for(const item of DataStore.multiSelected) {
+    for(const item of DataStoreEpoch.multiSelected) {
       promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
     }
-    const promSingleEpoch = this.loadConfusionData(DataStore.singleSelected.confusionInfo);
-    const promLabels = this.loadLabels(DataStore.labels);
+    const promSingleEpoch = this.loadConfusionData(DataStoreEpoch.singleSelected.confusionInfo);
+    const promLabels = this.loadLabels(DataStoreEpoch.labels);
 
     promMultiEpoch.push(promSingleEpoch);
     promMultiEpoch.push(promLabels);
 
-    const singleEpochIndex = DataStore.multiSelected.findIndex((x) => x === DataStore.singleSelected);
+    const singleEpochIndex = DataStoreEpoch.multiSelected.findIndex((x) => x === DataStoreEpoch.singleSelected);
 
     Promise.all(promMultiEpoch).then((x: any) => {
       const labels = x.splice(-1,1)[0];
@@ -271,7 +280,7 @@ export class ConfusionMatrix implements IAppView {
     const cellContent = calculator.calculate(data, labels);
     console.assert(cellContent.order() === data[0].order());
 
-    new ConfusionMatrixLineChartCellRenderer(cellContent, true, -1, labels, this.$confusionMatrix).renderCells();
+    new ConfusionMatrixLineChartCellRenderer(cellContent, true, -1, labels, this.$confusionMatrix, Language.PREDICTED_AS).renderCells();
   }
 
   private renderSingleEpoch(data: NumberMatrix, labels: [number, string]) {
@@ -280,7 +289,7 @@ export class ConfusionMatrix implements IAppView {
     }
     data = data.clone();
     setDiagonal(data, (r) => {return 0;});
-    new ConfusionMatrixHeatCellRenderer(data, data.to1DArray(), labels, this.$confusionMatrix).renderCells();
+    new ConfusionMatrixHeatCellRenderer(data, data.to1DArray(), labels, this.$confusionMatrix, Language.PREDICTED_AS).renderCells();
   }
 
   private renderCombined(multiEpochData: NumberMatrix[], singleEpochData: NumberMatrix, labels: [number, string], singleEpochIndex: number) {
@@ -293,7 +302,7 @@ export class ConfusionMatrix implements IAppView {
     const calculator = new LineChartCalculator();
     const lineData = calculator.calculate(multiEpochData, labels);
 
-    new MultiEpochCellRenderer(lineData, singleEpochData, true, labels, singleEpochIndex, this.$confusionMatrix).renderCells();
+    new CombinedEpochCellRenderer(lineData, singleEpochData, true, labels, singleEpochIndex, this.$confusionMatrix, Language.PREDICTED_AS).renderCells();
   }
 
   private clearViews() {

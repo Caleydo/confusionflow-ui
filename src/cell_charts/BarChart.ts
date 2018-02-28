@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import {IClassAffiliation} from './DataStructures';
+import {IClassAffiliation} from '../DataStructures';
 
 export class BarChart {
   private readonly $node: d3.Selection<any>;

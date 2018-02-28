@@ -1,7 +1,7 @@
 /**
  * Created by Martin on 01.02.2018.
  */
-import {IClassEvolution} from './DataStructures';
+import {IClassEvolution} from '../DataStructures';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 
@@ -67,7 +67,7 @@ export class MultilineChart {
   private readonly width: number;
   private readonly height: number;
 
-  constructor($parent: d3.Selection<any>, private lineCount: number) {
+  constructor($parent: d3.Selection<any>) {
     this.width = (<any>$parent[0][0]).clientWidth;
     this.height = (<any>$parent[0][0]).clientHeight;
 
@@ -80,28 +80,24 @@ export class MultilineChart {
   }
 
   render(data: IClassEvolution[], maxVal: number, minVal: number, singleEpochIndex: number) {
+    console.assert(data.length > 0);
     const $g = this.$node;
 
     const x = d3.scale.linear().rangeRound([0, this.width]);
     const y = d3.scale.linear().rangeRound([this.height, 0]);
     const z = d3.scale.category10();
 
-    x.domain([0, this.lineCount]);
+    x.domain([0, data[0].values.length - 1]);
     y.domain([minVal, maxVal]);
-    z.domain(data.map(function(c) { return c.label; }));
+    z.domain(data.map((c) => c.label));
 
     const line = d3_shape.line()
-      .x((d, i) => {
-        return x(i);
-      })
-      .y((d) => {
-        return y(d);
-      });
+      .x((d, i) => x(i))
+      .y((d) => y(d));
 
-    const $epochLine = $g.selectAll('path.line')
+    const $epochLine = $g.selectAll('path')
     .data(data)
     .enter().append('path')
-      .attr('class', 'line')
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d) => z(d.label))
       .append('title')

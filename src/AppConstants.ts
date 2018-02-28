@@ -12,11 +12,25 @@ export class AppConstants {
 
   static EVENT_RESIZE = 'eventResize';
 
+  static BW_COLOR_SCALE = ['white', 'gray'];
+
+  /**
+   * Ids for different detail view tabs
+   * @type {string}
+   */
+  static CHART_VIEW = 'chartView';
+  static IMAGE_VIEW = 'imageView';
+
   /**
    * Fires when the use selects a dataset from the selector
    * @type {string}
    */
   static EVENT_DATA_COLLECTION_SELECTED = 'eventDataCollectionSelected';
+
+  /**
+   * Fires when the detail view should be cleared
+   */
+  static CLEAR_DETAIL_VIEW = 'clearDetailView';
 
   /**
    * Fires when the user selects a timepoint (epoch)
@@ -25,18 +39,13 @@ export class AppConstants {
   static EVENT_EPOCH_SELECTED = 'eventEpochSelected';
 
   /**
-   * Fires when the user selects a cell in a confusion matrix
-   * @param predicted {number}
-   * @param groundTruth {number}
-   * @param labels {string[]}
+   * Represent the different cell types
    * @type {string}
    */
-  static EVENT_CELL_SELECTED = 'eventCellSelected';
-
-
-  static BW_COLOR_SCALE = ['white', 'gray'];
-
-  static CONFUSION_MATRIX_CELL = 'confusion_matrix_cell';
-
-  static BAR = 'bar';
+  static MULTI_LINE_CHART_CELL = 'multi_line_chart_cell';
+  static SINGLE_LINE_CHART_CELL = 'single_line_chart_cell';
+  static BAR_CHART_CELL = 'bar_chart_cell';
+  static LABEL_CHART_CELL = 'label_chart_cell';
+  static HEATMAP_CELL = 'heatmap_cell';
+  static COMBINED_CELL = 'combined_cell';
 }

@@ -2,15 +2,18 @@
  * Created by Martin on 29.01.2018.
  */
 
-import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, min, NumberMatrix} from './DataStructures';
-import {BarChart} from './BarChart';
-import {LineChart, MultilineChart} from './LineChart';
+import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, NumberMatrix} from './DataStructures';
+import {BarChart} from './cell_charts/BarChart';
+import {LineChart, MultilineChart} from './cell_charts/LineChart';
 import * as d3 from 'd3';
 import {adaptTextColorToBgColor} from './utils';
 import {AppConstants} from './AppConstants';
-import * as events from 'phovea_core/src/event';
+import {DataStoreCellSelection} from './DataStore';
 
 export abstract class ACellRenderer {
+  constructor(public type: string, public name: string) {
+  }
+
   abstract renderCells();
 
   protected attachListener($cells: d3.Selection<any>) {
@@ -21,8 +24,9 @@ export abstract class ACellRenderer {
 
 export class SingleLineChartCellRenderer extends ACellRenderer {
 
-  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, private singleEpochIndex: number, protected $parent: d3.Selection<any>) {
-    super();
+  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, private singleEpochIndex: number,
+              protected $parent: d3.Selection<any>, name: string) {
+    super(AppConstants.SINGLE_LINE_CHART_CELL, name);
   }
 
   renderCells() {
@@ -46,6 +50,16 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
     });
   }
 
+  protected attachListener($cells: d3.Selection<any>) {
+    const that = this;
+    $cells.on('click', function (d, i) {
+      DataStoreCellSelection.deselectAllCells();
+      d3.select(this).classed('selected', true);
+
+      DataStoreCellSelection.lineCellSelected(i, 0, that.data, null, null, that.type, that.name);
+    });
+  }
+
   clearCells() {
     this.$parent.selectAll('div').remove();
   }
@@ -53,8 +67,9 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
 
 export class MultilineChartCellRenderer extends ACellRenderer {
 
-  constructor(private data: SquareMatrix<IClassEvolution>, private singleEpochIndex: number, private $parent: d3.Selection<any>) {
-    super();
+  constructor(private data: SquareMatrix<IClassEvolution>, private singleEpochIndex: number, private $parent: d3.Selection<any>,
+              private labels: [number, string], name: string) {
+    super(AppConstants.MULTI_LINE_CHART_CELL, name);
   }
 
   renderCells() {
@@ -67,8 +82,19 @@ export class MultilineChartCellRenderer extends ACellRenderer {
     this.attachListener($cells);
     const that = this;
     $cells.each(function(d, i) {
-      const lineCount = d[0].values.length - 1;
-      new MultilineChart(d3.select(this), lineCount).render(d, maxVal, minVal, that.singleEpochIndex);
+      new MultilineChart(d3.select(this)).render(d, maxVal, minVal, that.singleEpochIndex);
+    });
+  }
+
+  protected attachListener($cells: d3.Selection<any>) {
+    const that = this;
+    $cells.on('click', function (d, i) {
+      DataStoreCellSelection.deselectAllCells();
+      d3.select(this).classed('selected', true);
+
+      const predicted = i % that.data.order();
+      const groundTruth = Math.floor(i / that.data.order());
+      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.data, null, that.labels, that.type, that.name);
     });
   }
 
@@ -79,8 +105,8 @@ export class MultilineChartCellRenderer extends ACellRenderer {
 
 export class BarChartCellRenderer extends ACellRenderer {
 
-  constructor(private data: SquareMatrix<IClassAffiliation>, private $parent: d3.Selection<any>) {
-      super();
+  constructor(private data: SquareMatrix<IClassAffiliation>, private $parent: d3.Selection<any>, name: string) {
+      super(AppConstants.BAR_CHART_CELL, name);
   }
 
   renderCells() {
@@ -121,8 +147,8 @@ export class BarChartCellRenderer extends ACellRenderer {
 }
 
 export class LabelCellRenderer extends ACellRenderer {
-  constructor(private data: number[], protected $parent: d3.Selection<any>) {
-    super();
+  constructor(private data: number[], protected $parent: d3.Selection<any>, name: string) {
+    super(AppConstants.LABEL_CHART_CELL, name);
   }
 
   renderCells() {
@@ -151,8 +177,8 @@ export class LabelCellRenderer extends ACellRenderer {
 
 export class HeatCellRenderer extends ACellRenderer {
 
-  constructor(private data: number[], protected $parent: d3.Selection<any>) {
-    super();
+  constructor(private data: number[], protected $parent: d3.Selection<any>, name: string) {
+    super(AppConstants.HEATMAP_CELL, name);
   }
 
   renderCells() {
@@ -186,51 +212,43 @@ export class HeatCellRenderer extends ACellRenderer {
   }
 }
 
+//todo check if we need this renderer
 export class ConfusionMatrixHeatCellRenderer extends HeatCellRenderer {
-  constructor(private cmdata: NumberMatrix, version1D: number[], private labels: [number, string], $parent: d3.Selection<any>) {
-    super(version1D, $parent);
+  constructor(private cmdata: NumberMatrix, version1D: number[], private labels: [number, string], $parent: d3.Selection<any>, name: string) {
+    super(version1D, $parent, name);
   }
 
   // todo extract to function
   protected attachListener($cells: d3.Selection<any>) {
     const that = this;
-    $cells.on('click', function (d, i) {
-      $cells.classed('selected', false);
-      d3.select(this).classed('selected', true);
-
-      const predicted = i % that.cmdata.order();
-      const groundTruth = Math.floor(i / that.cmdata.order());
-      events.fire(AppConstants.EVENT_CELL_SELECTED, AppConstants.CONFUSION_MATRIX_CELL, predicted, groundTruth, that.labels);
-    });
   }
 }
 
 export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRenderer {
   constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines, singleEpochIndex: number, private labels: [number, string],
-              $parent: d3.Selection<any>) {
-    super(cmdata, filterZeroLines, singleEpochIndex, $parent);
+              $parent: d3.Selection<any>, name: string) {
+    super(cmdata, filterZeroLines, singleEpochIndex, $parent, name);
   }
 
-  // todo extract to function
   protected attachListener($cells: d3.Selection<any>) {
     const that = this;
     $cells.on('click', function (d, i) {
-      $cells.classed('selected', false);
+      DataStoreCellSelection.deselectAllCells();
       d3.select(this).classed('selected', true);
 
       const predicted = i % that.cmdata.order();
       const groundTruth = Math.floor(i / that.cmdata.order());
-      events.fire(AppConstants.EVENT_CELL_SELECTED, AppConstants.CONFUSION_MATRIX_CELL, predicted, groundTruth, that.labels);
+      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.cmdata, null, that.labels, that.type, that.name);
     });
   }
 }
 
 interface ICombinedType {linedata: IClassEvolution; hmdata: number; }
 
-export class MultiEpochCellRenderer extends ACellRenderer {
+export class CombinedEpochCellRenderer extends ACellRenderer {
   constructor(private lineData: SquareMatrix<IClassEvolution>, private singleEpochData: SquareMatrix<number>, private filterZeroLines = true,
-              private labels: [number, string], private singleEpochIndex: number, private $parent: d3.Selection<any>) {
-    super();
+              private labels: [number, string], private singleEpochIndex: number, private $parent: d3.Selection<any>, name: string) {
+    super(AppConstants.COMBINED_CELL, name);
   }
 
   renderCells() {
@@ -284,13 +302,12 @@ export class MultiEpochCellRenderer extends ACellRenderer {
   protected attachListener($cells: d3.Selection<any>) {
     const that = this;
     $cells.on('click', function (d, i) {
-      $cells.classed('selected', false);
+      DataStoreCellSelection.deselectAllCells();
       d3.select(this).classed('selected', true);
 
-      //todo implement
-      /*const predicted = i % that.cmdata.order();
-      const groundTruth = Math.floor(i / that.cmdata.order());
-      events.fire(AppConstants.EVENT_CELL_SELECTED, AppConstants.CONFUSION_MATRIX_CELL, predicted, groundTruth, that.labels);*/
+      const predicted = i % that.singleEpochData.order();
+      const groundTruth = Math.floor(i / that.singleEpochData.order());
+      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.lineData, that.singleEpochData, that.labels, that.type, that.name);
     });
   }
 }
