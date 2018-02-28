@@ -109,9 +109,9 @@ export class ConfusionMatrix implements IAppView {
       this.updateViews();
     });
   }
-  
+
   clearDetailView() {
-	events.fire(AppConstants.CLEAR_DETAIL_VIEW);
+	  events.fire(AppConstants.CLEAR_DETAIL_VIEW);
   }
 
   updateViews() {

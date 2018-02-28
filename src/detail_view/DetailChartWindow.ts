@@ -46,7 +46,7 @@ export class DetailChartWindow extends ADetailWindow {
     }
     this.$header.text(text);
   }
-  
+
   clear() {
 	  if(this.$g !== null) {
 		this.$g.remove();
@@ -71,8 +71,6 @@ export class DetailChartWindow extends ADetailWindow {
       .rangeRound([0, this.width])
       .domain([0, DataStoreCellSelection.multiEpochData.values[0][0].values.length - 1]);
 
-    
-
     const y = d3.scale.linear()
       .rangeRound([this.height, 0])
       .domain([0, maxVal]);
@@ -93,23 +91,22 @@ export class DetailChartWindow extends ADetailWindow {
     const x = d3.scale.ordinal()
       .domain(values)
       .rangePoints([0, this.width]);
-	
+
 	//todo these are magic constants: use a more sophisticated algo to solve this
 	let tickFrequency = 1;
 	if(values.length > 20) {
 		tickFrequency = 4;
 	}
-	
-	
+
 	const ticks = values.filter((x, i) => i % tickFrequency == 0 );
-    const xAxis = d3.svg.axis()
-      .scale(x)
+	const xAxis = d3.svg.axis()
+    .scale(x)
 	  .tickValues(ticks);
 
-    this.$g.append('g')
-      .attr('class', 'chart-axis-x')
-      .attr('transform', 'translate(0,' + this.height + ')')
-      .call(xAxis);
+	this.$g.append('g')
+    .attr('class', 'chart-axis-x')
+    .attr('transform', 'translate(0,' + this.height + ')')
+    .call(xAxis);
 
 
     const yAxis = d3.svg.axis()
@@ -131,12 +128,12 @@ export class DetailChartWindow extends ADetailWindow {
         .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
         .attr('transform', 'translate('+ (this.width/2) +','+(this.height-(-axisDistance))+')')  // centre below axis
         .text(Language.EPOCH);
-		
-	this.$g.selectAll(".chart-axis-x text")  // select all the text elements for the xaxis
-          .attr("transform", function(d) {
-             return "translate(" + this.getBBox().height*-2 + "," + this.getBBox().height + ")rotate(-45)";
+
+	  this.$g.selectAll('.chart-axis-x text')  // select all the text elements for the xaxis
+          .attr('transform', function(d) {
+             return 'translate(' + this.getBBox().height*-2 + ',' + this.getBBox().height + ')rotate(-45)';
          });
-  }
+    }
 
   //TODO types for x and y
   renderSingleLine(lineDataOneCell: IClassEvolution, x, y) {
