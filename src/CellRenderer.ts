@@ -17,7 +17,9 @@ export abstract class ACellRenderer {
   abstract renderCells();
 
   protected attachListener($cells: d3.Selection<any>) {
-    const x = 0; // just to get rid of linter error
+    $cells.on('click',  () => {
+      const x = 0; // just to get rid of linter error
+    });
   }
   abstract clearCells();
 }
@@ -209,18 +211,6 @@ export class HeatCellRenderer extends ACellRenderer {
 
   clearCells() {
     this.$parent.selectAll('div').remove();
-  }
-}
-
-//todo check if we need this renderer
-export class ConfusionMatrixHeatCellRenderer extends HeatCellRenderer {
-  constructor(private cmdata: NumberMatrix, version1D: number[], private labels: [number, string], $parent: d3.Selection<any>, name: string) {
-    super(version1D, $parent, name);
-  }
-
-  // todo extract to function
-  protected attachListener($cells: d3.Selection<any>) {
-    const that = this;
   }
 }
 

@@ -7,7 +7,7 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {
-  BarChartCellRenderer, ConfusionMatrixHeatCellRenderer, HeatCellRenderer, MultilineChartCellRenderer,
+  BarChartCellRenderer, HeatCellRenderer, MultilineChartCellRenderer,
   SingleLineChartCellRenderer, ConfusionMatrixLineChartCellRenderer, CombinedEpochCellRenderer, LabelCellRenderer
 } from './CellRenderer';
 import {adaptTextColorToBgColor} from './utils';
@@ -289,7 +289,7 @@ export class ConfusionMatrix implements IAppView {
     }
     data = data.clone();
     setDiagonal(data, (r) => {return 0;});
-    new ConfusionMatrixHeatCellRenderer(data, data.to1DArray(), labels, this.$confusionMatrix, Language.PREDICTED_AS).renderCells();
+    new HeatCellRenderer(data.to1DArray(), this.$confusionMatrix, Language.PREDICTED_AS).renderCells();
   }
 
   private renderCombined(multiEpochData: NumberMatrix[], singleEpochData: NumberMatrix, labels: [number, string], singleEpochIndex: number) {
