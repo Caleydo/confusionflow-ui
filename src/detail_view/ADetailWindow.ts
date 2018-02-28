@@ -7,6 +7,7 @@ export abstract class ADetailWindow {
   }
 
   abstract render();
+  abstract clear();
 
   shouldDisplay(show = true) {
     if(show) {

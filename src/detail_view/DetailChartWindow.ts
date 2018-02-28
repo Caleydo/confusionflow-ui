@@ -1,5 +1,5 @@
 import {ADetailWindow} from './ADetailWindow';
-import {DataStoreCellSelection} from '../DataStore';
+import {DataStoreCellSelection, DataStoreEpoch} from '../DataStore';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
@@ -46,11 +46,18 @@ export class DetailChartWindow extends ADetailWindow {
     }
     this.$header.text(text);
   }
+  
+  clear() {
+	  if(this.$g !== null) {
+		this.$g.remove();
+		this.$g = null;
+	  }
+  }
 
   render() {
     console.assert(DataStoreCellSelection.multiEpochData !== null);
     this.createHeaderText();
-    const margin = {top: 5, right: 10, bottom: 65, left: 65}; // set left + bottom to show axis and labels
+    const margin = {top: 5, right: 10, bottom: 140, left: 65}; // set left + bottom to show axis and labels
     this.width = (<any>this.$node[0][0]).clientWidth - margin.left - margin.right;
     this.height = (<any>this.$node[0][0]).clientHeight - margin.top - margin.bottom;
     if (this.$g !== null) {
@@ -64,11 +71,13 @@ export class DetailChartWindow extends ADetailWindow {
       .rangeRound([0, this.width])
       .domain([0, DataStoreCellSelection.multiEpochData.values[0][0].values.length - 1]);
 
+    
+
     const y = d3.scale.linear()
       .rangeRound([this.height, 0])
       .domain([0, maxVal]);
 
-    this.renderAxis(x, y);
+    this.renderAxis(y);
 
     // combined cells will be handled like single line cells
     if(DataStoreCellSelection.type === AppConstants.SINGLE_LINE_CHART_CELL || DataStoreCellSelection.type === AppConstants.COMBINED_CELL) {
@@ -79,12 +88,26 @@ export class DetailChartWindow extends ADetailWindow {
     }
   }
 
-  renderAxis(x, y) {
+  renderAxis(y) {
+    const values = DataStoreEpoch.multiSelected.map((x) => x.name);
+    const x = d3.scale.ordinal()
+      .domain(values)
+      .rangePoints([0, this.width]);
+	
+	//todo these are magic constants: use a more sophisticated algo to solve this
+	let tickFrequency = 1;
+	if(values.length > 20) {
+		tickFrequency = 4;
+	}
+	
+	
+	const ticks = values.filter((x, i) => i % tickFrequency == 0 );
     const xAxis = d3.svg.axis()
-      .scale(x);
+      .scale(x)
+	  .tickValues(ticks);
 
     this.$g.append('g')
-      .attr('class', 'chart-axis')
+      .attr('class', 'chart-axis-x')
       .attr('transform', 'translate(0,' + this.height + ')')
       .call(xAxis);
 
@@ -94,7 +117,7 @@ export class DetailChartWindow extends ADetailWindow {
       .orient('left');
 
     this.$g.append('g')
-      .attr('class', 'chart-axis')
+      .attr('class', 'chart-axis-y')
       .call(yAxis);
 
     const axisDistance = 100;
@@ -106,8 +129,13 @@ export class DetailChartWindow extends ADetailWindow {
 
     this.$g.append('text')
         .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-        .attr('transform', 'translate('+ (this.width/2) +','+(this.height-(-axisDistance/3))+')')  // centre below axis
+        .attr('transform', 'translate('+ (this.width/2) +','+(this.height-(-axisDistance))+')')  // centre below axis
         .text(Language.EPOCH);
+		
+	this.$g.selectAll(".chart-axis-x text")  // select all the text elements for the xaxis
+          .attr("transform", function(d) {
+             return "translate(" + this.getBBox().height*-2 + "," + this.getBBox().height + ")rotate(-45)";
+         });
   }
 
   //TODO types for x and y

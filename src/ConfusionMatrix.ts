@@ -105,8 +105,13 @@ export class ConfusionMatrix implements IAppView {
 
   private attachListeners() {
     events.on(AppConstants.EVENT_EPOCH_SELECTED, (evt) => {
+	  this.clearDetailView();
       this.updateViews();
     });
+  }
+  
+  clearDetailView() {
+	events.fire(AppConstants.CLEAR_DETAIL_VIEW);
   }
 
   updateViews() {

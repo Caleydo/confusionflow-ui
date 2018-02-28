@@ -5,4 +5,7 @@ export class DetailImageWindow extends ADetailWindow {
   render() {
     // to implement
   }
+  
+  clear() {
+  }
 }

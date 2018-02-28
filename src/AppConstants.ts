@@ -26,6 +26,12 @@ export class AppConstants {
    * @type {string}
    */
   static EVENT_DATA_COLLECTION_SELECTED = 'eventDataCollectionSelected';
+  
+  
+  /**
+   * Fires when the detail view should be cleared
+  **/
+  static CLEAR_DETAIL_VIEW = 'clearDetailView';
 
   /**
    * Fires when the user selects a timepoint (epoch)

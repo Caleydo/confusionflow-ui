@@ -49,6 +49,10 @@ export class DetailView implements IAppView {
         this.selectedDetailView.render();
       }
     });
+	
+	events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
+		this.selectedDetailView.clear();
+	});
   }
 
   private createSelectionPanel() {
