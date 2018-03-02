@@ -11,7 +11,7 @@ import {AppConstants} from './AppConstants';
 import {DataStoreCellSelection} from './DataStore';
 
 export abstract class ACellRenderer {
-  constructor(public type: string, public name: string) {
+  constructor(public type: string) {
   }
 
   abstract renderCells();
@@ -27,8 +27,8 @@ export abstract class ACellRenderer {
 export class SingleLineChartCellRenderer extends ACellRenderer {
 
   constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, private singleEpochIndex: number,
-              protected $parent: d3.Selection<any>, name: string) {
-    super(AppConstants.SINGLE_LINE_CHART_CELL, name);
+              protected $parent: d3.Selection<any>, type: string) {
+    super(type);
   }
 
   renderCells() {
@@ -58,7 +58,7 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
       DataStoreCellSelection.deselectAllCells();
       d3.select(this).classed('selected', true);
 
-      DataStoreCellSelection.lineCellSelected(i, 0, that.data, null, null, that.type, that.name);
+      DataStoreCellSelection.lineCellSelected(i, 0, that.data, null, null, that.type);
     });
   }
 
@@ -70,8 +70,8 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
 export class MultilineChartCellRenderer extends ACellRenderer {
 
   constructor(private data: SquareMatrix<IClassEvolution>, private singleEpochIndex: number, private $parent: d3.Selection<any>,
-              private labels: [number, string], name: string) {
-    super(AppConstants.MULTI_LINE_CHART_CELL, name);
+              private labels: [number, string], type: string) {
+    super(type);
   }
 
   renderCells() {
@@ -96,7 +96,7 @@ export class MultilineChartCellRenderer extends ACellRenderer {
 
       const predicted = i % that.data.order();
       const groundTruth = Math.floor(i / that.data.order());
-      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.data, null, that.labels, that.type, that.name);
+      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.data, null, that.labels, that.type);
     });
   }
 
@@ -107,8 +107,8 @@ export class MultilineChartCellRenderer extends ACellRenderer {
 
 export class BarChartCellRenderer extends ACellRenderer {
 
-  constructor(private data: SquareMatrix<IClassAffiliation>, private $parent: d3.Selection<any>, name: string) {
-      super(AppConstants.BAR_CHART_CELL, name);
+  constructor(private data: SquareMatrix<IClassAffiliation>, private $parent: d3.Selection<any>, type: string) {
+      super(type);
   }
 
   renderCells() {
@@ -149,8 +149,8 @@ export class BarChartCellRenderer extends ACellRenderer {
 }
 
 export class LabelCellRenderer extends ACellRenderer {
-  constructor(private data: number[], protected $parent: d3.Selection<any>, name: string) {
-    super(AppConstants.LABEL_CHART_CELL, name);
+  constructor(private data: number[], protected $parent: d3.Selection<any>, type: string) {
+    super(type);
   }
 
   renderCells() {
@@ -179,8 +179,8 @@ export class LabelCellRenderer extends ACellRenderer {
 
 export class HeatCellRenderer extends ACellRenderer {
 
-  constructor(private data: number[], protected $parent: d3.Selection<any>, name: string) {
-    super(AppConstants.HEATMAP_CELL, name);
+  constructor(private data: number[], protected $parent: d3.Selection<any>, type: string) {
+    super(type);
   }
 
   renderCells() {
@@ -215,9 +215,9 @@ export class HeatCellRenderer extends ACellRenderer {
 }
 
 export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRenderer {
-  constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines, singleEpochIndex: number, private labels: [number, string],
-              $parent: d3.Selection<any>, name: string) {
-    super(cmdata, filterZeroLines, singleEpochIndex, $parent, name);
+  constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines: boolean, singleEpochIndex: number, private labels: [number, string],
+              $parent: d3.Selection<any>, type: string) {
+    super(cmdata, filterZeroLines, singleEpochIndex, $parent, type);
   }
 
   protected attachListener($cells: d3.Selection<any>) {
@@ -228,7 +228,7 @@ export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRen
 
       const predicted = i % that.cmdata.order();
       const groundTruth = Math.floor(i / that.cmdata.order());
-      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.cmdata, null, that.labels, that.type, that.name);
+      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.cmdata, null, that.labels, that.type);
     });
   }
 }
@@ -237,8 +237,8 @@ interface ICombinedType {linedata: IClassEvolution; hmdata: number; }
 
 export class CombinedEpochCellRenderer extends ACellRenderer {
   constructor(private lineData: SquareMatrix<IClassEvolution>, private singleEpochData: SquareMatrix<number>, private filterZeroLines = true,
-              private labels: [number, string], private singleEpochIndex: number, private $parent: d3.Selection<any>, name: string) {
-    super(AppConstants.COMBINED_CELL, name);
+              private labels: [number, string], private singleEpochIndex: number, private $parent: d3.Selection<any>, type: string) {
+    super(type);
   }
 
   renderCells() {
@@ -297,7 +297,7 @@ export class CombinedEpochCellRenderer extends ACellRenderer {
 
       const predicted = i % that.singleEpochData.order();
       const groundTruth = Math.floor(i / that.singleEpochData.order());
-      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.lineData, that.singleEpochData, that.labels, that.type, that.name);
+      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.lineData, that.singleEpochData, that.labels, that.type);
     });
   }
 }

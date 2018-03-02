@@ -43,10 +43,17 @@ export class AppConstants {
    * Represent the different cell types
    * @type {string}
    */
-  static MULTI_LINE_CHART_CELL = 'multiLineChartCell';
-  static SINGLE_LINE_CHART_CELL = 'singleLineChartCell';
-  static BAR_CHART_CELL = 'barChartCell';
-  static LABEL_CHART_CELL = 'labelChartCell';
-  static HEATMAP_CELL = 'heatmapCell';
-  static COMBINED_CELL = 'combinedCell';
+  static HEATMAP_CELL_PRECISION = 'heatmapCellPrecision';
+  static SINGLE_LINE_PRECISION = 'singleLinePrecision';
+
+  static BAR_CHART_CELL_FP = 'barChartCellFP';
+  static BAR_CHART_CELL_FN = 'barChartCellFN';
+
+  static MULTI_LINE_CHART_CELL_FP = 'multiLineChartCellFP';
+  static MULTI_LINE_CHART_CELL_FN = 'multiLineChartCellFN';
+
+  static COMBINED_MATRIX_CELL = 'combinedMatrixCell';
+  static SINGLE_LINE_MATRIX_CELL = 'singleLineMatrixCell';
+
+  static LABEL_CLASS_SIZE = 'labelClassSize';
 }

@@ -31,14 +31,14 @@ export class DetailChartTab extends ADetailViewTab {
 
   createHeaderText() {
     let text = '';
-    switch(DataStoreCellSelection.cellName) {
-      case Language.FP:
+    switch(DataStoreCellSelection.type) {
+      case AppConstants.BAR_CHART_CELL_FP:
         text = Language.FP_RATE;
         break;
-      case Language.FN:
+      case AppConstants.BAR_CHART_CELL_FN:
         text = Language.FN_RATE;
         break;
-      case Language.PREDICTED_AS:
+      case AppConstants.SINGLE_LINE_MATRIX_CELL:
         const rowLabel = DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.rowIndex].label;
         const colLabel = DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.colIndex].label;
         text = rowLabel + ' ' + Language.PREDICTED_AS + ' ' + colLabel;
@@ -78,10 +78,11 @@ export class DetailChartTab extends ADetailViewTab {
     this.renderAxis(y);
 
     // combined cells will be handled like single line cells
-    if(DataStoreCellSelection.type === AppConstants.SINGLE_LINE_CHART_CELL || DataStoreCellSelection.type === AppConstants.COMBINED_CELL) {
+    if(DataStoreCellSelection.type === AppConstants.SINGLE_LINE_MATRIX_CELL || DataStoreCellSelection.type === AppConstants.SINGLE_LINE_PRECISION ||
+      DataStoreCellSelection.type === AppConstants.COMBINED_MATRIX_CELL) {
       const lineDataOneCell = DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.rowIndex][DataStoreCellSelection.colIndex];
       this.renderSingleLine(lineDataOneCell, x, y);
-    } else if(DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL) {
+    } else if(DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL_FP || DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL_FN) {
       this.renderMultiLine(DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.colIndex], x, y);
     }
   }
