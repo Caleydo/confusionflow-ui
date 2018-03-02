@@ -3,9 +3,10 @@ import {IAppView} from '../app';
 import {ConfusionMatrix} from '../ConfusionMatrix';
 import {AppConstants} from '../AppConstants';
 import * as events from 'phovea_core/src/event';
-import {DetailChartWindow} from './DetailChartWindow';
-import {DetailImageWindow} from './DetailImageWindow';
-import {ADetailWindow} from './ADetailWindow';
+import {DetailChartTab} from './DetailChartTab';
+import {DetailImageWindow} from './DetailImageTab';
+import {SoftmaxStampTab} from './SoftmaxStampTab';
+import {ADetailViewTab} from './ADetailViewTab';
 import {Language} from '../language';
 
 
@@ -13,8 +14,8 @@ export class DetailView implements IAppView {
 
   private readonly $selectionPanel: d3.Selection<any>;
   private readonly $viewbody: d3.Selection<any>;
-  private panelCollection: Map<string, ADetailWindow> = new Map();
-  private selectedDetailView: ADetailWindow = null;
+  private panelCollection: Map<string, ADetailViewTab> = new Map();
+  private selectedDetailView: ADetailViewTab = null;
 
   constructor(parent:Element) {
     this.$selectionPanel = d3.select(parent)
@@ -24,8 +25,9 @@ export class DetailView implements IAppView {
       .append('div')
       .classed('view-body', true);
 
-    this.panelCollection.set(AppConstants.CHART_VIEW, new DetailChartWindow(AppConstants.CHART_VIEW, Language.CHART_VIEW, this.$viewbody));
+    this.panelCollection.set(AppConstants.CHART_VIEW, new DetailChartTab(AppConstants.CHART_VIEW, Language.CHART_VIEW, this.$viewbody));
     this.panelCollection.set(AppConstants.IMAGE_VIEW,  new DetailImageWindow(AppConstants.IMAGE_VIEW, Language.IMAGE_VIEW, this.$viewbody));
+    this.panelCollection.set(AppConstants.SOFTMAX_STAMP_VIEW,  new SoftmaxStampTab(AppConstants.SOFTMAX_STAMP_VIEW, Language.SOFTMAX_STAMP_VIEW ,this.$viewbody));
   }
 
   /**
@@ -49,7 +51,7 @@ export class DetailView implements IAppView {
         this.selectedDetailView.render();
       }
     });
-	
+
 	events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
 		this.selectedDetailView.clear();
 	});
@@ -79,7 +81,7 @@ export class DetailView implements IAppView {
     this.selectView(this.panelCollection.get(defaultView), $div.filter((x) => x.id === defaultView));
   }
 
-  private selectView(content: ADetailWindow, $node: d3.Selection<any>) {
+  private selectView(content: ADetailViewTab, $node: d3.Selection<any>) {
     $node.classed('selected', true);
     content.shouldDisplay(true);
     this.selectedDetailView = content;

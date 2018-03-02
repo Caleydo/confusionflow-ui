@@ -20,6 +20,7 @@ export class AppConstants {
    */
   static CHART_VIEW = 'chartView';
   static IMAGE_VIEW = 'imageView';
+  static SOFTMAX_STAMP_VIEW = 'softmaxStampView';
 
   /**
    * Fires when the use selects a dataset from the selector
@@ -42,10 +43,10 @@ export class AppConstants {
    * Represent the different cell types
    * @type {string}
    */
-  static MULTI_LINE_CHART_CELL = 'multi_line_chart_cell';
-  static SINGLE_LINE_CHART_CELL = 'single_line_chart_cell';
-  static BAR_CHART_CELL = 'bar_chart_cell';
-  static LABEL_CHART_CELL = 'label_chart_cell';
-  static HEATMAP_CELL = 'heatmap_cell';
-  static COMBINED_CELL = 'combined_cell';
+  static MULTI_LINE_CHART_CELL = 'multiLineChartCell';
+  static SINGLE_LINE_CHART_CELL = 'singleLineChartCell';
+  static BAR_CHART_CELL = 'barChartCell';
+  static LABEL_CHART_CELL = 'labelChartCell';
+  static HEATMAP_CELL = 'heatmapCell';
+  static COMBINED_CELL = 'combinedCell';
 }

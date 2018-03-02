@@ -1,4 +1,4 @@
-import {ADetailWindow} from './ADetailWindow';
+import {ADetailViewTab} from './ADetailViewTab';
 import {DataStoreCellSelection, DataStoreEpoch} from '../DataStore';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
@@ -6,7 +6,7 @@ import * as d3_shape from 'd3-shape';
 import {IClassEvolution, max} from '../DataStructures';
 import {Language} from '../language';
 
-export class DetailChartWindow extends ADetailWindow {
+export class DetailChartTab extends ADetailViewTab {
   private width: number;
   private height: number;
   private $g: d3.Selection<any> = null;

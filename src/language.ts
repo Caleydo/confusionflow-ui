@@ -18,4 +18,5 @@ export class Language {
   static VALUE = 'Value';
   static FP_RATE = 'False Positive Rate';
   static FN_RATE = 'False Negative Rate';
+  static SOFTMAX_STAMP_VIEW = 'Softmax Stamp View';
 }
