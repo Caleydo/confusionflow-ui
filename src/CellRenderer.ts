@@ -44,7 +44,7 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
     this.attachListener($cells);
     const that = this;
     $cells.each(function(d) {
-       // if we want to filter zero lines and the the line has just 0 values => continue
+       // if we want to filter zero lines and the line has just 0 values => continue
       if(that.filterZeroLines && !d.values.find((val) => val !== 0)) {
         return;
       }
@@ -202,7 +202,12 @@ export class HeatCellRenderer extends ACellRenderer {
     $cells
       .style('background-color', (datum: number) => heatmapColorScale(datum))
       .style('color', (datum: number) => adaptTextColorToBgColor(heatmapColorScale(datum).toString()))
-      .text((d) => String(d));
+      .text(
+        (d, i) => {
+          // todo this is kind of a hack to filter the main diagonal values
+          return d < 0 ? '' : String(d);
+        }
+      );
 
     $cells
       .exit()

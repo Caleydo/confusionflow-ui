@@ -288,7 +288,8 @@ export class ConfusionMatrix implements IAppView {
       return;
     }
     data = data.clone();
-    setDiagonal(data, (r) => {return 0;});
+    // todo this is kind of a hack to filter the main diagonal values
+    setDiagonal(data, (r) => {return -1;});
     new HeatCellRenderer(data.to1DArray(), this.$confusionMatrix, AppConstants.SINGLE_LINE_MATRIX_CELL).renderCells();
   }
 
