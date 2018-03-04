@@ -163,10 +163,14 @@ class DataProvider {
     const dsc: IMalevoDatasetCollection = {};
 
     for(const x of data) {
-      const parts = this.getDatasetName(x);
-      const dataset = getOrCreateMalevoDataset(dsc, parts[0]);
-      const epochInfo: IMalevoEpochInfo = getOrCreateEpochInfo(dataset, parts[2]);
-      epochInfo.confusionInfo = x;
+      try {
+        const parts = this.getDatasetName(x);
+        const dataset = getOrCreateMalevoDataset(dsc, parts[0]);
+        const epochInfo: IMalevoEpochInfo = getOrCreateEpochInfo(dataset, parts[2]);
+        epochInfo.confusionInfo = x;
+      } catch(e) {
+
+      }
 
     }
     return dsc;

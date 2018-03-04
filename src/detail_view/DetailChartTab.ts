@@ -55,7 +55,9 @@ export class DetailChartTab extends ADetailViewTab {
   }
 
   render() {
-    console.assert(DataStoreCellSelection.multiEpochData !== null);
+    if(DataStoreCellSelection.multiEpochData === null) {
+      return;
+    }
     this.createHeaderText();
     const margin = {top: 5, right: 10, bottom: 140, left: 65}; // set left + bottom to show axis and labels
     this.width = (<any>this.$node[0][0]).clientWidth - margin.left - margin.right;

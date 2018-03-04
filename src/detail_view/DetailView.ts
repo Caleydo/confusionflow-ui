@@ -84,10 +84,11 @@ export class DetailView implements IAppView {
     this.selectView(this.panelCollection.get(defaultView), $div.filter((x) => x.id === defaultView));
   }
 
-  private selectView(content: ADetailViewTab, $node: d3.Selection<any>) {
+  private selectView(tab: ADetailViewTab, $node: d3.Selection<any>) {
     $node.classed('selected', true);
-    content.shouldDisplay(true);
-    this.selectedDetailView = content;
+    tab.shouldDisplay(true);
+    this.selectedDetailView = tab;
+    this.selectedDetailView.render();
   }
 }
 
