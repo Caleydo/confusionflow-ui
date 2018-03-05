@@ -24,6 +24,17 @@ module.exports = function(registry) {
     'name': 'DetailView'
   });
 
+  registry.push('malevoView', 'DetailChartWindow', function() { return System.import('./src/detail_view/DetailChartWindow'); }, {
+    'name': 'DetailChartWindow',
+    'isDetailWindow': true,
+    'order': 10
+  });
+
+  registry.push('malevoView', 'DetailImageWindow', function() { return System.import('./src/detail_view/DetailImageWindow'); }, {
+    'name': 'DetailImageWindow',
+    'isDetailWindow': true,
+    'order': 20
+  });
 
   // generator-phovea:end
 };

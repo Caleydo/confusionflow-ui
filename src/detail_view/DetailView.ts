@@ -3,29 +3,23 @@ import {IAppView} from '../app';
 import {ConfusionMatrix} from '../ConfusionMatrix';
 import {AppConstants} from '../AppConstants';
 import * as events from 'phovea_core/src/event';
-import {DetailChartWindow} from './DetailChartWindow';
-import {DetailImageWindow} from './DetailImageWindow';
+import * as plugins from 'phovea_core/src/plugin';
 import {ADetailWindow} from './ADetailWindow';
-import {Language} from '../language';
 
 
 export class DetailView implements IAppView {
 
   private readonly $selectionPanel: d3.Selection<any>;
   private readonly $viewbody: d3.Selection<any>;
-  private panelCollection: Map<string, ADetailWindow> = new Map();
   private selectedDetailView: ADetailWindow = null;
 
-  constructor(parent:Element) {
+  constructor(parent: Element) {
     this.$selectionPanel = d3.select(parent)
       .append('div')
       .classed('selection-panel-wrapper', true);
     this.$viewbody = d3.select(parent)
       .append('div')
       .classed('view-body', true);
-
-    this.panelCollection.set(AppConstants.CHART_VIEW, new DetailChartWindow(AppConstants.CHART_VIEW, Language.CHART_VIEW, this.$viewbody));
-    this.panelCollection.set(AppConstants.IMAGE_VIEW,  new DetailImageWindow(AppConstants.IMAGE_VIEW, Language.IMAGE_VIEW, this.$viewbody));
   }
 
   /**
@@ -35,9 +29,7 @@ export class DetailView implements IAppView {
    */
   init() {
     this.attachListeners();
-    this.createSelectionPanel();
-    // return the promise directly as long there is no dynamical data to update
-    return Promise.resolve(this);
+    return this.build();
   }
 
   private attachListeners() {
@@ -45,19 +37,53 @@ export class DetailView implements IAppView {
       AppConstants.MULTI_LINE_CHART_CELL + events.EventHandler.MULTI_EVENT_SEPARATOR + AppConstants.COMBINED_CELL;
 
     events.on(e, () => {
-      if(this.selectedDetailView !== null && this.selectedDetailView.id === AppConstants.CHART_VIEW) {
+      if(this.selectedDetailView !== null) {
         this.selectedDetailView.render();
       }
     });
-	
-	events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
-		this.selectedDetailView.clear();
-	});
+
+    events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
+      this.selectedDetailView.clear();
+    });
   }
 
-  private createSelectionPanel() {
+  /**
+   * Load and initialize all necessary views
+   * @returns {Promise<App>}
+   */
+  private build() {
+    // wrap view ids from package.json as plugin and load the necessary files
+    const pluginPromises = plugins.list()
+      .filter((d) => d.type === AppConstants.VIEW && d.isDetailWindow !== undefined)
+      .sort((a, b) => d3.ascending(a.order, b.order))
+      .map((d) => plugins.get(AppConstants.VIEW, d.id))
+      .filter((d) => d !== undefined) // filter views that does not exists
+      .map((d) => d.load());
 
-    const $div = this.$selectionPanel.selectAll('div').data(Array.from(this.panelCollection.values()));
+    // when everything is loaded, then create and init the views
+    const buildPromise = Promise.all(pluginPromises)
+      .then((plugins) => {
+        const initPromises = plugins.map((p, index): Promise<ADetailWindow> => {
+          const view = p.factory(
+            this.$viewbody.node(), // parent node
+            {} // options
+          );
+          return view.init();
+        });
+
+        // wait until all views are initialized, before going to next then
+        return Promise.all(initPromises);
+      })
+      .then((viewInstances) => {
+        this.selectedDetailView = viewInstances[0];
+        this.createSelectionPanel(viewInstances);
+        return this;
+      });
+    return buildPromise;
+  }
+
+  private createSelectionPanel(views: ADetailWindow[]) {
+    const $div = this.$selectionPanel.selectAll('div').data(views);
 
     const that = this;
     $div.enter().append('a')
@@ -75,13 +101,13 @@ export class DetailView implements IAppView {
     $div.exit().remove();
 
     // set a default view
-    const defaultView = AppConstants.CHART_VIEW;
-    this.selectView(this.panelCollection.get(defaultView), $div.filter((x) => x.id === defaultView));
+    this.selectView(views[0], $div.filter((x) => x.id === views[0].id));
   }
 
   private selectView(content: ADetailWindow, $node: d3.Selection<any>) {
     $node.classed('selected', true);
     content.shouldDisplay(true);
+    content.render();
     this.selectedDetailView = content;
   }
 }

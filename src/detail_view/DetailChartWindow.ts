@@ -7,18 +7,20 @@ import {IClassEvolution, max} from '../DataStructures';
 import {Language} from '../language';
 
 export class DetailChartWindow extends ADetailWindow {
+  public id: string = AppConstants.CHART_VIEW;
+  public name: string = Language.CHART_VIEW;
+
   private width: number;
   private height: number;
   private $g: d3.Selection<any> = null;
   private $svg: d3.Selection<any> = null;
   private $header: d3.Selection<any> = null;
-  private readonly STROKE_WIDTH = 3;
 
-  constructor(id: string, name: string, $parent: d3.Selection<any>) {
-    super(id, name, $parent);
+  constructor(parent: Element) {
+    super(parent);
 
-    this.width = (<any>$parent[0][0]).clientWidth;
-    this.height = (<any>$parent[0][0]).clientHeight;
+    this.width = parent.clientWidth;
+    this.height = parent.clientHeight;
 
     this.$header = this.$node
       .append('div')
@@ -27,6 +29,11 @@ export class DetailChartWindow extends ADetailWindow {
     this.$svg = this.$node
       .append('svg')
       .attr('viewBox', `0 0 ${this.width} 500`);
+  }
+
+  init(): Promise<DetailChartWindow> {
+    this.$node.attr('id', this.id);
+    return Promise.resolve(this);
   }
 
   createHeaderText() {
@@ -49,8 +56,8 @@ export class DetailChartWindow extends ADetailWindow {
 
   clear() {
 	  if(this.$g !== null) {
-		this.$g.remove();
-		this.$g = null;
+      this.$g.remove();
+      this.$g = null;
 	  }
   }
 
@@ -144,8 +151,7 @@ export class DetailChartWindow extends ADetailWindow {
 
     this.$g.append('path')
       .classed('detail-view-line', true)
-      .attr('d', line(lineDataOneCell.values))
-      .style('stroke-width', this.STROKE_WIDTH);
+      .attr('d', line(lineDataOneCell.values));
   }
 
   renderMultiLine(data: IClassEvolution[], x, y) {
@@ -163,8 +169,17 @@ export class DetailChartWindow extends ADetailWindow {
       .classed('detail-view-line', true)
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d) => z(d.label))
-      .style('stroke-width', this.STROKE_WIDTH)
       .append('title')
       .text((d) => d.label);
   }
+}
+
+/**
+ * Factory method to create a new HeatMap instance
+ * @param parent
+ * @param options
+ * @returns {DetailChartWindow}
+ */
+export function create(parent:Element, options:any) {
+  return new DetailChartWindow(parent);
 }
