@@ -6,6 +6,23 @@ import * as d3_shape from 'd3-shape';
 import {IClassEvolution, max} from '../DataStructures';
 import {Language} from '../language';
 
+function addDashedLines($g: d3.Selection<any>, x: any, singleEpochIndex: number, height: number, width: number) {
+  const $line = $g.append('line').attr('y1', 0).attr('y2', height);
+  $line.classed('dashed-lines', true);
+  $line.attr('x1', x(singleEpochIndex) + borderOffset($line, x(singleEpochIndex), width)).attr('x2', x(singleEpochIndex) + borderOffset($line, x(singleEpochIndex), width));
+}
+
+function borderOffset($line: d3.Selection<any>, posX: number, width: number) {
+  let sw = parseInt($line.style('stroke-width'), 10);
+  sw /= 2;
+  if(posX === 0) {
+    return sw;
+  } else if(posX === width) {
+    return -sw;
+  }
+  return 0;
+}
+
 export class DetailChartTab extends ADetailViewTab {
   private width: number;
   private height: number;
@@ -79,38 +96,39 @@ export class DetailChartTab extends ADetailViewTab {
 
     this.renderAxis(y);
 
-    // combined cells will be handled like single line cells
-    if(DataStoreCellSelection.type === AppConstants.SINGLE_LINE_MATRIX_CELL || DataStoreCellSelection.type === AppConstants.SINGLE_LINE_PRECISION ||
-      DataStoreCellSelection.type === AppConstants.COMBINED_MATRIX_CELL) {
+    if(DataStoreCellSelection.type === AppConstants.SINGLE_LINE_MATRIX_CELL || DataStoreCellSelection.type === AppConstants.SINGLE_LINE_PRECISION) {
       const lineDataOneCell = DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.rowIndex][DataStoreCellSelection.colIndex];
       this.renderSingleLine(lineDataOneCell, x, y);
     } else if(DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL_FP || DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL_FN) {
-      this.renderMultiLine(DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.colIndex], x, y);
+      console.assert(DataStoreCellSelection.singleEpochIndex === -1);
+      this.renderMultiLine(DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.colIndex], x, y, -1);
+    } else if(DataStoreCellSelection.type === AppConstants.COMBINED_MATRIX_CELL) {
+      console.assert(DataStoreCellSelection.singleEpochIndex > -1);
+      this.renderMultiLine(DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.colIndex], x, y, DataStoreCellSelection.singleEpochIndex);
     }
   }
 
-  renderAxis(y) {
+  renderAxis(y: any) {
     const values = DataStoreEpoch.multiSelected.map((x) => x.name);
     const x = d3.scale.ordinal()
       .domain(values)
       .rangePoints([0, this.width]);
 
-	//todo these are magic constants: use a more sophisticated algo to solve this
-	let tickFrequency = 1;
-	if(values.length > 20) {
-		tickFrequency = 4;
-	}
+    //todo these are magic constants: use a more sophisticated algo to solve this
+    let tickFrequency = 1;
+    if(values.length > 20) {
+      tickFrequency = 4;
+    }
 
-	const ticks = values.filter((x, i) => i % tickFrequency == 0 );
-	const xAxis = d3.svg.axis()
-    .scale(x)
-	  .tickValues(ticks);
+    const ticks = values.filter((x, i) => i % tickFrequency === 0 );
+    const xAxis = d3.svg.axis()
+      .scale(x)
+      .tickValues(ticks);
 
-	this.$g.append('g')
-    .attr('class', 'chart-axis-x')
-    .attr('transform', 'translate(0,' + this.height + ')')
-    .call(xAxis);
-
+    this.$g.append('g')
+      .attr('class', 'chart-axis-x')
+      .attr('transform', 'translate(0,' + this.height + ')')
+      .call(xAxis);
 
     const yAxis = d3.svg.axis()
       .scale(y)
@@ -138,8 +156,7 @@ export class DetailChartTab extends ADetailViewTab {
          });
     }
 
-  //TODO types for x and y
-  renderSingleLine(lineDataOneCell: IClassEvolution, x, y) {
+  renderSingleLine(lineDataOneCell: IClassEvolution, x: any, y: any) {
     this.$g.classed('linechart', true);
     const line = d3_shape.line()
       .x((d, i) => x(i))
@@ -151,7 +168,7 @@ export class DetailChartTab extends ADetailViewTab {
       .style('stroke-width', this.STROKE_WIDTH);
   }
 
-  renderMultiLine(data: IClassEvolution[], x, y) {
+  renderMultiLine(data: IClassEvolution[], x, y, singleEpochIndex: number) {
     this.$g.classed('multilinechart', true);
     const z = d3.scale.category10()
       .domain(data.map((c) => c.label));
@@ -169,5 +186,9 @@ export class DetailChartTab extends ADetailViewTab {
       .style('stroke-width', this.STROKE_WIDTH)
       .append('title')
       .text((d) => d.label);
+
+    if(singleEpochIndex > -1) {
+      addDashedLines(this.$g, x, singleEpochIndex, this.height, this.width);
+    }
   }
 }

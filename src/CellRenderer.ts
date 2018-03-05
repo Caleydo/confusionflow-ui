@@ -26,7 +26,7 @@ export abstract class ACellRenderer {
 
 export class SingleLineChartCellRenderer extends ACellRenderer {
 
-  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, private singleEpochIndex: number,
+  constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, protected singleEpochIndex: number,
               protected $parent: d3.Selection<any>, type: string) {
     super(type);
   }
@@ -58,7 +58,7 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
       DataStoreCellSelection.deselectAllCells();
       d3.select(this).classed('selected', true);
 
-      DataStoreCellSelection.lineCellSelected(i, 0, that.data, null, null, that.type);
+      DataStoreCellSelection.lineCellSelected(i, 0, that.data, null, that.singleEpochIndex, null, that.type);
     });
   }
 
@@ -96,7 +96,7 @@ export class MultilineChartCellRenderer extends ACellRenderer {
 
       const predicted = i % that.data.order();
       const groundTruth = Math.floor(i / that.data.order());
-      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.data, null, that.labels, that.type);
+      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.data, null, that.singleEpochIndex, that.labels, that.type);
     });
   }
 
@@ -233,7 +233,7 @@ export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRen
 
       const predicted = i % that.cmdata.order();
       const groundTruth = Math.floor(i / that.cmdata.order());
-      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.cmdata, null, that.labels, that.type);
+      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.cmdata, null, that.singleEpochIndex, that.labels, that.type);
     });
   }
 }
@@ -302,7 +302,7 @@ export class CombinedEpochCellRenderer extends ACellRenderer {
 
       const predicted = i % that.singleEpochData.order();
       const groundTruth = Math.floor(i / that.singleEpochData.order());
-      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.lineData, that.singleEpochData, that.labels, that.type);
+      DataStoreCellSelection.lineCellSelected(groundTruth, predicted, that.lineData, that.singleEpochData, that.singleEpochIndex, that.labels, that.type);
     });
   }
 }

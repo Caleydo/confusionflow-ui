@@ -22,8 +22,8 @@ export class SoftmaxStampHeatmap {
 
   private heatMapOptions = {
       initialScale: AppConstants.HEATMAP_CELL_SIZE,
-      color: ['black', 'white', 'black'],
-      domain: [-1, 0, 1]
+      color: ['white', 'black'],
+      domain: [0, 1]
     };
 
   constructor($parent: d3.Selection<any>) {
@@ -86,8 +86,7 @@ export class SoftmaxStampHeatmap {
 
     const options = mixin({}, this.heatMapOptions, {
       scale,
-      labels: showLabels,
-      domain: [-maxRangeValue, 0, maxRangeValue]
+      domain: [0, maxRangeValue]
     });
 
     this.$node.classed('loading', true);

@@ -152,16 +152,19 @@ export class ConfusionMatrix implements IAppView {
     const fnData = transformSq(fpData, (r, c, matrix) => {return {values: matrix.values[c][r].values, label: matrix.values[r][c].label};});
     console.assert(fpData.order() === data[0].order());
 
-    this.fpColumn.render(new MultilineChartCellRenderer(fpData, singleEpochIndex, this.fpColumn.$node, labels, AppConstants.MULTI_LINE_CHART_CELL_FP));
+    let cellType = singleEpochIndex > -1 ? AppConstants.COMBINED_MATRIX_CELL : AppConstants.MULTI_LINE_CHART_CELL_FP;
+
+    this.fpColumn.render(new MultilineChartCellRenderer(fpData, singleEpochIndex, this.fpColumn.$node, labels, cellType));
+
+    this.fnColumn.render(new MultilineChartCellRenderer(fnData, singleEpochIndex, this.fnColumn.$node, labels, cellType));
+
+    cellType = singleEpochIndex > -1 ? AppConstants.COMBINED_MATRIX_CELL : AppConstants.SINGLE_LINE_PRECISION;
 
     this.precisionColumn.render(new SingleLineChartCellRenderer(confMeasures.calcEvolution(data, confMeasures.PPV), true,
-      singleEpochIndex, this.precisionColumn.$node, AppConstants.SINGLE_LINE_PRECISION));
+      singleEpochIndex, this.precisionColumn.$node, cellType));
 
     this.classSizeColumn.render(new LabelCellRenderer(confMeasures.calcForMultipleClasses(data[0], confMeasures.ClassSize),
       this.classSizeColumn.$node, AppConstants.LABEL_CLASS_SIZE));
-
-    this.fnColumn.render(new MultilineChartCellRenderer(fnData, singleEpochIndex,
-      this.fnColumn.$node, labels, AppConstants.MULTI_LINE_CHART_CELL_FN));
   }
 
   private renderPanelsSingleEpoch(data: NumberMatrix, labels: [number, string]) {
@@ -303,7 +306,7 @@ export class ConfusionMatrix implements IAppView {
     const calculator = new LineChartCalculator();
     const lineData = calculator.calculate(multiEpochData, labels);
 
-    new CombinedEpochCellRenderer(lineData, singleEpochData, true, labels, singleEpochIndex, this.$confusionMatrix, AppConstants.SINGLE_LINE_MATRIX_CELL).renderCells();
+    new CombinedEpochCellRenderer(lineData, singleEpochData, true, labels, singleEpochIndex, this.$confusionMatrix, AppConstants.COMBINED_MATRIX_CELL).renderCells();
   }
 
   private clearViews() {
