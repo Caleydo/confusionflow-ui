@@ -110,19 +110,6 @@ $num-columns-right-area: 3;
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(10, 1fr);
-
-  .cell {
-    &.selected,
-    &:active,
-    &:focus,
-    &:hover {
-      cursor: pointer;
-      outline: 2px solid orange;
-      border: none;
-      z-index: 1;
-      margin: 1px;
-    }
-  }
 }
 
 .labels,
@@ -157,6 +144,23 @@ $num-columns-right-area: 3;
     position: absolute;
     height: 100%;
     width: 100%;
+  }
+}
+
+.chart-right,
+.chart-bottom,
+.matrix {
+  .cell {
+    &.selected,
+    &:active,
+    &:focus,
+    &:hover {
+      cursor: pointer;
+      outline: 2px solid orange;
+      border: none;
+      z-index: 1;
+      margin: 1px;
+    }
   }
 }
 

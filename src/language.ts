@@ -12,4 +12,10 @@ export class Language {
   static PRECISION = 'Precision';
   static PREDICTED_AS = 'predicted as';
   static CLASS_SIZE = 'Class Size';
+  static CHART_VIEW = 'Chart View';
+  static IMAGE_VIEW = 'Image View';
+  static EPOCH = 'Epoch';
+  static VALUE = 'Value';
+  static FP_RATE = 'False Positive Rate';
+  static FN_RATE = 'False Negative Rate';
 }

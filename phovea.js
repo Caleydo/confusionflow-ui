@@ -20,14 +20,8 @@ module.exports = function(registry) {
     'name': 'Timeline'
   });
 
-  registry.push('malevoView', 'DummyDetailView', function() { return System.import('./src/DummyDetailView'); }, {
-    'name': 'DummyDetailView',
-    'isDetailView': true
-  });
-
-  registry.push('malevoView', 'ImageDetailView', function() { return System.import('./src/ImageDetailView'); }, {
-    'name': 'ImageDetailView',
-    'isDetailView': true
+  registry.push('malevoView', 'DetailView', function() { return System.import('./src/detail_view/DetailView'); }, {
+    'name': 'DetailView'
   });
 
 
