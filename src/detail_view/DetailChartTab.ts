@@ -167,8 +167,6 @@ export class DetailChartTab extends ADetailViewTab {
       .classed('detail-view-line', true)
       .attr('d', line(lineDataOneCell.values))
       .style('stroke-width', this.STROKE_WIDTH);
-
-    this.createFocus(x, y, lineDataOneCell);
   }
 
   renderMultiLine(data: IClassEvolution[], x, y, singleEpochIndex: number) {
@@ -193,11 +191,9 @@ export class DetailChartTab extends ADetailViewTab {
     if (singleEpochIndex > -1) {
       addDashedLines(this.$g, x, singleEpochIndex, this.height, this.width);
     }
-
-    this.createFocus(x, y, data);
   }
 
-  createFocus(x: any, y: any, data: IClassEvolution[]) {
+  /*createFocus(x: any, y: any, data: IClassEvolution[]) {
     this.$focus = this.$g.append('g')
         .attr('class', 'focus')
         .style('display', 'none');
@@ -234,5 +230,5 @@ export class DetailChartTab extends ADetailViewTab {
     d = x0 - d0.year > d1.year - x0 ? d1 : d0;
     this.$focus.attr('transform', 'translate(' + x(d.year) + ',' + y(d.value) + ')');
     this.$focus.select('text').text(function() { return d.value; });
-  }
+  }*/
 }
