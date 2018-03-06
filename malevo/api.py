@@ -17,9 +17,12 @@ from phovea_server.ns import Namespace
 from flask import request
 from .util import IntListConverter, serve_pil_image
 from phovea_server.util import jsonify
+import logging
 
 app = Namespace(__name__)
 app.url_map.converters['integerList'] = IntListConverter
+
+_log = logging.getLogger(__name__)
 
 os.environ['SQLITE_TMPDIR'] = '/tmp'
 
@@ -37,7 +40,10 @@ def _get_image_ids():
 
     query = (run_id, epoch_id, ground_truth_id, predicted_id)
 
-    conn = sqlite3.connect(os.path.join(cwd, '../data/malevo_cifar10_rundata.db'))
+    dbpath = os.path.realpath(os.path.join(cwd, '../../_data/malevo_cifar10_rundata.db'))
+    _log.info('rundata.db path: %s', dbpath)
+
+    conn = sqlite3.connect(dbpath)
     c = conn.cursor()
     c.execute("SELECT img_id FROM logs WHERE run_id = ? AND epoch_id = ? AND ground_truth = ? AND predicted = ?", query)
     img_ids_tuples = c.fetchall()[:num_count]
@@ -64,6 +70,9 @@ def _get_image_sprite():
 
     dbname = 'lmdb_cifar10_train'
     dbpath = os.path.join(root, dbname)
+
+    _log.info('lmdb path: %s', dbpath)
+
     env = lmdb.open(dbpath)
 
     n_w = 10
