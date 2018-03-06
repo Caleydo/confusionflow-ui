@@ -169,7 +169,7 @@ class DataProvider {
         const epochInfo: IMalevoEpochInfo = getOrCreateEpochInfo(dataset, parts[2]);
         epochInfo.confusionInfo = x;
       } catch(e) {
-
+        // handle invalid server response data here
       }
 
     }

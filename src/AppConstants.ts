@@ -58,9 +58,9 @@ export class AppConstants {
   static LABEL_CLASS_SIZE = 'labelClassSize';
 
     /**
-   * Initial size of a heatmap cell
-   * @type {number}
-   */
+     * Initial size of a heatmap cell
+     * @type {number}
+     */
   static HEATMAP_CELL_SIZE = 5;
 
   static MAXIMAL_HEATMAP_LABEL_SIZE = 70;

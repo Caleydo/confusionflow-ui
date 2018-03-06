@@ -30,6 +30,7 @@ export class DetailChartTab extends ADetailViewTab {
   private $svg: d3.Selection<any> = null;
   private $header: d3.Selection<any> = null;
   private readonly STROKE_WIDTH = 3;
+  private $focus: d3.Selection<any>;
 
   constructor(id: string, name: string, $parent: d3.Selection<any>) {
     super(id, name, $parent);
@@ -166,6 +167,8 @@ export class DetailChartTab extends ADetailViewTab {
       .classed('detail-view-line', true)
       .attr('d', line(lineDataOneCell.values))
       .style('stroke-width', this.STROKE_WIDTH);
+
+    this.createFocus(x, y, lineDataOneCell);
   }
 
   renderMultiLine(data: IClassEvolution[], x, y, singleEpochIndex: number) {
@@ -178,8 +181,8 @@ export class DetailChartTab extends ADetailViewTab {
       .y((d) => y(d));
 
     const $epochLine = this.$g.selectAll('.detail-view-line')
-    .data(data)
-    .enter().append('path')
+      .data(data)
+      .enter().append('path')
       .classed('detail-view-line', true)
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d) => z(d.label))
@@ -187,8 +190,49 @@ export class DetailChartTab extends ADetailViewTab {
       .append('title')
       .text((d) => d.label);
 
-    if(singleEpochIndex > -1) {
+    if (singleEpochIndex > -1) {
       addDashedLines(this.$g, x, singleEpochIndex, this.height, this.width);
     }
+
+    this.createFocus(x, y, data);
+  }
+
+  createFocus(x: any, y: any, data: IClassEvolution[]) {
+    this.$focus = this.$g.append('g')
+        .attr('class', 'focus')
+        .style('display', 'none');
+
+    this.$focus.append('line')
+        .attr('class', 'x-hover-line hover-line')
+        .attr('y1', 0)
+        .attr('y2', this.height);
+
+    this.$focus.append('line')
+        .attr('class', 'y-hover-line hover-line')
+        .attr('x1', this.width)
+        .attr('x2', this.width);
+
+    this.$focus.append('circle')
+        .attr('r', 7.5);
+
+    this.$focus.append('text')
+        .attr('x', 15)
+      	.attr('dy', '.31em');
+
+    const that = this;
+    this.$svg.on('mouseover', () => { this.$focus.style('display', null); })
+        .on('mouseout', () => { this.$focus.style('display', 'none'); })
+        .on('mousemove', function() {that.foo(this, x, y, data);});
+  }
+
+  foo(ele: HTMLElement, x: any, y: any, data: any) {
+    const bisectDate = d3.bisector(function(d) { return d; }).left;
+    const x0 = x.invert(d3.mouse(ele)[0]),
+    i = bisectDate(data, x0, 1),
+    d0 = data[i - 1],
+    d1 = data[i],
+    d = x0 - d0.year > d1.year - x0 ? d1 : d0;
+    this.$focus.attr('transform', 'translate(' + x(d.year) + ',' + y(d.value) + ')');
+    this.$focus.select('text').text(function() { return d.value; });
   }
 }
