@@ -1,6 +1,6 @@
 import {ADetailWindow} from './ADetailWindow';
 import {DataStoreCellSelection, DataStoreEpoch} from '../DataStore';
-import {getAPIData, getAPIJSON} from '../../../phovea_core/src/ajax';
+import {getAPIData, getAPIJSON} from 'phovea_core/src/ajax';
 import {AppConstants} from '../AppConstants';
 import {Language} from '../language';
 import {extractEpochId} from '../utils';
