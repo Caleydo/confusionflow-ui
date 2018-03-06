@@ -33,13 +33,15 @@ root = os.path.join(cwd, '../../_data')
 lmdbname = 'malevo_cifar10_lmdb'
 lmdbpath = os.path.realpath(os.path.join(root, lmdbname))
 
+
 def initialize_lmdb():
   """
   Move and rename downloaded LMDB files into separate directory to match convention
+  TODO To avoid this function the phovea_product.json and build.js should be extended by a `destname` option
   :return:
   """
-  data_file = os.path.join(root, 'malevo_cifar10_data.mdb') # name as defined in `malevo_product/phovea_product.json`
-  lock_file = os.path.join(root, 'malevo_cifar10_lock.mdb') # name as defined in `malevo_product/phovea_product.json`
+  data_file = os.path.join(root, 'malevo_cifar10_data.mdb')  # name as defined in `malevo_product/phovea_product.json`
+  lock_file = os.path.join(root, 'malevo_cifar10_lock.mdb')  # name as defined in `malevo_product/phovea_product.json`
 
   if not os.path.exists(lmdbpath):
     os.makedirs(lmdbpath)
