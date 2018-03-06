@@ -15,8 +15,10 @@ export class Language {
   static CHART_VIEW = 'Chart View';
   static IMAGE_VIEW = 'Image View';
   static EPOCH = 'Epoch';
-  static VALUE = 'Number of Confused Instances';
+  static CONFUSION_Y_LABEL = 'Number of Confused Instances';
+  static PRECISION_Y_LABEL = 'Precision [%]';
   static FP_RATE = 'False Positive Rate';
   static FN_RATE = 'False Negative Rate';
   static SOFTMAX_STAMP_VIEW = 'Softmax Stamp View';
+  static FOR_CLASS = 'for class';
 }

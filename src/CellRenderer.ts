@@ -27,7 +27,7 @@ export abstract class ACellRenderer {
 export class SingleLineChartCellRenderer extends ACellRenderer {
 
   constructor(private data: Matrix<IClassEvolution>, private filterZeroLines, protected singleEpochIndex: number,
-              protected $parent: d3.Selection<any>, type: string) {
+              protected $parent: d3.Selection<any>, protected labels: [number, string], type: string) {
     super(type);
   }
 
@@ -58,7 +58,7 @@ export class SingleLineChartCellRenderer extends ACellRenderer {
       DataStoreCellSelection.deselectAllCells();
       d3.select(this).classed('selected', true);
 
-      DataStoreCellSelection.lineCellSelected(i, 0, that.data, null, that.singleEpochIndex, null, that.type);
+      DataStoreCellSelection.lineCellSelected(i, 0, that.data, null, that.singleEpochIndex, that.labels, that.type);
     });
   }
 
@@ -220,9 +220,9 @@ export class HeatCellRenderer extends ACellRenderer {
 }
 
 export class ConfusionMatrixLineChartCellRenderer extends SingleLineChartCellRenderer {
-  constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines: boolean, singleEpochIndex: number, private labels: [number, string],
+  constructor(private cmdata: SquareMatrix<IClassEvolution>, filterZeroLines: boolean, singleEpochIndex: number, labels: [number, string],
               $parent: d3.Selection<any>, type: string) {
-    super(cmdata, filterZeroLines, singleEpochIndex, $parent, type);
+    super(cmdata, filterZeroLines, singleEpochIndex, $parent, labels, type);
   }
 
   protected attachListener($cells: d3.Selection<any>) {

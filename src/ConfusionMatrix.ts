@@ -161,7 +161,7 @@ export class ConfusionMatrix implements IAppView {
     cellType = singleEpochIndex > -1 ? AppConstants.COMBINED_CHART_CELL_PRECISION : AppConstants.SINGLE_LINE_PRECISION;
 
     this.precisionColumn.render(new SingleLineChartCellRenderer(confMeasures.calcEvolution(data, confMeasures.PPV), true,
-      singleEpochIndex, this.precisionColumn.$node, cellType));
+      singleEpochIndex, this.precisionColumn.$node, labels, cellType));
 
     this.classSizeColumn.render(new LabelCellRenderer(confMeasures.calcForMultipleClasses(data[0], confMeasures.ClassSize),
       this.classSizeColumn.$node, AppConstants.LABEL_CLASS_SIZE));

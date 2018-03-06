@@ -66,6 +66,36 @@ export class DetailChartTab extends ADetailViewTab {
     this.$header.text(text);
   }
 
+  getYLabelText() {
+    let text = '';
+    const rowLabel = DataStoreCellSelection.labels[DataStoreCellSelection.rowIndex][1];
+    switch(DataStoreCellSelection.type) {
+      case AppConstants.SINGLE_LINE_MATRIX_CELL:
+      case AppConstants.COMBINED_MATRIX_CELL:
+        text = Language.CONFUSION_Y_LABEL;
+        text = text + ' ' + Language.FOR_CLASS + ' ';
+        text += rowLabel;
+        text += ' with ';
+        text += DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.colIndex].label;
+        break;
+      case AppConstants.COMBINED_CHART_CELL_FP:
+      case AppConstants.COMBINED_CHART_CELL_FN:
+      case AppConstants.MULTI_LINE_CHART_CELL_FN:
+      case AppConstants.MULTI_LINE_CHART_CELL_FP:
+        text = Language.CONFUSION_Y_LABEL;
+        text = text + ' ' + Language.FOR_CLASS + ' ';
+        text += rowLabel;
+        break;
+      case AppConstants.COMBINED_CHART_CELL_PRECISION:
+      case AppConstants.SINGLE_LINE_PRECISION:
+        text = Language.PRECISION_Y_LABEL;
+        text = text + ' ' + Language.FOR_CLASS + ' ';
+        text += rowLabel;
+        break;
+    }
+    return text;
+  }
+
   clear() {
 	  if(this.$g !== null) {
 		this.$g.remove();
@@ -99,14 +129,13 @@ export class DetailChartTab extends ADetailViewTab {
     this.renderAxis(y);
 
     if(DataStoreCellSelection.type === AppConstants.SINGLE_LINE_MATRIX_CELL || DataStoreCellSelection.type === AppConstants.SINGLE_LINE_PRECISION ||
-      DataStoreCellSelection.type === AppConstants.COMBINED_MATRIX_CELL) {
+      DataStoreCellSelection.type === AppConstants.COMBINED_MATRIX_CELL || DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_PRECISION) {
       const lineDataOneCell = DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.rowIndex][DataStoreCellSelection.colIndex];
       this.renderSingleLine(lineDataOneCell, x, y, DataStoreCellSelection.singleEpochIndex);
     } else if(DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL_FP || DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL_FN) {
       console.assert(DataStoreCellSelection.singleEpochIndex === -1);
       this.renderMultiLine(DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.colIndex], x, y, -1);
-    } else if(DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_FP || DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_FN ||
-      DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_PRECISION) {
+    } else if(DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_FP || DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_FN) {
       console.assert(DataStoreCellSelection.singleEpochIndex > -1);
       this.renderMultiLine(DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.colIndex], x, y, DataStoreCellSelection.singleEpochIndex);
     }
@@ -147,7 +176,7 @@ export class DetailChartTab extends ADetailViewTab {
     this.$g.append('text')
         .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
         .attr('transform', 'translate('+ (-axisDistance/2) +','+(this.height/2)+')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
-        .text(Language.VALUE);
+        .text(this.getYLabelText());
 
     this.$g.append('text')
         .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
