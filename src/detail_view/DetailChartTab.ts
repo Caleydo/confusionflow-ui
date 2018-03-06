@@ -50,10 +50,8 @@ export class DetailChartTab extends ADetailViewTab {
 
   createHeaderText() {
     let text = '';
-    const rowLabel = DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.rowIndex].label;
-    const colLabel = DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.colIndex].label;
-
     if(DataStoreCellSelection.isMatrixCell()) {
+      const rowLabel = DataStoreCellSelection.labels[DataStoreCellSelection.rowIndex][1];
       text = Language.CONFUSION_Y_LABEL;
       text = text + ' ' + Language.FOR_CLASS + ' ';
       text += rowLabel;
@@ -64,17 +62,19 @@ export class DetailChartTab extends ADetailViewTab {
     } else if(DataStoreCellSelection.isFNCell()) {
       text = Language.FN_RATE;
     } else if(DataStoreCellSelection.isPrecisionCell()) {
-      text = Language.PRECISION_Y_LABEL;
-      text = text + ' ' + Language.FOR_CLASS + ' ';
-      text += rowLabel;
+      if(DataStoreCellSelection.rowIndex < DataStoreCellSelection.labels.length) {
+        text = Language.PRECISION_Y_LABEL;
+        text = text + ' ' + Language.FOR_CLASS + ' ';
+        text += DataStoreCellSelection.labels[DataStoreCellSelection.rowIndex][1];
+      } else {
+        text = Language.OVERALL_PRECISION;
+      }
     }
     this.$header.text(text);
   }
 
   getYLabelText() {
     let text = '';
-    const rowLabel = DataStoreCellSelection.labels[DataStoreCellSelection.rowIndex][1];
-
     if(DataStoreCellSelection.isMatrixCell()) {
       text = Language.CONFUSION_Y_LABEL;
     } else if(DataStoreCellSelection.isFPCell() || DataStoreCellSelection.isFNCell()) {

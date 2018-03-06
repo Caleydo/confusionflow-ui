@@ -16,6 +16,7 @@ export class Language {
   static EPOCH = 'Epoch';
   static CONFUSION_Y_LABEL = '# of Confused Instances';
   static PRECISION_Y_LABEL = 'Precision [%]';
+  static OVERALL_PRECISION = 'Overall Precision';
   static FP_RATE = 'False Positive Rate';
   static FN_RATE = 'False Negative Rate';
   static SOFTMAX_STAMP_VIEW = 'Softmax Stamp View';
