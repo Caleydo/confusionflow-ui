@@ -45,12 +45,16 @@ export class AppConstants {
    */
   static HEATMAP_CELL_PRECISION = 'heatmapCellPrecision';
   static SINGLE_LINE_PRECISION = 'singleLinePrecision';
+  static COMBINED_CHART_CELL_PRECISION = 'combinedChartCellPrecision';
 
   static BAR_CHART_CELL_FP = 'barChartCellFP';
   static BAR_CHART_CELL_FN = 'barChartCellFN';
 
   static MULTI_LINE_CHART_CELL_FP = 'multiLineChartCellFP';
   static MULTI_LINE_CHART_CELL_FN = 'multiLineChartCellFN';
+
+  static COMBINED_CHART_CELL_FP = 'combinedChartCellFP';
+  static COMBINED_CHART_CELL_FN = 'combinedChartCellFN';
 
   static COMBINED_MATRIX_CELL = 'combinedMatrixCell';
   static SINGLE_LINE_MATRIX_CELL = 'singleLineMatrixCell';

@@ -5,6 +5,7 @@ import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 import {IClassEvolution, max} from '../DataStructures';
 import {Language} from '../language';
+import {App} from '../app';
 
 function addDashedLines($g: d3.Selection<any>, x: any, singleEpochIndex: number, height: number, width: number) {
   const $line = $g.append('line').attr('y1', 0).attr('y2', height);
@@ -97,13 +98,15 @@ export class DetailChartTab extends ADetailViewTab {
 
     this.renderAxis(y);
 
-    if(DataStoreCellSelection.type === AppConstants.SINGLE_LINE_MATRIX_CELL || DataStoreCellSelection.type === AppConstants.SINGLE_LINE_PRECISION) {
+    if(DataStoreCellSelection.type === AppConstants.SINGLE_LINE_MATRIX_CELL || DataStoreCellSelection.type === AppConstants.SINGLE_LINE_PRECISION ||
+      DataStoreCellSelection.type === AppConstants.COMBINED_MATRIX_CELL) {
       const lineDataOneCell = DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.rowIndex][DataStoreCellSelection.colIndex];
-      this.renderSingleLine(lineDataOneCell, x, y);
+      this.renderSingleLine(lineDataOneCell, x, y, DataStoreCellSelection.singleEpochIndex);
     } else if(DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL_FP || DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL_FN) {
       console.assert(DataStoreCellSelection.singleEpochIndex === -1);
       this.renderMultiLine(DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.colIndex], x, y, -1);
-    } else if(DataStoreCellSelection.type === AppConstants.COMBINED_MATRIX_CELL) {
+    } else if(DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_FP || DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_FN ||
+      DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_PRECISION) {
       console.assert(DataStoreCellSelection.singleEpochIndex > -1);
       this.renderMultiLine(DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.colIndex], x, y, DataStoreCellSelection.singleEpochIndex);
     }
@@ -157,7 +160,7 @@ export class DetailChartTab extends ADetailViewTab {
          });
     }
 
-  renderSingleLine(lineDataOneCell: IClassEvolution, x: any, y: any) {
+  renderSingleLine(lineDataOneCell: IClassEvolution, x: any, y: any, singleEpochIndex: number) {
     this.$g.classed('linechart', true);
     const line = d3_shape.line()
       .x((d, i) => x(i))
@@ -167,6 +170,10 @@ export class DetailChartTab extends ADetailViewTab {
       .classed('detail-view-line', true)
       .attr('d', line(lineDataOneCell.values))
       .style('stroke-width', this.STROKE_WIDTH);
+
+    if (singleEpochIndex > -1) {
+      addDashedLines(this.$g, x, singleEpochIndex, this.height, this.width);
+    }
   }
 
   renderMultiLine(data: IClassEvolution[], x, y, singleEpochIndex: number) {

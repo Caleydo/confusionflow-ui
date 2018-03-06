@@ -47,7 +47,10 @@ export class DetailView implements IAppView {
       AppConstants.MULTI_LINE_CHART_CELL_FP + events.EventHandler.MULTI_EVENT_SEPARATOR +
       AppConstants.MULTI_LINE_CHART_CELL_FN + events.EventHandler.MULTI_EVENT_SEPARATOR +
       AppConstants.SINGLE_LINE_MATRIX_CELL + events.EventHandler.MULTI_EVENT_SEPARATOR +
-      AppConstants.COMBINED_MATRIX_CELL;
+      AppConstants.COMBINED_MATRIX_CELL + events.EventHandler.MULTI_EVENT_SEPARATOR +
+      AppConstants.COMBINED_CHART_CELL_FP + events.EventHandler.MULTI_EVENT_SEPARATOR +
+      AppConstants.COMBINED_CHART_CELL_FN + events.EventHandler.MULTI_EVENT_SEPARATOR +
+      AppConstants.COMBINED_CHART_CELL_PRECISION;
 
     events.on(e, () => {
       if(this.selectedDetailView !== null && this.selectedDetailView.id === AppConstants.CHART_VIEW) {

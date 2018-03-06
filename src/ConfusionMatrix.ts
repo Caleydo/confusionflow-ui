@@ -152,13 +152,13 @@ export class ConfusionMatrix implements IAppView {
     const fnData = transformSq(fpData, (r, c, matrix) => {return {values: matrix.values[c][r].values, label: matrix.values[r][c].label};});
     console.assert(fpData.order() === data[0].order());
 
-    let cellType = singleEpochIndex > -1 ? AppConstants.COMBINED_MATRIX_CELL : AppConstants.MULTI_LINE_CHART_CELL_FP;
-
+    let cellType = singleEpochIndex > -1 ? AppConstants.COMBINED_CHART_CELL_FP : AppConstants.MULTI_LINE_CHART_CELL_FP;
     this.fpColumn.render(new MultilineChartCellRenderer(fpData, singleEpochIndex, this.fpColumn.$node, labels, cellType));
 
+    cellType = singleEpochIndex > -1 ? AppConstants.COMBINED_CHART_CELL_FN : AppConstants.MULTI_LINE_CHART_CELL_FN;
     this.fnColumn.render(new MultilineChartCellRenderer(fnData, singleEpochIndex, this.fnColumn.$node, labels, cellType));
 
-    cellType = singleEpochIndex > -1 ? AppConstants.COMBINED_MATRIX_CELL : AppConstants.SINGLE_LINE_PRECISION;
+    cellType = singleEpochIndex > -1 ? AppConstants.COMBINED_CHART_CELL_PRECISION : AppConstants.SINGLE_LINE_PRECISION;
 
     this.precisionColumn.render(new SingleLineChartCellRenderer(confMeasures.calcEvolution(data, confMeasures.PPV), true,
       singleEpochIndex, this.precisionColumn.$node, cellType));
