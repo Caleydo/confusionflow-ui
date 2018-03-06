@@ -26,7 +26,7 @@ export class DetailImageWindow extends ADetailWindow {
 
     this.$node.html(`
       <p class="title"></p>
-      <div class="images"><img id="sprite" /></div>
+      <div class="images"><div class="loading">Loading images...</div></div>
     `);
     this.$node.select('.title')
         .html(`<strong>${labels[groundTruth][1]}</strong> ${Language.PREDICTED_AS} <strong>${labels[predicted][1]}</strong>`);
@@ -40,12 +40,15 @@ export class DetailImageWindow extends ADetailWindow {
         return getAPIData(`/malevo/images/imageSprite?imageIds=${imageIds}`, {}, 'blob');
       })
       .then((imageSprite) => {
+        this.$node.select('.images .loading').classed('hidden', true);
         const imageUrl = window.URL.createObjectURL(imageSprite);
-        this.$node.select('#sprite').attr('src', imageUrl);
+        this.$node.select('.images').append('img').attr('src', imageUrl);
       });
   }
 
   clear() {
+    this.$node.select('.images img').remove();
+    this.$node.select('.images .loading').classed('hidden', false);
   }
 }
 
