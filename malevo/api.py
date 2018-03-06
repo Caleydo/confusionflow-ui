@@ -18,6 +18,7 @@ from flask import request
 from .util import IntListConverter, serve_pil_image
 from phovea_server.util import jsonify
 import logging
+import shutil
 
 app = Namespace(__name__)
 app.url_map.converters['integerList'] = IntListConverter
@@ -27,7 +28,29 @@ _log = logging.getLogger(__name__)
 os.environ['SQLITE_TMPDIR'] = '/tmp'
 
 cwd = os.path.dirname(os.path.realpath(__file__))
-root = os.path.join(cwd, '../../_data/images')
+root = os.path.join(cwd, '../../_data')
+
+lmdbname = 'malevo_cifar10_lmdb'
+lmdbpath = os.path.realpath(os.path.join(root, lmdbname))
+
+def initialize_lmdb():
+  """
+  Move and rename downloaded LMDB files into separate directory to match convention
+  :return:
+  """
+  data_file = os.path.join(root, 'malevo_cifar10_data.mdb') # name as defined in `malevo_product/phovea_product.json`
+  lock_file = os.path.join(root, 'malevo_cifar10_lock.mdb') # name as defined in `malevo_product/phovea_product.json`
+
+  if not os.path.exists(lmdbpath):
+    os.makedirs(lmdbpath)
+
+  if os.path.isfile(data_file):
+    shutil.move(data_file, os.path.join(lmdbpath, 'data.mdb'))
+
+  if os.path.isfile(lock_file):
+    shutil.move(lock_file, os.path.join(lmdbpath, 'lock.mdb'))
+
+initialize_lmdb()
 
 
 @app.route("/confmat/cell/imageIds", methods=['GET'])
@@ -40,7 +63,7 @@ def _get_image_ids():
 
     query = (run_id, epoch_id, ground_truth_id, predicted_id)
 
-    dbpath = os.path.realpath(os.path.join(cwd, '../../_data/malevo_cifar10_rundata.db'))
+    dbpath = os.path.realpath(os.path.join(root, 'malevo_cifar10_rundata.db'))
     _log.info('rundata.db path: %s', dbpath)
 
     conn = sqlite3.connect(dbpath)
@@ -68,12 +91,9 @@ def _get_image_sprite():
     if len(img_ids) == 0:
       return 'error'
 
-    dbname = 'lmdb_cifar10_train'
-    dbpath = os.path.join(root, dbname)
+    _log.info('lmdb path: %s', lmdbpath)
 
-    _log.info('lmdb path: %s', dbpath)
-
-    env = lmdb.open(dbpath)
+    env = lmdb.open(lmdbpath)
 
     n_w = 10
     n_h = int(math.ceil(n_imgs / float(n_w)))
