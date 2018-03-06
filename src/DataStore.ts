@@ -80,4 +80,24 @@ export class DataStoreCellSelection {
     const $allCells = DataStoreCellSelection.$grid.selectAll('.cell');
     $allCells.classed('selected', false);
   }
+
+  static isMatrixCell() {
+    return DataStoreCellSelection.type === AppConstants.SINGLE_LINE_MATRIX_CELL ||
+      DataStoreCellSelection.type === AppConstants.COMBINED_MATRIX_CELL;
+  }
+
+  static isFPCell() {
+    return DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_FP ||
+      DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL_FP;
+  }
+
+  static isFNCell() {
+    return DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_FN ||
+      DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL_FN
+  }
+
+  static isPrecisionCell() {
+    return DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_PRECISION ||
+      DataStoreCellSelection.type === AppConstants.SINGLE_LINE_PRECISION;
+  }
 }

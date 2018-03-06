@@ -10,12 +10,11 @@ export class Language {
   static FN = 'FN';
   static FP = 'FP';
   static PRECISION = 'Precision';
-  static PREDICTED_AS = 'predicted as';
   static CLASS_SIZE = 'Class Size';
   static CHART_VIEW = 'Chart View';
   static IMAGE_VIEW = 'Image View';
   static EPOCH = 'Epoch';
-  static CONFUSION_Y_LABEL = 'Number of Confused Instances';
+  static CONFUSION_Y_LABEL = '# of Confused Instances';
   static PRECISION_Y_LABEL = 'Precision [%]';
   static FP_RATE = 'False Positive Rate';
   static FN_RATE = 'False Negative Rate';

@@ -50,18 +50,23 @@ export class DetailChartTab extends ADetailViewTab {
 
   createHeaderText() {
     let text = '';
-    switch(DataStoreCellSelection.type) {
-      case AppConstants.BAR_CHART_CELL_FP:
-        text = Language.FP_RATE;
-        break;
-      case AppConstants.BAR_CHART_CELL_FN:
-        text = Language.FN_RATE;
-        break;
-      case AppConstants.SINGLE_LINE_MATRIX_CELL:
-        const rowLabel = DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.rowIndex].label;
-        const colLabel = DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.colIndex].label;
-        text = rowLabel + ' ' + Language.PREDICTED_AS + ' ' + colLabel;
-        break;
+    const rowLabel = DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.rowIndex].label;
+    const colLabel = DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.colIndex].label;
+
+    if(DataStoreCellSelection.isMatrixCell()) {
+      text = Language.CONFUSION_Y_LABEL;
+      text = text + ' ' + Language.FOR_CLASS + ' ';
+      text += rowLabel;
+      text += ' with ';
+      text += DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.colIndex].label;
+    } else if(DataStoreCellSelection.isFPCell()) {
+      text = Language.FP_RATE;
+    } else if(DataStoreCellSelection.isFNCell()) {
+      text = Language.FN_RATE;
+    } else if(DataStoreCellSelection.isPrecisionCell()) {
+      text = Language.PRECISION_Y_LABEL;
+      text = text + ' ' + Language.FOR_CLASS + ' ';
+      text += rowLabel;
     }
     this.$header.text(text);
   }
@@ -69,29 +74,13 @@ export class DetailChartTab extends ADetailViewTab {
   getYLabelText() {
     let text = '';
     const rowLabel = DataStoreCellSelection.labels[DataStoreCellSelection.rowIndex][1];
-    switch(DataStoreCellSelection.type) {
-      case AppConstants.SINGLE_LINE_MATRIX_CELL:
-      case AppConstants.COMBINED_MATRIX_CELL:
-        text = Language.CONFUSION_Y_LABEL;
-        text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += rowLabel;
-        text += ' with ';
-        text += DataStoreCellSelection.multiEpochData.values[0][DataStoreCellSelection.colIndex].label;
-        break;
-      case AppConstants.COMBINED_CHART_CELL_FP:
-      case AppConstants.COMBINED_CHART_CELL_FN:
-      case AppConstants.MULTI_LINE_CHART_CELL_FN:
-      case AppConstants.MULTI_LINE_CHART_CELL_FP:
-        text = Language.CONFUSION_Y_LABEL;
-        text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += rowLabel;
-        break;
-      case AppConstants.COMBINED_CHART_CELL_PRECISION:
-      case AppConstants.SINGLE_LINE_PRECISION:
-        text = Language.PRECISION_Y_LABEL;
-        text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += rowLabel;
-        break;
+
+    if(DataStoreCellSelection.isMatrixCell()) {
+      text = Language.CONFUSION_Y_LABEL;
+    } else if(DataStoreCellSelection.isFPCell() || DataStoreCellSelection.isFNCell()) {
+      text = Language.CONFUSION_Y_LABEL;
+    } else if(DataStoreCellSelection.isPrecisionCell()) {
+      text = Language.PRECISION_Y_LABEL;
     }
     return text;
   }
