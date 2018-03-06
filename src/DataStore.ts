@@ -93,7 +93,7 @@ export class DataStoreCellSelection {
 
   static isFNCell() {
     return DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_FN ||
-      DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL_FN
+      DataStoreCellSelection.type === AppConstants.MULTI_LINE_CHART_CELL_FN;
   }
 
   static isPrecisionCell() {
