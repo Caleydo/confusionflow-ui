@@ -1,4 +1,4 @@
-export abstract class ADetailWindow {
+export abstract class ADetailViewTab {
 
   protected $node: d3.Selection<any>;
 

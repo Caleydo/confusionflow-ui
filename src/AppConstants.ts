@@ -20,6 +20,7 @@ export class AppConstants {
    */
   static CHART_VIEW = 'chartView';
   static IMAGE_VIEW = 'imageView';
+  static SOFTMAX_STAMP_VIEW = 'softmaxStampView';
 
   /**
    * Fires when the use selects a dataset from the selector
@@ -42,10 +43,29 @@ export class AppConstants {
    * Represent the different cell types
    * @type {string}
    */
-  static MULTI_LINE_CHART_CELL = 'multi_line_chart_cell';
-  static SINGLE_LINE_CHART_CELL = 'single_line_chart_cell';
-  static BAR_CHART_CELL = 'bar_chart_cell';
-  static LABEL_CHART_CELL = 'label_chart_cell';
-  static HEATMAP_CELL = 'heatmap_cell';
-  static COMBINED_CELL = 'combined_cell';
+  static HEATMAP_CELL_PRECISION = 'heatmapCellPrecision';
+  static SINGLE_LINE_PRECISION = 'singleLinePrecision';
+  static COMBINED_CHART_CELL_PRECISION = 'combinedChartCellPrecision';
+
+  static BAR_CHART_CELL_FP = 'barChartCellFP';
+  static BAR_CHART_CELL_FN = 'barChartCellFN';
+
+  static MULTI_LINE_CHART_CELL_FP = 'multiLineChartCellFP';
+  static MULTI_LINE_CHART_CELL_FN = 'multiLineChartCellFN';
+
+  static COMBINED_CHART_CELL_FP = 'combinedChartCellFP';
+  static COMBINED_CHART_CELL_FN = 'combinedChartCellFN';
+
+  static COMBINED_MATRIX_CELL = 'combinedMatrixCell';
+  static SINGLE_LINE_MATRIX_CELL = 'singleLineMatrixCell';
+
+  static LABEL_CLASS_SIZE = 'labelClassSize';
+
+    /**
+     * Initial size of a heatmap cells for the softmax stampx
+     * @type {number}
+     */
+  static SOFTMAX_HEATMAP_CELL_SIZE = 5;
+
+  static SOFTMAX_MAXIMAL_HEATMAP_LABEL_SIZE = 70;
 }
