@@ -21,7 +21,7 @@ export class SoftmaxStampHeatmap {
   private scaleFactor: {x: number, y: number};
 
   private heatMapOptions = {
-      initialScale: AppConstants.HEATMAP_CELL_SIZE,
+      initialScale: AppConstants.SOFTMAX_HEATMAP_CELL_SIZE,
       color: ['white', 'black'],
       domain: [0, 1]
     };
@@ -127,13 +127,13 @@ export class SoftmaxStampHeatmap {
  * @returns {string}
  */
 function chooseLabel(nrow: number, ncol: number):string {
-  if (nrow < AppConstants.MAXIMAL_HEATMAP_LABEL_SIZE && ncol < AppConstants.MAXIMAL_HEATMAP_LABEL_SIZE) {
+  if (nrow < AppConstants.SOFTMAX_MAXIMAL_HEATMAP_LABEL_SIZE && ncol < AppConstants.SOFTMAX_MAXIMAL_HEATMAP_LABEL_SIZE) {
     return 'CELL';
   }
-  if (nrow < AppConstants.MAXIMAL_HEATMAP_LABEL_SIZE) {
+  if (nrow < AppConstants.SOFTMAX_MAXIMAL_HEATMAP_LABEL_SIZE) {
     return 'ROW';
   }
-  if (ncol < AppConstants.MAXIMAL_HEATMAP_LABEL_SIZE) {
+  if (ncol < AppConstants.SOFTMAX_MAXIMAL_HEATMAP_LABEL_SIZE) {
     return 'COLUMN';
   }
   return 'NONE';

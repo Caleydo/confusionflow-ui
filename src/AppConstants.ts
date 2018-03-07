@@ -62,10 +62,10 @@ export class AppConstants {
   static LABEL_CLASS_SIZE = 'labelClassSize';
 
     /**
-     * Initial size of a heatmap cell
+     * Initial size of a heatmap cells for the softmax stampx
      * @type {number}
      */
-  static HEATMAP_CELL_SIZE = 5;
+  static SOFTMAX_HEATMAP_CELL_SIZE = 5;
 
-  static MAXIMAL_HEATMAP_LABEL_SIZE = 70;
+  static SOFTMAX_MAXIMAL_HEATMAP_LABEL_SIZE = 70;
 }

@@ -93,13 +93,13 @@ export function calcSummedPercent(matrices: NumberMatrix[]): number[] {
   }
 
   for(const m of matrices) {
-    const res = calcSummedPercent1(m);
+    const res = calcSums(m);
     arr.push(res);
   }
   return arr;
 }
 
-export function calcSummedPercent1(matrix: NumberMatrix) {
+export function calcSums(matrix: NumberMatrix) {
   let tpSum = 0;
   let classSizeSum = 0;
   for(let i = 0; i < matrix.order(); i++) {
