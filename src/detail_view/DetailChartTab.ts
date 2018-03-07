@@ -217,43 +217,4 @@ export class DetailChartTab extends ADetailViewTab {
       addDashedLines(this.$g, x, singleEpochIndex, this.height, this.width);
     }
   }
-
-  /*createFocus(x: any, y: any, data: IClassEvolution[]) {
-    this.$focus = this.$g.append('g')
-        .attr('class', 'focus')
-        .style('display', 'none');
-
-    this.$focus.append('line')
-        .attr('class', 'x-hover-line hover-line')
-        .attr('y1', 0)
-        .attr('y2', this.height);
-
-    this.$focus.append('line')
-        .attr('class', 'y-hover-line hover-line')
-        .attr('x1', this.width)
-        .attr('x2', this.width);
-
-    this.$focus.append('circle')
-        .attr('r', 7.5);
-
-    this.$focus.append('text')
-        .attr('x', 15)
-      	.attr('dy', '.31em');
-
-    const that = this;
-    this.$svg.on('mouseover', () => { this.$focus.style('display', null); })
-        .on('mouseout', () => { this.$focus.style('display', 'none'); })
-        .on('mousemove', function() {that.foo(this, x, y, data);});
-  }
-
-  foo(ele: HTMLElement, x: any, y: any, data: any) {
-    const bisectDate = d3.bisector(function(d) { return d; }).left;
-    const x0 = x.invert(d3.mouse(ele)[0]),
-    i = bisectDate(data, x0, 1),
-    d0 = data[i - 1],
-    d1 = data[i],
-    d = x0 - d0.year > d1.year - x0 ? d1 : d0;
-    this.$focus.attr('transform', 'translate(' + x(d.year) + ',' + y(d.value) + ')');
-    this.$focus.select('text').text(function() { return d.value; });
-  }*/
 }
