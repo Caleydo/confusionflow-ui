@@ -48,12 +48,12 @@ export class ConfusionMatrix implements IAppView {
 
   private setupLayout() {
     this.$node.append('div')
-      .classed('axis', true)
+      .classed('cfm-axis', true)
       .classed('axis-top', true)
       .text(Language.PREDICTED);
 
     this.$node.append('div')
-      .classed('axis', true)
+      .classed('cfm-axis', true)
       .classed('axis-left', true)
       .append('span')
       .text(Language.GROUND_TRUTH);
