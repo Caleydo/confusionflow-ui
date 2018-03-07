@@ -2,6 +2,7 @@
  * Created by Holger Stitz on 26.08.2016.
  */
 
+import 'select2';
 import * as data from 'phovea_core/src/data';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
@@ -12,6 +13,7 @@ import * as d3 from 'd3';
 import Format = d3.time.Format;
 import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './MalevoDataset';
 import {ITable} from 'phovea_core/src/table';
+import * as $ from 'jquery';
 
 /**
  * Shows a list of available datasets and lets the user choose one.
@@ -48,22 +50,20 @@ class DataSetSelector implements IAppView {
    */
   private build() {
     this.$node.append('label')
-      .attr('for', 'ds')
+      .attr('for', 'dataset-selector')
       .text(Language.DATA_SET);
+    this.$node.append('select')
+      .attr('id', 'dataset-selector')
+      .attr('multiple', 'multiple')
+      .style('width', '800px');
 
-    // create select and update hash on property change
-    this.$select = this.$node.append('select')
-      .attr('id', 'ds')
-      .classed('form-control', true)
-      .on('change', () => {
-        const selectedData = this.$select.selectAll('option')
-            .filter((d, i) => i === this.$select.property('selectedIndex'))
-            .data();
+    this.$node.html(`
+      <select id="dataset-selector" multiple="multiple" style="width:800px">
+      </select> `);
 
-        if(selectedData.length > 0) {
-          events.fire(AppConstants.EVENT_DATA_COLLECTION_SELECTED, selectedData[0]);
-        }
-      });
+    this.$select = this.$node.select('#dataset-selector');
+
+    (<any>$(this.$select.node())).select2();
   }
 
 
