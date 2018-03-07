@@ -4,7 +4,7 @@
 
 export class Language {
   static APP_NAME = 'Malevo';
-  static DATA_SET = 'Dataset';
+  static DATASET = 'Select a Dataset';
   static GROUND_TRUTH = 'Ground Truth';
   static PREDICTED = 'Predicted';
   static FN = 'FN';

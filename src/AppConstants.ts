@@ -26,7 +26,13 @@ export class AppConstants {
    * Fires when the use selects a dataset from the selector
    * @type {string}
    */
-  static EVENT_DATA_COLLECTION_SELECTED = 'eventDataCollectionSelected';
+  static EVENT_DATA_SET_ADDED = 'eventDataCollectionSelected';
+
+    /**
+   * Fires when the use unselects a dataset from the selector
+   * @type {string}
+   */
+  static EVENT_DATA_SET_REMOVED = 'eventDataCollectionUnselected';
 
   /**
    * Fires when the detail view should be cleared
@@ -61,11 +67,14 @@ export class AppConstants {
 
   static LABEL_CLASS_SIZE = 'labelClassSize';
 
-    /**
-     * Initial size of a heatmap cells for the softmax stampx
-     * @type {number}
-     */
+  /**
+   * Initial size of a heatmap cells for the softmax stampx
+   * @type {number}
+   */
   static SOFTMAX_HEATMAP_CELL_SIZE = 5;
 
   static SOFTMAX_MAXIMAL_HEATMAP_LABEL_SIZE = 70;
+
+  // Specifies how many dataset can be selected in the dataset selector at most
+  static MAX_DATASET_COUNT = 4;
 }

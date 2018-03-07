@@ -64,7 +64,7 @@ export class App implements IAppView {
       }
     },
     {
-      view: 'Timeline',
+      view: 'TimelineView',
       parent: 'timeline-wrapper',
       options: {
         eventName: ''

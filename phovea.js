@@ -16,8 +16,8 @@ module.exports = function(registry) {
     'name': 'Data Set Selector'
   });
 
-  registry.push('malevoView', 'Timeline', function() { return System.import('./src/Timeline'); }, {
-    'name': 'Timeline'
+  registry.push('malevoView', 'TimelineView', function() { return System.import('./src/Timeline'); }, {
+    'name': 'TimelineView'
   });
 
   registry.push('malevoView', 'DetailView', function() { return System.import('./src/detail_view/DetailView'); }, {

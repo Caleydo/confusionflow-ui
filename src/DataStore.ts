@@ -8,44 +8,61 @@ import {AppConstants} from './AppConstants';
 import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, min, NumberMatrix} from './DataStructures';
 
 /**
+ * Stores the selected datasets
+ */
+export class DataStoreDatasetSelection {
+  static datasets: MalevoDataset[] = [];
+
+  static datasetAdded(ds: MalevoDataset) {
+    DataStoreDatasetSelection.datasets.push(ds);
+    events.fire(AppConstants.EVENT_DATA_SET_ADDED, ds);
+  }
+
+  static datasetRemoved(ds: MalevoDataset) {
+    DataStoreDatasetSelection.datasets = DataStoreDatasetSelection.datasets.filter((x) => x !== ds);
+    events.fire(AppConstants.EVENT_DATA_SET_REMOVED, ds);
+  }
+}
+
+/**
  * Stores selection from dataset/run selector and timeline
  */
-export class DataStoreEpoch {
+export class DataStoreEpochSelection {
   static singleSelected: IMalevoEpochInfo = null;
   static multiSelected: IMalevoEpochInfo[] = [];
   static labels:ITable = null;
   static selectedDataset:MalevoDataset = null;
 
   static isJustOneEpochSelected(): boolean {
-    return DataStoreEpoch.singleSelected !== null && DataStoreEpoch.multiSelected.length === 0;
+    return DataStoreEpochSelection.singleSelected !== null && DataStoreEpochSelection.multiSelected.length === 0;
   }
 
   static isRangeSelected(): boolean {
-    return DataStoreEpoch.singleSelected === null && DataStoreEpoch.multiSelected.length !== 0;
+    return DataStoreEpochSelection.singleSelected === null && DataStoreEpochSelection.multiSelected.length !== 0;
   }
 
   static isSingleAndRangeSelected(): boolean {
-    return DataStoreEpoch.singleSelected !== null && DataStoreEpoch.multiSelected.length !== 0;
+    return DataStoreEpochSelection.singleSelected !== null && DataStoreEpochSelection.multiSelected.length !== 0;
   }
 
   static clearSelection() {
-    DataStoreEpoch.clearSingleSelection();
-    DataStoreEpoch.clearMultiSelection();
+    DataStoreEpochSelection.clearSingleSelection();
+    DataStoreEpochSelection.clearMultiSelection();
   }
 
   static clearMultiSelection() {
-    DataStoreEpoch.multiSelected = [];
+    DataStoreEpochSelection.multiSelected = [];
   }
 
   static clearSingleSelection() {
-    DataStoreEpoch.singleSelected = null;
+    DataStoreEpochSelection.singleSelected = null;
   }
 
   static isFullRangeSelected() {
-    if(DataStoreEpoch.selectedDataset === null || DataStoreEpoch.multiSelected === []) {
+    if(DataStoreEpochSelection.selectedDataset === null || DataStoreEpochSelection.multiSelected === []) {
       return false;
     }
-    return DataStoreEpoch.selectedDataset.epochInfos.length === DataStoreEpoch.multiSelected.length;
+    return DataStoreEpochSelection.selectedDataset.epochInfos.length === DataStoreEpochSelection.multiSelected.length;
   }
 }
 

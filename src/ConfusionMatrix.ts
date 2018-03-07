@@ -15,7 +15,7 @@ import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
-import {DataStoreCellSelection, DataStoreEpoch} from './DataStore';
+import {DataStoreCellSelection, DataStoreEpochSelection} from './DataStore';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -115,11 +115,11 @@ export class ConfusionMatrix implements IAppView {
   }
 
   updateViews() {
-    if(DataStoreEpoch.isJustOneEpochSelected() === true) {
+    if(DataStoreEpochSelection.isJustOneEpochSelected() === true) {
       this.updateSingleEpoch();
-    } else if(DataStoreEpoch.isRangeSelected() === true) {
+    } else if(DataStoreEpochSelection.isRangeSelected() === true) {
       this.updateEpochRange();
-    } else if(DataStoreEpoch.isSingleAndRangeSelected() === true) {
+    } else if(DataStoreEpochSelection.isSingleAndRangeSelected() === true) {
       this.updateSingleAndEpochRange();
     } else {
       this.clearViews();
@@ -184,10 +184,10 @@ export class ConfusionMatrix implements IAppView {
 
   private updateEpochRange() {
     const promMultiEpoch = [];
-    for(const item of DataStoreEpoch.multiSelected) {
+    for(const item of DataStoreEpochSelection.multiSelected) {
       promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
     }
-    const promLabels = this.loadLabels(DataStoreEpoch.labels);
+    const promLabels = this.loadLabels(DataStoreEpochSelection.labels);
     promMultiEpoch.push(promLabels);
 
     Promise.all(promMultiEpoch).then((x: any) => {
@@ -200,8 +200,8 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private updateSingleEpoch() {
-    const confusionData = this.loadConfusionData(DataStoreEpoch.singleSelected.confusionInfo);
-    const promLabels = this.loadLabels(DataStoreEpoch.labels);
+    const confusionData = this.loadConfusionData(DataStoreEpochSelection.singleSelected.confusionInfo);
+    const promLabels = this.loadLabels(DataStoreEpochSelection.labels);
 
     Promise.all([confusionData, promLabels]).then((x:any) => {
       this.checkDataSanity([x[0]], x[1]);
@@ -213,16 +213,16 @@ export class ConfusionMatrix implements IAppView {
 
   private updateSingleAndEpochRange() {
     const promMultiEpoch = [];
-    for(const item of DataStoreEpoch.multiSelected) {
+    for(const item of DataStoreEpochSelection.multiSelected) {
       promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
     }
-    const promSingleEpoch = this.loadConfusionData(DataStoreEpoch.singleSelected.confusionInfo);
-    const promLabels = this.loadLabels(DataStoreEpoch.labels);
+    const promSingleEpoch = this.loadConfusionData(DataStoreEpochSelection.singleSelected.confusionInfo);
+    const promLabels = this.loadLabels(DataStoreEpochSelection.labels);
 
     promMultiEpoch.push(promSingleEpoch);
     promMultiEpoch.push(promLabels);
 
-    const singleEpochIndex = DataStoreEpoch.multiSelected.findIndex((x) => x === DataStoreEpoch.singleSelected);
+    const singleEpochIndex = DataStoreEpochSelection.multiSelected.findIndex((x) => x === DataStoreEpochSelection.singleSelected);
 
     Promise.all(promMultiEpoch).then((x: any) => {
       const labels = x.splice(-1,1)[0];

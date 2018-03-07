@@ -14,6 +14,7 @@ import Format = d3.time.Format;
 import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './MalevoDataset';
 import {ITable} from 'phovea_core/src/table';
 import * as $ from 'jquery';
+import {DataStoreDatasetSelection} from './DataStore';
 
 /**
  * Shows a list of available datasets and lets the user choose one.
@@ -49,9 +50,6 @@ class DataSetSelector implements IAppView {
    * Build the basic DOM elements and binds the change function
    */
   private build() {
-    this.$node.append('label')
-      .attr('for', 'dataset-selector')
-      .text(Language.DATA_SET);
     this.$node.append('select')
       .attr('id', 'dataset-selector')
       .attr('multiple', 'multiple')
@@ -64,12 +62,17 @@ class DataSetSelector implements IAppView {
     this.$select = this.$node.select('#dataset-selector');
 
     (<any>$(this.$select.node()))
-      .select2()
+      .select2({
+        maximumSelectionLength: AppConstants.MAX_DATASET_COUNT,
+        placeholder: Language.DATASET
+      })
       .on('select2:select', (evt) => {
-
-        const selectedOptions = (<any>$(this.$select.node())).select2('data');
-        const datasets = selectedOptions.map((x) => d3.select(x.element).data()[0]);
-        events.fire(AppConstants.EVENT_DATA_COLLECTION_SELECTED, datasets);
+        const dataset = d3.select(evt.params.data.element).data()[0];
+        DataStoreDatasetSelection.datasetAdded(dataset);
+      })
+      .on('select2:unselect', (evt) => {
+        const dataset = d3.select(evt.params.data.element).data()[0];
+        DataStoreDatasetSelection.datasetRemoved(dataset);
       });
   }
 
