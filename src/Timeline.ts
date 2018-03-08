@@ -36,34 +36,39 @@ export default class TimelineView implements IAppView {
       }, this.maxLabelWidth);
   }
 
-  private attachListener() {
-    const timelineHeight = AppConstants.TML_HEIGHT;
-    const labelMargin = 10;
-    events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds:MalevoDataset) => {
-      this.$node.attr('viewBox', `0 0 ${this.width} ${(this.timelines.length + 1) * timelineHeight}`);
+  updateSvg() {
+      this.$node.attr('viewBox', `0 0 ${this.width} ${(this.timelines.length) * AppConstants.TML_HEIGHT}`);
       this.$node.attr('height', '100%');
+  }
+
+  updateTimelines() {
+    const labelMargin = 10;
+    this.findMaxLabelWidth();
+    this.timelines.forEach((x, i) => x.offsetV(i * AppConstants.TML_HEIGHT)); // realign other timelines
+    this.timelines.forEach((x) => x.render(this.maxLabelWidth + labelMargin));
+  }
+
+  private attachListener() {
+
+    events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds:MalevoDataset) => {
 
       const ts = new Timeline(ds, this.$node);
       this.timelines.push(ts);
 
-      this.findMaxLabelWidth();
-      this.timelines.forEach((x, i) => x.offsetV(i * timelineHeight)); // realign other timelines
-      this.timelines.forEach((x) => x.render(this.maxLabelWidth + labelMargin));
+      this.updateSvg();
+      this.updateTimelines();
     });
 
     events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds:MalevoDataset) => {
       const ts = this.timelines.find((x) => x.dataset === ds);
       console.assert(ts);
 
-      this.$node.attr('viewBox', `0 0 ${this.width} ${(this.timelines.length - 1) * timelineHeight}`);
-      this.$node.attr('height', '100%');
-
       this.timelines = this.timelines.filter((x) => x !== ts); // remove from list
-      ts.node().remove();
 
-            this.findMaxLabelWidth();
-      this.timelines.forEach((x, i) => x.offsetV(i * timelineHeight)); // realign other timelines
-      this.timelines.forEach((x) => x.render(this.maxLabelWidth + labelMargin));
+      this.updateSvg();
+      this.updateTimelines();
+
+      ts.node().remove();
 
     });
   }
