@@ -1,72 +1,38 @@
 @import "vars";
 
-.timeline {
-  display: flex;
-  justify-content: flex-start;
+.timeline-view {
+  z-index: 30;
+  display: block;
+  visibility: visible;
   position: relative;
-  margin: 0 20px 0 40px;
 
-  .selection {
-    position: absolute;
-    top: -4px;
-    height: 24px;
-    border: 2px $select-color solid;
-    background: transparentize($select-color, 0.75);
-    border-radius: 5px;
-    visibility: hidden;
-    z-index: -1;
+  .tml-axis {
+    font: 10px sans-serif;
   }
 
-  .epochs {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-right: 20px;
+  .tml-axis path,
+  .tml-axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
 
-    .point {
-      position: relative;
-      //border-radius: 50%;
-      background-color: darken($label-bg, 15%);
-      width: 15px;
-      height: 15px;
+  .x.axis path {
+    display: none;
+  }
 
-      &:before {
-        content: '';
-        display: block;
-        position: absolute;
-        border-top: 2px solid darken($label-border, 10%);
-        width: 300%;
-        top: 50%;
-        right: 100%;
-        z-index: -1;
-        user-select: none;
-      }
+  .resize path {
+    fill: #666;
+    fill-opacity: .8;
+    stroke: #000;
+    stroke-width: 1.5px;
+  }
 
-      &:after {
-        content: '';
-        display: block;
-        position: absolute;
-        border-top: 2px solid darken($label-border, 10%);
-        width: 300%;
-        top: 50%;
-        left: 100%;
-        z-index: -1;
-        user-select: none;
-      }
-    }
-
-    &.single-selected .point {
-        background-color: $select-color;
-    }
-
-    &:nth-child(2) .point:before,
-    &:last-child .point:after {
-      display: none;
-    }
-
-    .epoch-label {
-      margin-top: 5px;
-      color: black;
-    }
+  .brush .extent {
+    stroke: #fff;
+    stroke-opacity: .6;
+    stroke-width: 2px;
+    fill-opacity: .1;
+    shape-rendering: crispEdges;
   }
 }

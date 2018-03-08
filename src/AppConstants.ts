@@ -77,4 +77,15 @@ export class AppConstants {
 
   // Specifies how many dataset can be selected in the dataset selector at most
   static MAX_DATASET_COUNT = 4;
+
+  /**
+   * Size of timeline components
+   */
+  static TML_TOP_MARGIN = 15;
+  static TML_DS_LABEL_HEIGHT = 20;
+  static TML_BAR_HEIGHT = 20;
+  static TML_BAR_WIDTH = 30;
+  static TML_AXIS_LABEL_HEIGHT = 20;
+  static TML_MARGIN = 5;
+  static TML_HEIGHT = 70;
 }
