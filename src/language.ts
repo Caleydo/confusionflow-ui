@@ -13,7 +13,7 @@ export class Language {
   static CLASS_SIZE = 'Class Size';
   static CHART_VIEW = 'Charts';
   static IMAGE_VIEW = 'Images';
-  static SOFTMAX_STAMP_VIEW = 'Softmax Stamps'
+  static SOFTMAX_STAMP_VIEW = 'Softmax Stamps';
   static EPOCH = 'Epoch';
   static CONFUSION_Y_LABEL = '# of Confused Instances';
   static PRECISION_Y_LABEL = 'Precision [%]';
