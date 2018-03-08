@@ -123,7 +123,10 @@ $num-columns-right-area: 3;
   }
 }
 
-.label-left > .labels,
+.label-left > .labels {
+  grid-template-rows: repeat(10, 1fr);
+}
+
 .chart-right > .chart {
   grid-template-rows: repeat(11, 1fr);
 }
