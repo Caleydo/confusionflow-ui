@@ -20,16 +20,21 @@ module.exports = function(registry) {
     'name': 'Timeline'
   });
 
-  registry.push('malevoView', 'DummyDetailView', function() { return System.import('./src/DummyDetailView'); }, {
-    'name': 'DummyDetailView',
-    'isDetailView': true
+  registry.push('malevoView', 'DetailView', function() { return System.import('./src/detail_view/DetailView'); }, {
+    'name': 'DetailView'
   });
 
-  registry.push('malevoView', 'ImageDetailView', function() { return System.import('./src/ImageDetailView'); }, {
-    'name': 'ImageDetailView',
-    'isDetailView': true
+  registry.push('malevoView', 'DetailChartWindow', function() { return System.import('./src/detail_view/DetailChartWindow'); }, {
+    'name': 'DetailChartWindow',
+    'isDetailWindow': true,
+    'order': 10
   });
 
+  registry.push('malevoView', 'DetailImageWindow', function() { return System.import('./src/detail_view/DetailImageWindow'); }, {
+    'name': 'DetailImageWindow',
+    'isDetailWindow': true,
+    'order': 20
+  });
 
   // generator-phovea:end
 };

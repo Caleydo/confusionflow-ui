@@ -17,14 +17,42 @@ from phovea_server.ns import Namespace
 from flask import request
 from .util import IntListConverter, serve_pil_image
 from phovea_server.util import jsonify
+import logging
+import shutil
 
 app = Namespace(__name__)
 app.url_map.converters['integerList'] = IntListConverter
 
+_log = logging.getLogger(__name__)
+
 os.environ['SQLITE_TMPDIR'] = '/tmp'
 
 cwd = os.path.dirname(os.path.realpath(__file__))
-root = os.path.join(cwd, '../data/images')
+root = os.path.join(cwd, '../../_data')
+
+lmdbname = 'malevo_cifar10_lmdb'
+lmdbpath = os.path.realpath(os.path.join(root, lmdbname))
+
+
+def initialize_lmdb():
+  """
+  Move and rename downloaded LMDB files into separate directory to match convention
+  TODO To avoid this function the phovea_product.json and build.js should be extended by a `destname` option
+  :return:
+  """
+  data_file = os.path.join(root, 'malevo_cifar10_data.mdb')  # name as defined in `malevo_product/phovea_product.json`
+  lock_file = os.path.join(root, 'malevo_cifar10_lock.mdb')  # name as defined in `malevo_product/phovea_product.json`
+
+  if not os.path.exists(lmdbpath):
+    os.makedirs(lmdbpath)
+
+  if os.path.isfile(data_file):
+    shutil.move(data_file, os.path.join(lmdbpath, 'data.mdb'))
+
+  if os.path.isfile(lock_file):
+    shutil.move(lock_file, os.path.join(lmdbpath, 'lock.mdb'))
+
+initialize_lmdb()
 
 
 @app.route("/confmat/cell/imageIds", methods=['GET'])
@@ -37,7 +65,10 @@ def _get_image_ids():
 
     query = (run_id, epoch_id, ground_truth_id, predicted_id)
 
-    conn = sqlite3.connect(os.path.join(cwd, '../data/rundata.db'))
+    dbpath = os.path.realpath(os.path.join(root, 'malevo_cifar10_rundata.db'))
+    _log.info('rundata.db path: %s', dbpath)
+
+    conn = sqlite3.connect(dbpath)
     c = conn.cursor()
     c.execute("SELECT img_id FROM logs WHERE run_id = ? AND epoch_id = ? AND ground_truth = ? AND predicted = ?", query)
     img_ids_tuples = c.fetchall()[:num_count]
@@ -62,9 +93,9 @@ def _get_image_sprite():
     if len(img_ids) == 0:
       return 'error'
 
-    dbname = 'lmdb_cifar10_train'
-    dbpath = os.path.join(root, dbname)
-    env = lmdb.open(dbpath)
+    _log.info('lmdb path: %s', lmdbpath)
+
+    env = lmdb.open(lmdbpath)
 
     n_w = 10
     n_h = int(math.ceil(n_imgs / float(n_w)))
