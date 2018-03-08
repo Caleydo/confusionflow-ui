@@ -1,2 +1,1 @@
-python py-pip openssl ca-certificates py-openssl wget
-build-dependencies libffi-dev openssl-dev python-dev py-pip build-base
+gcc mono-mcs
