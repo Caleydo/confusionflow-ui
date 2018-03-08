@@ -62,7 +62,8 @@ export function calcForMultipleClasses(matrix: NumberMatrix, funct: (matrix: Num
 }
 
 export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMatrix, index: number) => number): Matrix<IClassEvolution> {
-  const order = matrices[0].order();
+  const order = matrices[0].order() + 1;
+
   if(matrices.length === 0) {
     return new Matrix<IClassEvolution>(0, 0);
   }
@@ -78,5 +79,35 @@ export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMa
     const res = calcForMultipleClasses(m, funct);
     matrix.values.map((c, i) => c[0].values.push(res[i]));
   }
+
+  const summedPercent = calcSummedPercent(matrices);
+  matrix.values[order - 1][0].values = summedPercent;
   return matrix;
+}
+
+export function calcSummedPercent(matrices: NumberMatrix[]): number[] {
+  const order = matrices[0].order();
+  const arr = [];
+  if(matrices.length === 0) {
+    return arr;
+  }
+
+  for(const m of matrices) {
+    const res = calcSums(m);
+    arr.push(res);
+  }
+  return arr;
+}
+
+export function calcSums(matrix: NumberMatrix) {
+  let tpSum = 0;
+  let classSizeSum = 0;
+  for(let i = 0; i < matrix.order(); i++) {
+    tpSum += TP(matrix, i);
+    classSizeSum += ClassSize(matrix, i);
+  }
+  if(classSizeSum === 0) {
+    return 0;
+  }
+  return tpSum / classSizeSum;
 }

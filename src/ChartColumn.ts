@@ -3,6 +3,7 @@
  */
 import * as d3 from 'd3';
 import {ACellRenderer} from './CellRenderer';
+import {Matrix, IClassEvolution} from './DataStructures';
 
 export class ChartColumn {
   private curRenderer = null;

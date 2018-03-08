@@ -1,9 +1,6 @@
 import * as d3 from "d3";
 
-export abstract class ADetailWindow {
-
-  public id: string = '';
-  public name: string = '';
+export abstract class ADetailViewTab {
 
   protected $node: d3.Selection<any>;
 
@@ -11,7 +8,7 @@ export abstract class ADetailWindow {
     this.$node = d3.select(parent).append('div').classed('viewpanel-content', true);
   }
 
-  abstract init(): Promise<ADetailWindow>;
+  abstract init(): Promise<ADetailViewTab>;
   abstract render(): void;
   abstract clear(): void;
 

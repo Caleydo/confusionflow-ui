@@ -4,14 +4,14 @@ import {ConfusionMatrix} from '../ConfusionMatrix';
 import {AppConstants} from '../AppConstants';
 import * as events from 'phovea_core/src/event';
 import * as plugins from 'phovea_core/src/plugin';
-import {ADetailWindow} from './ADetailWindow';
+import {ADetailViewTab} from './ADetailViewTab';
 
 
 export class DetailView implements IAppView {
 
   private readonly $selectionPanel: d3.Selection<any>;
   private readonly $viewbody: d3.Selection<any>;
-  private selectedDetailView: ADetailWindow = null;
+  private selectedDetailView: ADetailViewTab = null;
 
   constructor(parent: Element) {
     this.$selectionPanel = d3.select(parent)
@@ -33,11 +33,17 @@ export class DetailView implements IAppView {
   }
 
   private attachListeners() {
-    const e = AppConstants.SINGLE_LINE_CHART_CELL + events.EventHandler.MULTI_EVENT_SEPARATOR +
-      AppConstants.MULTI_LINE_CHART_CELL + events.EventHandler.MULTI_EVENT_SEPARATOR + AppConstants.COMBINED_CELL;
+    const e = AppConstants.SINGLE_LINE_PRECISION + events.EventHandler.MULTI_EVENT_SEPARATOR +
+      AppConstants.MULTI_LINE_CHART_CELL_FP + events.EventHandler.MULTI_EVENT_SEPARATOR +
+      AppConstants.MULTI_LINE_CHART_CELL_FN + events.EventHandler.MULTI_EVENT_SEPARATOR +
+      AppConstants.SINGLE_LINE_MATRIX_CELL + events.EventHandler.MULTI_EVENT_SEPARATOR +
+      AppConstants.COMBINED_MATRIX_CELL + events.EventHandler.MULTI_EVENT_SEPARATOR +
+      AppConstants.COMBINED_CHART_CELL_FP + events.EventHandler.MULTI_EVENT_SEPARATOR +
+      AppConstants.COMBINED_CHART_CELL_FN + events.EventHandler.MULTI_EVENT_SEPARATOR +
+      AppConstants.COMBINED_CHART_CELL_PRECISION;
 
     events.on(e, () => {
-      if(this.selectedDetailView !== null) {
+      if(this.selectedDetailView !== null && this.selectedDetailView.id === AppConstants.CHART_VIEW) {
         this.selectedDetailView.render();
       }
     });
@@ -63,7 +69,7 @@ export class DetailView implements IAppView {
     // when everything is loaded, then create and init the views
     const buildPromise = Promise.all(pluginPromises)
       .then((plugins) => {
-        const initPromises = plugins.map((p, index): Promise<ADetailWindow> => {
+        const initPromises = plugins.map((p, index): Promise<ADetailViewTab> => {
           const view = p.factory(
             this.$viewbody.node(), // parent node
             {} // options
@@ -82,7 +88,7 @@ export class DetailView implements IAppView {
     return buildPromise;
   }
 
-  private createSelectionPanel(views: ADetailWindow[]) {
+  private createSelectionPanel(views: ADetailViewTab[]) {
     const $div = this.$selectionPanel.selectAll('div').data(views);
 
     const that = this;
@@ -104,11 +110,11 @@ export class DetailView implements IAppView {
     this.selectView(views[0], $div.filter((x) => x.id === views[0].id));
   }
 
-  private selectView(content: ADetailWindow, $node: d3.Selection<any>) {
+  private selectView(tab: ADetailViewTab, $node: d3.Selection<any>) {
     $node.classed('selected', true);
-    content.shouldDisplay(true);
-    content.render();
-    this.selectedDetailView = content;
+    tab.shouldDisplay(true);
+    this.selectedDetailView = tab;
+    this.selectedDetailView.render();
   }
 }
 

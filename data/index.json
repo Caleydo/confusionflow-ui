@@ -6253,5 +6253,20 @@
         }
       }
     ]
+  },
+  {
+    "name": "softmax-test1",
+    "description": "Softmax output",
+    "path": "softmax_test/softmax1.csv",
+    "separator": ",",
+    "type": "matrix",
+    "size": [12, 10],
+    "idtype": "Softmax",
+    "rowtype": "a",
+    "coltype": "b",
+    "value": {
+      "type": "float",
+      "range": [0, 1]
+    }
   }
 ]
