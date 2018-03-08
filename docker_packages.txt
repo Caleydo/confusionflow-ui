@@ -1,0 +1,2 @@
+python py-pip openssl ca-certificates py-openssl wget
+--virtual build-dependencies libffi-dev openssl-dev python-dev py-pip build-base
