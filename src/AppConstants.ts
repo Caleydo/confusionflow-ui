@@ -81,11 +81,8 @@ export class AppConstants {
   /**
    * Size of timeline components
    */
-  static TML_TOP_MARGIN = 15;
-  static TML_DS_LABEL_HEIGHT = 20;
-  static TML_BAR_HEIGHT = 20;
-  static TML_BAR_WIDTH = 30;
-  static TML_AXIS_LABEL_HEIGHT = 20;
-  static TML_MARGIN = 5;
-  static TML_HEIGHT = 70;
+  static TML_DS_LABEL_HEIGHT = 15;
+  static TML_BAR_HEIGHT = 10;
+  static TML_BAR_WIDTH = 25;
+  static TML_HEIGHT = 35;
 }
