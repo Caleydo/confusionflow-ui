@@ -33,7 +33,7 @@ _log.info('use data dir: %s', dataDir)
 
 lmdbname = 'malevo_cifar10_lmdb'
 lmdbpath = os.path.realpath(os.path.join(dataDir, lmdbname))
-_log.info('use lmdb path: %s', lmdbpath)
+
 
 def initialize_lmdb():
   """
