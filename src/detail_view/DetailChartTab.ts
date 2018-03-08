@@ -30,14 +30,14 @@ export class DetailChartTab extends ADetailViewTab {
   private $g: d3.Selection<any> = null;
   private $svg: d3.Selection<any> = null;
   private $header: d3.Selection<any> = null;
-  private readonly STROKE_WIDTH = 3;
-  private $focus: d3.Selection<any>;
+  public id: string = AppConstants.CHART_VIEW;
+  public name: string = Language.CHART_VIEW;
 
-  constructor(id: string, name: string, $parent: d3.Selection<any>) {
-    super(id, name, $parent);
+  constructor(parent: Element) {
+    super(parent);
 
-    this.width = (<any>$parent[0][0]).clientWidth;
-    this.height = (<any>$parent[0][0]).clientHeight;
+    this.width = parent.clientWidth;
+    this.height = parent.clientHeight;
 
     this.$header = this.$node
       .append('div')
@@ -46,6 +46,11 @@ export class DetailChartTab extends ADetailViewTab {
     this.$svg = this.$node
       .append('svg')
       .attr('viewBox', `0 0 ${this.width} 500`);
+  }
+
+  init(): Promise<DetailChartTab> {
+    this.$node.attr('id', this.id);
+    return Promise.resolve(this);
   }
 
   createHeaderText() {
@@ -87,8 +92,8 @@ export class DetailChartTab extends ADetailViewTab {
 
   clear() {
 	  if(this.$g !== null) {
-		this.$g.remove();
-		this.$g = null;
+		  this.$g.remove();
+		  this.$g = null;
 	  }
   }
 
@@ -186,9 +191,7 @@ export class DetailChartTab extends ADetailViewTab {
 
     this.$g.append('path')
       .classed('detail-view-line', true)
-      .attr('d', line(lineDataOneCell.values))
-      .style('stroke-width', this.STROKE_WIDTH);
-
+      .attr('d', line(lineDataOneCell.values));
     if (singleEpochIndex > -1) {
       addDashedLines(this.$g, x, singleEpochIndex, this.height, this.width);
     }
@@ -209,7 +212,6 @@ export class DetailChartTab extends ADetailViewTab {
       .classed('detail-view-line', true)
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d) => z(d.label))
-      .style('stroke-width', this.STROKE_WIDTH)
       .append('title')
       .text((d) => d.label);
 
@@ -217,43 +219,14 @@ export class DetailChartTab extends ADetailViewTab {
       addDashedLines(this.$g, x, singleEpochIndex, this.height, this.width);
     }
   }
+}
 
-  /*createFocus(x: any, y: any, data: IClassEvolution[]) {
-    this.$focus = this.$g.append('g')
-        .attr('class', 'focus')
-        .style('display', 'none');
-
-    this.$focus.append('line')
-        .attr('class', 'x-hover-line hover-line')
-        .attr('y1', 0)
-        .attr('y2', this.height);
-
-    this.$focus.append('line')
-        .attr('class', 'y-hover-line hover-line')
-        .attr('x1', this.width)
-        .attr('x2', this.width);
-
-    this.$focus.append('circle')
-        .attr('r', 7.5);
-
-    this.$focus.append('text')
-        .attr('x', 15)
-      	.attr('dy', '.31em');
-
-    const that = this;
-    this.$svg.on('mouseover', () => { this.$focus.style('display', null); })
-        .on('mouseout', () => { this.$focus.style('display', 'none'); })
-        .on('mousemove', function() {that.foo(this, x, y, data);});
-  }
-
-  foo(ele: HTMLElement, x: any, y: any, data: any) {
-    const bisectDate = d3.bisector(function(d) { return d; }).left;
-    const x0 = x.invert(d3.mouse(ele)[0]),
-    i = bisectDate(data, x0, 1),
-    d0 = data[i - 1],
-    d1 = data[i],
-    d = x0 - d0.year > d1.year - x0 ? d1 : d0;
-    this.$focus.attr('transform', 'translate(' + x(d.year) + ',' + y(d.value) + ')');
-    this.$focus.select('text').text(function() { return d.value; });
-  }*/
+/**
+ * Factory method to create a new HeatMap instance
+ * @param parent
+ * @param options
+ * @returns {DetailChartWindow}
+ */
+export function create(parent:Element, options:any) {
+  return new DetailChartTab(parent);
 }

@@ -2,8 +2,16 @@ import {ADetailViewTab} from './ADetailViewTab';
 import * as data from 'phovea_core/src/data';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {SoftmaxStampHeatmap} from './SoftmaxStampHeatmap';
+import {Language} from '../language';
+import {AppConstants} from '../AppConstants';
 
 export class SoftmaxStampTab extends ADetailViewTab {
+  public id: string = AppConstants.SOFTMAX_STAMP_VIEW;
+  public name: string = Language.SOFTMAX_STAMP_VIEW;
+
+  init() {
+    return Promise.resolve(this);
+  }
 
   render() {
     const promMatrix = data
@@ -36,4 +44,14 @@ export class SoftmaxStampTab extends ADetailViewTab {
 
   clear() {
   }
+}
+
+/**
+ * Factory method to create a new HeatMap instance
+ * @param parent
+ * @param options
+ * @returns {DetailChartWindow}
+ */
+export function create(parent:Element, options:any) {
+  return new SoftmaxStampTab(parent);
 }

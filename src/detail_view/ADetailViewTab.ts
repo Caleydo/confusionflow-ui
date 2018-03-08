@@ -1,19 +1,20 @@
+import * as d3 from "d3";
+
 export abstract class ADetailViewTab {
 
   protected $node: d3.Selection<any>;
+  public id: string = '';
+  public name: string = '';
 
-  constructor(public id: string, public name: string, protected $parent: d3.Selection<any>) {
-    this.$node = $parent.append('div').classed('viewpanel-content', true).attr('id', this.id);
+  constructor(protected parent: Element) {
+    this.$node = d3.select(parent).append('div').classed('viewpanel-content', true);
   }
 
-  abstract render();
-  abstract clear();
+  abstract init(): Promise<ADetailViewTab>;
+  abstract render(): void;
+  abstract clear(): void;
 
   shouldDisplay(show = true) {
-    if(show) {
-      this.$node.style('display', 'block');
-    } else {
-      this.$node.style('display', 'none');
-    }
+    this.$node.classed('hidden', !show);
   }
 }
