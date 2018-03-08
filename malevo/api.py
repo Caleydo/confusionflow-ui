@@ -13,6 +13,7 @@ import os
 import os.path
 import math
 import sqlite3
+import phovea_server.config
 from phovea_server.ns import Namespace
 from flask import request
 from .util import IntListConverter, serve_pil_image
@@ -27,12 +28,12 @@ _log = logging.getLogger(__name__)
 
 os.environ['SQLITE_TMPDIR'] = '/tmp'
 
-cwd = os.path.dirname(os.path.realpath(__file__))
-root = os.path.join(cwd, '../../_data')
+dataDir = phovea_server.config.get('phovea_server.absoluteDataDir')
+_log.info('use data dir: %s', dataDir)
 
 lmdbname = 'malevo_cifar10_lmdb'
-lmdbpath = os.path.realpath(os.path.join(root, lmdbname))
-
+lmdbpath = os.path.realpath(os.path.join(dataDir, lmdbname))
+_log.info('use lmdb path: %s', lmdbpath)
 
 def initialize_lmdb():
   """
@@ -40,8 +41,8 @@ def initialize_lmdb():
   TODO To avoid this function the phovea_product.json and build.js should be extended by a `destname` option
   :return:
   """
-  data_file = os.path.join(root, 'malevo_cifar10_data.mdb')  # name as defined in `malevo_product/phovea_product.json`
-  lock_file = os.path.join(root, 'malevo_cifar10_lock.mdb')  # name as defined in `malevo_product/phovea_product.json`
+  data_file = os.path.join(dataDir, 'malevo_cifar10_data.mdb')  # name as defined in `malevo_product/phovea_product.json`
+  lock_file = os.path.join(dataDir, 'malevo_cifar10_lock.mdb')  # name as defined in `malevo_product/phovea_product.json`
 
   if not os.path.exists(lmdbpath):
     os.makedirs(lmdbpath)
@@ -65,7 +66,7 @@ def _get_image_ids():
 
     query = (run_id, epoch_id, ground_truth_id, predicted_id)
 
-    dbpath = os.path.realpath(os.path.join(root, 'malevo_cifar10_rundata.db'))
+    dbpath = os.path.realpath(os.path.join(dataDir, 'malevo_cifar10_rundata.db'))
     _log.info('rundata.db path: %s', dbpath)
 
     conn = sqlite3.connect(dbpath)
