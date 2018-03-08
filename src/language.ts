@@ -11,14 +11,15 @@ export class Language {
   static FP = 'FP';
   static PRECISION = 'Precision';
   static CLASS_SIZE = 'Class Size';
-  static CHART_VIEW = 'Chart View';
-  static IMAGE_VIEW = 'Image View';
+  static CHART_VIEW = 'Charts';
+  static IMAGE_VIEW = 'Images';
+  static SOFTMAX_STAMP_VIEW = 'Softmax Stamps'
   static EPOCH = 'Epoch';
   static CONFUSION_Y_LABEL = '# of Confused Instances';
   static PRECISION_Y_LABEL = 'Precision [%]';
   static OVERALL_PRECISION = 'Overall Precision';
   static FP_RATE = 'False Positive Rate';
   static FN_RATE = 'False Negative Rate';
-  static SOFTMAX_STAMP_VIEW = 'Softmax Stamp View';
   static FOR_CLASS = 'for class';
+  static PREDICTED_AS = 'predicted as';
 }

@@ -43,7 +43,7 @@ export class DetailView implements IAppView {
       AppConstants.COMBINED_CHART_CELL_PRECISION;
 
     events.on(e, () => {
-      if(this.selectedDetailView !== null && this.selectedDetailView.id === AppConstants.CHART_VIEW) {
+      if(this.selectedDetailView !== null) {
         this.selectedDetailView.render();
       }
     });

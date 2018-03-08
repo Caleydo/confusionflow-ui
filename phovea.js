@@ -24,16 +24,22 @@ module.exports = function(registry) {
     'name': 'DetailView'
   });
 
-  registry.push('malevoView', 'DetailChartWindow', function() { return System.import('./src/detail_view/DetailChartWindow'); }, {
-    'name': 'DetailChartWindow',
+  registry.push('malevoView', 'DetailChartTab', function() { return System.import('./src/detail_view/DetailChartTab'); }, {
+    'name': 'DetailChartTab',
     'isDetailWindow': true,
     'order': 10
   });
 
-  registry.push('malevoView', 'DetailImageWindow', function() { return System.import('./src/detail_view/DetailImageWindow'); }, {
-    'name': 'DetailImageWindow',
+  registry.push('malevoView', 'DetailImageTab', function() { return System.import('./src/detail_view/DetailImageTab'); }, {
+    'name': 'DetailImageTab',
     'isDetailWindow': true,
     'order': 20
+  });
+
+    registry.push('malevoView', 'SoftmaxStampTab', function() { return System.import('./src/detail_view/SoftmaxStampTab'); }, {
+    'name': 'SoftmaxStampTab',
+    'isDetailWindow': true,
+    'order': 30
   });
 
   // generator-phovea:end
