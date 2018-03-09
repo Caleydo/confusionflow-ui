@@ -13,10 +13,14 @@ import {IAppView} from './app';
 import {DataStoreEpochSelection} from './DataStore';
 import {extractEpochId} from './utils';
 
+class OverallTimeline {
+  public dataPoints: TimelineDataPoints[][] = [];
+}
 class TimelineCollection {
   private timelines:Timeline[] = [];
   private maxLabelWidth = 0;
   private $labels: d3.Selection<any> = null;
+  private otl: OverallTimeline;
 
   timelineCount(): number {
     return this.timelines.length;
@@ -36,7 +40,54 @@ class TimelineCollection {
     this.updateTimelines();
   }
 
+  condenseTimelines() {
+    const largestValue = this.getMaxEpoch();
+    for(let i = 0; i < largestValue; i++) {
+      const epochsAti = [];
+      this.timelines.forEach((x) => {
+        if(i < x.data.datapoints.length) {
+          epochsAti.push(x.data.datapoints[i]);
+        }
+      });
+
+      this.removeEmpty(epochsAti);
+      if(i % AppConstants.TML_NODE_DENSITY_DISTANCE !== 0) {
+        this.consdenseNodes(epochsAti);
+      }
+    }
+  }
+
+  removeEmpty(epochsAti: DataPoint[]) {
+    const existingEpochs = epochsAti.filter((x) => x && x.exists);
+      if(existingEpochs.length === 0) {
+        epochsAti.map((x) => x.canBeRemoved = true);
+      }
+  }
+
+  consdenseNodes(epochsAti: DataPoint[]) {
+      epochsAti.map((x) => x.condense = true);
+  }
+
+  updateOverallTimeline() {
+    this.otl = new OverallTimeline();
+    const largestValue = this.getMaxEpoch();
+    for(let i = 0; i < largestValue; i++) {
+      const epochsAti = [];
+      this.timelines.forEach((x) => {
+        if (i < x.data.datapoints.length) {
+          epochsAti.push(x.data.datapoints[i]);
+        }
+      });
+
+      this.otl.dataPoints.push(epochsAti);
+    }
+
+
+  }
+
   updateTimelines() {
+    this.updateOverallTimeline();
+    this.condenseTimelines();
     const labelMargin = 10;
     this.findMaxLabelWidth();
     this.timelines.forEach((x, i) => {
@@ -112,6 +163,8 @@ class TimelineDataPoints {
 }
 
 class DataPoint {
+  public canBeRemoved = false;
+  public condense = false;
   constructor(public exists: boolean, public position: number) {
 
   }
@@ -216,7 +269,7 @@ class Timeline {
     this.$rectangles = this.$node.append('g');
     this.$rectangles.attr('transform', 'translate(' + offsetH + ',' + 7 + ')')
       .selectAll('rect')
-      .data(this.data.datapoints)
+      .data(this.data.datapoints.filter((x) => !x.canBeRemoved))
       .enter().append('rect')
         .attr('class', 'bar')
         .attr('x', function (d, i) {
