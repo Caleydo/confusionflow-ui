@@ -13,13 +13,89 @@ import {IAppView} from './app';
 import {DataStoreEpochSelection} from './DataStore';
 import {extractEpochId} from './utils';
 
-export default class TimelineView implements IAppView {
-  private readonly $node:d3.Selection<any>;
+class TimelineCollection {
   private timelines:Timeline[] = [];
-  private width: number;
   private maxLabelWidth = 0;
 
+  timelineCount(): number {
+    return this.timelines.length;
+  }
+  add(timeline: Timeline) {
+    this.timelines.push(timeline);
+    const tmData = new TimelineDataPoints(timeline.dataset.epochInfos);
+    timeline.data = tmData;
+    this.updateTimelines();
+    // set compression flags of all timelines here
+  }
+
+  remove(ds: MalevoDataset) {
+    const ts = this.timelines.find((x) => x.dataset === ds);
+    console.assert(ts);
+    ts.node().remove();
+    this.timelines = this.timelines.filter((x) => x !== ts); // remove from list
+    // set condense flags of all timelines here
+  }
+
+  updateTimelines() {
+    const labelMargin = 10;
+    this.findMaxLabelWidth();
+    this.timelines.forEach((x, i) => {
+      x.render(this.maxLabelWidth + labelMargin, i * AppConstants.TML_HEIGHT);
+    });
+    this.renderLabels(this.maxLabelWidth + labelMargin, this.timelines.length * AppConstants.TML_HEIGHT );
+  }
+
+  private findMaxLabelWidth() {
+      this.maxLabelWidth = this.timelines.reduce((acc, val) => {
+        return acc > val.getLabelWidth() ? acc : val.getLabelWidth();
+      }, this.maxLabelWidth);
+  }
+
+  private renderLabels(offsetH: number, offsetV: number) {
+    //this.timelines[0].node().attr('transform', 'translate(0,' + offsetV + ')');
+    const largestValue = this.getMaxEpoch();
+
+
+  }
+
+  private getMaxEpoch() {
+    const maxEpochs = this.timelines.map((x) => x.data.datapoints[x.data.datapoints.length - 1].position);
+    return Math.max(...maxEpochs);
+  }
+
+}
+class TimelineDataPoints {
+  constructor(epochs: IMalevoEpochInfo[]) {
+    this.build(epochs);
+  }
+  datapoints: DataPoint[] = [];
+
+  build(epochs: IMalevoEpochInfo[]) {
+    function sortNumber(a,b) {
+      return a - b;
+    }
+    const ids = epochs.map((x) => extractEpochId(x));
+    ids.sort(sortNumber);
+    for(let i = 0; i <= ids[ids.length - 1]; i++) {
+      const dp = ids.includes(i) ? new DataPoint(true, i) : new DataPoint(false, i);
+      this.datapoints.push(dp);
+    }
+  }
+}
+
+class DataPoint {
+  constructor(public exists: boolean, public position: number) {
+
+  }
+}
+
+export default class TimelineView implements IAppView {
+  private readonly $node:d3.Selection<any>;
+  private timelineData: TimelineCollection;
+  private width: number;
+
   constructor(parent: Element) {
+    this.timelineData = new TimelineCollection();
     this.width = parent.clientWidth;
 
     this.$node = d3.select(parent)
@@ -30,46 +106,22 @@ export default class TimelineView implements IAppView {
       .attr('viewBox', `0 0 ${this.width} ${0}`);
   }
 
-  private findMaxLabelWidth() {
-      this.maxLabelWidth = this.timelines.reduce((acc, val) => {
-        return acc > val.getLabelWidth() ? acc : val.getLabelWidth();
-      }, this.maxLabelWidth);
-  }
-
-  updateSvg() {
-      this.$node.attr('viewBox', `0 0 ${this.width} ${(this.timelines.length) * AppConstants.TML_HEIGHT}`);
+  updateSvg(timeLineCount: number) {
+      this.$node.attr('viewBox', `0 0 ${this.width} ${(timeLineCount) * AppConstants.TML_HEIGHT}`);
       this.$node.attr('height', '100%');
-  }
-
-  updateTimelines() {
-    const labelMargin = 10;
-    this.findMaxLabelWidth();
-    this.timelines.forEach((x, i) => x.offsetV(i * AppConstants.TML_HEIGHT)); // realign other timelines
-    this.timelines.forEach((x) => x.render(this.maxLabelWidth + labelMargin));
   }
 
   private attachListener() {
 
     events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds:MalevoDataset) => {
-
       const ts = new Timeline(ds, this.$node);
-      this.timelines.push(ts);
+      this.timelineData.add(ts);
 
-      this.updateSvg();
-      this.updateTimelines();
+      this.updateSvg(this.timelineData.timelineCount());
     });
 
     events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds:MalevoDataset) => {
-      const ts = this.timelines.find((x) => x.dataset === ds);
-      console.assert(ts);
-
-      this.timelines = this.timelines.filter((x) => x !== ts); // remove from list
-
-      this.updateSvg();
-      this.updateTimelines();
-
-      ts.node().remove();
-
+      this.updateSvg(this.timelineData.timelineCount());
     });
   }
 
@@ -101,6 +153,8 @@ class Timeline {
   private $axisX: d3.Selection<any> = null;
   private $rectangles: d3.Selection<any> = null;
 
+  data:TimelineDataPoints = null;
+
   constructor(public dataset: MalevoDataset, $parent: d3.Selection<any>) {
     this.$node = $parent.append('g');
     this.build();
@@ -122,14 +176,14 @@ class Timeline {
     return this.$node;
   }
 
-  offsetV(offset: number) {
-    this.$node.attr('transform', 'translate(0,' + offset + ')');
-  }
+  render(offsetH: number, offsetV: number) {
 
-  render(labelWidth: number) {
-    // Scales
+    this.$node.attr('transform', 'translate(0,' + offsetV + ')');
+
+
+
+   /* // Scales
     const x = d3.scale.ordinal().rangeBands([0, AppConstants.TML_BAR_WIDTH * this.dataset.epochInfos.length], 0.1, 0);
-
 
     const values = this.dataset.epochInfos.map((x) => String(extractEpochId(x)));
     x.domain(values);
@@ -145,8 +199,8 @@ class Timeline {
     this.$axisX = this.$node.append('g')
         .attr('class', 'x axis')
         .style('fill', '#000')
-        .attr('transform', 'translate(' + labelWidth + ',' + 15 + ')')
-        .call(xAxis);
+        .attr('transform', 'translate(' + offsetH + ',' + 15 + ')')
+        .call(xAxis);*/
 
     // Add a group for each cause.
     if(this.$rectangles) {
@@ -154,13 +208,13 @@ class Timeline {
       this.$rectangles = null;
     }
     this.$rectangles = this.$node.append('g');
-    this.$rectangles.attr('transform', 'translate(' + labelWidth + ',' + 7 + ')')
+    this.$rectangles.attr('transform', 'translate(' + offsetH + ',' + 7 + ')')
       .selectAll('rect')
-      .data(values)
+      .data(this.data.datapoints)
       .enter().append('rect')
         .attr('class', 'bar')
-        .attr('x', function (d) {
-            return x(d);
+        .attr('x', function (d, i) {
+            return (AppConstants.TML_BAR_WIDTH + 5) * i;
         })
         .attr('y', function (d) {
             return 0;
@@ -168,6 +222,7 @@ class Timeline {
         .attr('height', function (d) {
             return AppConstants.TML_BAR_HEIGHT;
         })
-        .attr('width', x.rangeBand());
+        .attr('width', AppConstants.TML_BAR_WIDTH)
+        .style('visibility', (d) => d.exists ? 'visible' : 'hidden');
   }
 }
