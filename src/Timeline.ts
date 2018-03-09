@@ -6,34 +6,37 @@ import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
-import {INumericalMatrix} from 'phovea_core/src/matrix';
-import {IDragSelection} from './RangeSelector';
-import {TimelineRangeSelector} from './RangeSelector';
 import {IAppView} from './app';
-import {DataStoreEpochSelection} from './DataStore';
 import {extractEpochId} from './utils';
 
-class OverallTimeline {
-  public dataPoints: TimelineDataPoints[][] = [];
+class NodeWrapper {
+  public canBeRemoved = false;
+  public condense = false;
+  constructor(public name, public dps: DataPoint[]) {
+
+  }
 }
+class OverallTimeline {
+  public dataPoints: NodeWrapper[] = [];
+}
+
 class TimelineCollection {
   private timelines:Timeline[] = [];
-  private maxLabelWidth = 0;
   private $labels: d3.Selection<any> = null;
   private otl: OverallTimeline;
 
   timelineCount(): number {
     return this.timelines.length;
   }
-  add(timeline: Timeline) {
+  add(timeline: Timeline, epochInfos: IMalevoEpochInfo[]) {
     this.timelines.push(timeline);
-    const tmData = new TimelineDataPoints(timeline.dataset.epochInfos);
+    const tmData = new TimelineData(epochInfos);
     timeline.data = tmData;
     this.updateTimelines();
   }
 
   remove(ds: MalevoDataset) {
-    const ts = this.timelines.find((x) => x.dataset === ds);
+    const ts = this.timelines.find((x) => x.data.epochs === ds.epochInfos);
     console.assert(ts);
     ts.node().remove();
     this.timelines = this.timelines.filter((x) => x !== ts); // remove from list
@@ -41,37 +44,31 @@ class TimelineCollection {
   }
 
   condenseTimelines() {
-    const largestValue = this.getMaxEpoch();
-    for(let i = 0; i < largestValue; i++) {
-      const epochsAti = [];
-      this.timelines.forEach((x) => {
-        if(i < x.data.datapoints.length) {
-          epochsAti.push(x.data.datapoints[i]);
-        }
-      });
-
-      this.removeEmpty(epochsAti);
+    for(let i = 0; i < this.otl.dataPoints.length; i++) {
+      this.removeEmpty(this.otl.dataPoints[i]);
       if(i % AppConstants.TML_NODE_DENSITY_DISTANCE !== 0) {
-        this.consdenseNodes(epochsAti);
+        this.consdenseNodes(this.otl.dataPoints[i]);
       }
     }
   }
 
-  removeEmpty(epochsAti: DataPoint[]) {
-    const existingEpochs = epochsAti.filter((x) => x && x.exists);
+  removeEmpty(epochsAti: NodeWrapper) {
+    const existingEpochs = epochsAti.dps.filter((x) => x && x.exists);
       if(existingEpochs.length === 0) {
-        epochsAti.map((x) => x.canBeRemoved = true);
+        epochsAti.canBeRemoved = true;
+        epochsAti.dps.map((x) => x.canBeRemoved = true);
       }
   }
 
-  consdenseNodes(epochsAti: DataPoint[]) {
-      epochsAti.map((x) => x.condense = true);
+  consdenseNodes(epochsAti: NodeWrapper) {
+      epochsAti.condense = true;
+      epochsAti.dps.map((x) => x.condense = true);
   }
 
   updateOverallTimeline() {
     this.otl = new OverallTimeline();
     const largestValue = this.getMaxEpoch();
-    for(let i = 0; i < largestValue; i++) {
+    for(let i = 0; i <= largestValue; i++) {
       const epochsAti = [];
       this.timelines.forEach((x) => {
         if (i < x.data.datapoints.length) {
@@ -79,29 +76,27 @@ class TimelineCollection {
         }
       });
 
-      this.otl.dataPoints.push(epochsAti);
+      this.otl.dataPoints.push(new NodeWrapper(i, epochsAti));
     }
-
-
   }
 
   updateTimelines() {
     this.updateOverallTimeline();
     this.condenseTimelines();
     const labelMargin = 10;
-    this.findMaxLabelWidth();
+    const maxDSLabelWidth = this.findMaxDSLabelWidth();
     this.timelines.forEach((x, i) => {
-      x.render(this.maxLabelWidth + labelMargin, i * AppConstants.TML_HEIGHT);
+      x.render(maxDSLabelWidth + labelMargin, i * AppConstants.TML_HEIGHT);
     });
     if(this.timelines.length > 0) {
-      this.renderLabels(this.maxLabelWidth + labelMargin, this.timelines.length * AppConstants.TML_HEIGHT);
+      this.renderLabels(maxDSLabelWidth + labelMargin, 24);
     }
   }
 
-  private findMaxLabelWidth() {
-      this.maxLabelWidth = this.timelines.reduce((acc, val) => {
-        return acc > val.getLabelWidth() ? acc : val.getLabelWidth();
-      }, this.maxLabelWidth);
+  private findMaxDSLabelWidth() {
+      return this.timelines.reduce((acc, val) => {
+        return acc > val.getDSLabelWidth() ? acc : val.getDSLabelWidth();
+      }, 0);
   }
 
   private renderLabels(offsetH: number, offsetV: number) {
@@ -110,19 +105,14 @@ class TimelineCollection {
       this.$labels = null;
     }
 
-    const largestValue = this.getMaxEpoch();
-    const labels = [];
-    for(let i = 0; i <= largestValue; i++) {
-      labels.push(i);
-    }
     this.$labels = this.timelines[this.timelines.length - 1].node()
       .append('g');
 
     const $g = this.$labels.classed('x axis', true)
       .style('fill', '#000')
-      .attr('transform', 'translate(' + offsetH + ',' + 24 + ')')
+      .attr('transform', 'translate(' + offsetH + ',' + offsetV + ')')
       .selectAll('g')
-      .data(labels);
+      .data(this.otl.dataPoints.filter((x) => !x.canBeRemoved));
 
     $g.enter()
       .append('g')
@@ -133,7 +123,7 @@ class TimelineCollection {
       .attr('x', (d, i) => (AppConstants.TML_BAR_WIDTH + AppConstants.TML_BAR_MARGIN) * i + AppConstants.TML_BAR_WIDTH / 2)
       .style('text-anchor', 'middle')
       .attr('width', AppConstants.TML_BAR_WIDTH)
-      .text((d) => d);
+      .text((d) => d.name);
 
   }
 
@@ -143,8 +133,8 @@ class TimelineCollection {
   }
 
 }
-class TimelineDataPoints {
-  constructor(epochs: IMalevoEpochInfo[]) {
+class TimelineData {
+  constructor(public epochs: IMalevoEpochInfo[]) {
     this.build(epochs);
   }
   datapoints: DataPoint[] = [];
@@ -190,20 +180,19 @@ export default class TimelineView implements IAppView {
   updateSvg(timeLineCount: number) {
       this.$node.attr('viewBox', `0 0 ${this.width} ${(timeLineCount) * AppConstants.TML_HEIGHT}`);
       this.$node.attr('height', '100%');
+      this.$node.classed('hidden', timeLineCount === 0);
   }
 
   private attachListener() {
-
     events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds:MalevoDataset) => {
-      const ts = new Timeline(ds, this.$node);
-      this.timelineData.add(ts);
-
-      this.updateSvg(this.timelineData.timelineCount());
+      const ts = new Timeline(ds.name, this.$node);
+      this.updateSvg(this.timelineData.timelineCount() + 1);
+      this.timelineData.add(ts, ds.epochInfos);
     });
 
     events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds:MalevoDataset) => {
+      this.updateSvg(this.timelineData.timelineCount() - 1);
       this.timelineData.remove(ds);
-      this.updateSvg(this.timelineData.timelineCount());
     });
   }
 
@@ -235,23 +224,23 @@ class Timeline {
   private $axisX: d3.Selection<any> = null;
   private $rectangles: d3.Selection<any> = null;
 
-  data:TimelineDataPoints = null;
+  data:TimelineData = null;
 
-  constructor(public dataset: MalevoDataset, $parent: d3.Selection<any>) {
+  constructor(public datasetName: string, $parent: d3.Selection<any>) {
     this.$node = $parent.append('g');
-    this.build();
+    this.build(datasetName);
   }
 
-  build() {
+  build(datasetName: string) {
     this.$label = this.$node.append('g')
       .attr('transform', 'translate(0,' + 15 +')')
       .append('text')
       .attr('font-size', AppConstants.TML_DS_LABEL_HEIGHT)
-      .text(this.dataset.name);
+      .text(datasetName);
   }
 
-  getLabelWidth(): number {
-    return (<any>this.$label[0][0]).clientWidth;
+  getDSLabelWidth(): number {
+    return (<any>this.$label[0][0]).getBBox().width;
   }
 
   node(): d3.Selection<any> {
@@ -282,6 +271,6 @@ class Timeline {
             return AppConstants.TML_BAR_HEIGHT;
         })
         .attr('width', AppConstants.TML_BAR_WIDTH)
-        .style('visibility', (d) => d.exists ? 'visible' : 'hidden');
+        .style('hidden', (d) => !d.exists);
   }
 }
