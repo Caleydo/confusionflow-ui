@@ -16,6 +16,7 @@ import {extractEpochId} from './utils';
 class TimelineCollection {
   private timelines:Timeline[] = [];
   private maxLabelWidth = 0;
+  private $labels: d3.Selection<any> = null;
 
   timelineCount(): number {
     return this.timelines.length;
@@ -25,7 +26,6 @@ class TimelineCollection {
     const tmData = new TimelineDataPoints(timeline.dataset.epochInfos);
     timeline.data = tmData;
     this.updateTimelines();
-    // set compression flags of all timelines here
   }
 
   remove(ds: MalevoDataset) {
@@ -33,7 +33,7 @@ class TimelineCollection {
     console.assert(ts);
     ts.node().remove();
     this.timelines = this.timelines.filter((x) => x !== ts); // remove from list
-    // set condense flags of all timelines here
+    this.updateTimelines();
   }
 
   updateTimelines() {
@@ -42,7 +42,9 @@ class TimelineCollection {
     this.timelines.forEach((x, i) => {
       x.render(this.maxLabelWidth + labelMargin, i * AppConstants.TML_HEIGHT);
     });
-    this.renderLabels(this.maxLabelWidth + labelMargin, this.timelines.length * AppConstants.TML_HEIGHT );
+    if(this.timelines.length > 0) {
+      this.renderLabels(this.maxLabelWidth + labelMargin, this.timelines.length * AppConstants.TML_HEIGHT);
+    }
   }
 
   private findMaxLabelWidth() {
@@ -52,9 +54,35 @@ class TimelineCollection {
   }
 
   private renderLabels(offsetH: number, offsetV: number) {
-    //this.timelines[0].node().attr('transform', 'translate(0,' + offsetV + ')');
-    const largestValue = this.getMaxEpoch();
+    if(this.$labels) {
+      this.$labels.remove();
+      this.$labels = null;
+    }
 
+    const largestValue = this.getMaxEpoch();
+    const labels = [];
+    for(let i = 0; i <= largestValue; i++) {
+      labels.push(i);
+    }
+    this.$labels = this.timelines[this.timelines.length - 1].node()
+      .append('g');
+
+    const $g = this.$labels.classed('x axis', true)
+      .style('fill', '#000')
+      .attr('transform', 'translate(' + offsetH + ',' + 24 + ')')
+      .selectAll('g')
+      .data(labels);
+
+    $g.enter()
+      .append('g')
+      .classed('tick', true)
+      .style('fill', 'black')
+      .append('text')
+      .attr('dy', '.71em')
+      .attr('x', (d, i) => (AppConstants.TML_BAR_WIDTH + AppConstants.TML_BAR_MARGIN) * i + AppConstants.TML_BAR_WIDTH / 2)
+      .style('text-anchor', 'middle')
+      .attr('width', AppConstants.TML_BAR_WIDTH)
+      .text((d) => d);
 
   }
 
@@ -121,6 +149,7 @@ export default class TimelineView implements IAppView {
     });
 
     events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds:MalevoDataset) => {
+      this.timelineData.remove(ds);
       this.updateSvg(this.timelineData.timelineCount());
     });
   }
@@ -179,29 +208,6 @@ class Timeline {
   render(offsetH: number, offsetV: number) {
 
     this.$node.attr('transform', 'translate(0,' + offsetV + ')');
-
-
-
-   /* // Scales
-    const x = d3.scale.ordinal().rangeBands([0, AppConstants.TML_BAR_WIDTH * this.dataset.epochInfos.length], 0.1, 0);
-
-    const values = this.dataset.epochInfos.map((x) => String(extractEpochId(x)));
-    x.domain(values);
-
-    // Axis variables for the bar chart
-    const xAxis = d3.svg.axis().scale(x).tickValues(values).orient('bottom');
-
-    // x axis
-    if(this.$axisX) {
-      this.$axisX.remove();
-      this.$axisX = null;
-    }
-    this.$axisX = this.$node.append('g')
-        .attr('class', 'x axis')
-        .style('fill', '#000')
-        .attr('transform', 'translate(' + offsetH + ',' + 15 + ')')
-        .call(xAxis);*/
-
     // Add a group for each cause.
     if(this.$rectangles) {
       this.$rectangles.remove();
@@ -214,7 +220,7 @@ class Timeline {
       .enter().append('rect')
         .attr('class', 'bar')
         .attr('x', function (d, i) {
-            return (AppConstants.TML_BAR_WIDTH + 5) * i;
+            return (AppConstants.TML_BAR_WIDTH + AppConstants.TML_BAR_MARGIN) * i;
         })
         .attr('y', function (d) {
             return 0;
