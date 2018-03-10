@@ -44,11 +44,16 @@ class TimelineCollection {
   }
 
   condenseTimelines() {
-    for(let i = 0; i < this.otl.dataPoints.length; i++) {
-      this.removeEmpty(this.otl.dataPoints[i]);
-      if(i % AppConstants.TML_NODE_DENSITY_DISTANCE !== 0) {
-        this.consdenseNodes(this.otl.dataPoints[i]);
+    let visibleNodeCounter = 0;
+    for(const dp of this.otl.dataPoints) {
+      this.removeEmpty(dp);
+      if(dp.canBeRemoved) {
+        continue;
       }
+      if(visibleNodeCounter % AppConstants.TML_NODE_DENSITY_DISTANCE !== 0) {
+        this.consdenseNodes(dp);
+      }
+      visibleNodeCounter++;
     }
   }
 
@@ -111,20 +116,24 @@ class TimelineCollection {
     const $g = this.$labels.classed('x axis', true)
       .style('fill', '#000')
       .attr('transform', 'translate(' + offsetH + ',' + offsetV + ')')
-      .selectAll('g')
+      .selectAll('text')
       .data(this.otl.dataPoints.filter((x) => !x.canBeRemoved));
 
     $g.enter()
-      .append('g')
-      .classed('tick', true)
-      .style('fill', 'black')
       .append('text')
       .attr('dy', '.71em')
-      .attr('x', (d, i) => (AppConstants.TML_BAR_WIDTH + AppConstants.TML_BAR_MARGIN) * i + AppConstants.TML_BAR_WIDTH / 2)
       .style('text-anchor', 'middle')
-      .attr('width', AppConstants.TML_BAR_WIDTH)
-      .text((d) => d.name);
-
+      .attr('width', (d) => d.condense ? AppConstants.TML_CONDENSED_BAR_WIDTH : AppConstants.TML_BAR_WIDTH)
+      .text((d) => d.condense ? '' : d.name)
+      .each(function (d, i) {
+          let x = 0;
+          if(this.previousSibling) {
+            x = +this.previousSibling.getAttribute('x') + +this.previousSibling.getAttribute('width');
+            x += AppConstants.TML_BAR_MARGIN ;
+          }
+          this.setAttribute('x', x);
+          this.setAttribute('transform',`translate(${this.getAttribute('width') / 2}, 0)`);
+        });
   }
 
   private getMaxEpoch() {
@@ -248,7 +257,6 @@ class Timeline {
   }
 
   render(offsetH: number, offsetV: number) {
-
     this.$node.attr('transform', 'translate(0,' + offsetV + ')');
     // Add a group for each cause.
     if(this.$rectangles) {
@@ -261,18 +269,17 @@ class Timeline {
       .data(this.data.datapoints.filter((x) => !x.canBeRemoved))
       .enter().append('rect')
         .attr('class', 'bar')
-        .attr('x', function (d, i) {
-            return (AppConstants.TML_BAR_WIDTH + AppConstants.TML_BAR_MARGIN) * i;
-        })
-        .attr('y', function (d) {
-            return 0;
-        })
-        .attr('height', function (d) {
-            return AppConstants.TML_BAR_HEIGHT;
-        })
-        .attr('width', AppConstants.TML_BAR_WIDTH)
-        .classed('hidden', (d) => {
-          return !d.exists;
-        });
+        .attr('y', 0)
+        .attr('height', AppConstants.TML_BAR_HEIGHT)
+        .attr('width', (d) => d.condense ? AppConstants.TML_CONDENSED_BAR_WIDTH : AppConstants.TML_BAR_WIDTH)
+        .classed('hidden', (d) => !d.exists)
+      .each(function () {
+        let x = 0;
+        if(this.previousSibling) {
+          x = +this.previousSibling.getAttribute('x') + +this.previousSibling.getAttribute('width');
+          x += AppConstants.TML_BAR_MARGIN;
+        }
+        this.setAttribute('x', x);
+      });
   }
 }
