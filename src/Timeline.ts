@@ -50,24 +50,28 @@ class TimelineCollection {
       if(dp.canBeRemoved) {
         continue;
       }
-      if(visibleNodeCounter % AppConstants.TML_NODE_DENSITY_DISTANCE !== 0) {
-        this.consdenseNodes(dp);
-      }
+      this.consdenseNodes(dp, visibleNodeCounter);
       visibleNodeCounter++;
     }
   }
 
   removeEmpty(epochsAti: NodeWrapper) {
     const existingEpochs = epochsAti.dps.filter((x) => x && x.exists);
-      if(existingEpochs.length === 0) {
-        epochsAti.canBeRemoved = true;
-        epochsAti.dps.map((x) => x.canBeRemoved = true);
-      }
+    let val = false;
+    if(existingEpochs.length === 0) {
+      val = true;
+    }
+    epochsAti.canBeRemoved = val;
+    epochsAti.dps.map((x) => x.canBeRemoved = val);
   }
 
-  consdenseNodes(epochsAti: NodeWrapper) {
-      epochsAti.condense = true;
-      epochsAti.dps.map((x) => x.condense = true);
+  consdenseNodes(epochsAti: NodeWrapper, visibleNodeCounter: number) {
+    let val = false;
+    if(visibleNodeCounter % AppConstants.TML_NODE_DENSITY_DISTANCE !== 0) {
+      val = true;
+    }
+    epochsAti.condense = val;
+    epochsAti.dps.map((x) => x.condense = val);
   }
 
   updateOverallTimeline() {
