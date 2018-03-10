@@ -16,36 +16,13 @@ class NodeWrapper {
 
   }
 }
+
 class OverallTimeline {
   public dataPoints: NodeWrapper[] = [];
-}
 
-class TimelineCollection {
-  private timelines:Timeline[] = [];
-  private $labels: d3.Selection<any> = null;
-  private otl: OverallTimeline;
-
-  timelineCount(): number {
-    return this.timelines.length;
-  }
-  add(timeline: Timeline, epochInfos: IMalevoEpochInfo[]) {
-    this.timelines.push(timeline);
-    const tmData = new TimelineData(epochInfos);
-    timeline.data = tmData;
-    this.updateTimelines();
-  }
-
-  remove(ds: MalevoDataset) {
-    const ts = this.timelines.find((x) => x.data.epochs === ds.epochInfos);
-    console.assert(ts);
-    ts.node().remove();
-    this.timelines = this.timelines.filter((x) => x !== ts); // remove from list
-    this.updateTimelines();
-  }
-
-  condenseTimelines() {
+  shrinkTimelines() {
     let visibleNodeCounter = 0;
-    for(const dp of this.otl.dataPoints) {
+    for(const dp of this.dataPoints) {
       this.removeEmpty(dp);
       if(dp.canBeRemoved) {
         continue;
@@ -73,6 +50,30 @@ class TimelineCollection {
     epochsAti.condense = val;
     epochsAti.dps.map((x) => x.condense = val);
   }
+}
+
+class TimelineCollection {
+  private timelines:Timeline[] = [];
+  private $labels: d3.Selection<any> = null;
+  private otl: OverallTimeline;
+
+  timelineCount(): number {
+    return this.timelines.length;
+  }
+  add(timeline: Timeline, epochInfos: IMalevoEpochInfo[]) {
+    this.timelines.push(timeline);
+    const tmData = new TimelineData(epochInfos);
+    timeline.data = tmData;
+    this.updateTimelines();
+  }
+
+  remove(ds: MalevoDataset) {
+    const ts = this.timelines.find((x) => x.data.epochs === ds.epochInfos);
+    console.assert(ts);
+    ts.node().remove();
+    this.timelines = this.timelines.filter((x) => x !== ts); // remove from list
+    this.updateTimelines();
+  }
 
   updateOverallTimeline() {
     this.otl = new OverallTimeline();
@@ -91,7 +92,7 @@ class TimelineCollection {
 
   updateTimelines() {
     this.updateOverallTimeline();
-    this.condenseTimelines();
+    this.otl.shrinkTimelines();
     const labelMargin = 10;
     const maxDSLabelWidth = this.findMaxDSLabelWidth();
     this.timelines.forEach((x, i) => {
@@ -144,8 +145,8 @@ class TimelineCollection {
     const maxEpochs = this.timelines.map((x) => x.data.datapoints[x.data.datapoints.length - 1].position);
     return Math.max(...maxEpochs);
   }
-
 }
+
 class TimelineData {
   constructor(public epochs: IMalevoEpochInfo[]) {
     this.build(epochs);
