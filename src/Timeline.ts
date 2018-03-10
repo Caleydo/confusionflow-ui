@@ -271,6 +271,8 @@ class Timeline {
             return AppConstants.TML_BAR_HEIGHT;
         })
         .attr('width', AppConstants.TML_BAR_WIDTH)
-        .style('hidden', (d) => !d.exists);
+        .classed('hidden', (d) => {
+          return !d.exists;
+        });
   }
 }
