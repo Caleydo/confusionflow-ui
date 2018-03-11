@@ -8,6 +8,10 @@
       height: 16px;
       fill: $select-color;
       z-index: -1;
+
+    }
+    .single-selected {
+      fill: $select-color;
     }
   }
 }

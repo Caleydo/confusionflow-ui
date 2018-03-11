@@ -3,6 +3,8 @@ export class Rangeband implements IDragSelection {
 
   private $node: d3.Selection<any>;
   private readonly MARGINH: number = 3;
+  private isDragging = false;
+
   constructor($parent: d3.Selection<any>) {
     this.$node = $parent.append('rect')
       .attr('fill-opacity', '0.5')
@@ -16,12 +18,15 @@ export class Rangeband implements IDragSelection {
   }
 
   dragEnd(sel: d3.Selection<any>) {
-    // corner case: if the selection range contains just one node or no node at all => don't show rangeband
-    if(sel[0].length === 1 || sel[0].length === 0) {
-      this.hide(true);
-      return;
+    if(sel[0].length > 1) {
+      this.snapBand(sel);
     }
-    this.snapBand(sel);
+
+    // corner case: if the selection range contains just one node or no node at all => don't show rangeband
+    if(this.isDragging && sel[0].length === 1 || sel[0].length === 0) {
+      this.hide(true);
+    }
+    this.isDragging = false;
   }
 
   dragStart() {
@@ -33,6 +38,7 @@ export class Rangeband implements IDragSelection {
       this.hide(false);
       this.$node.attr('x', start[0] + 'px');
       this.$node.attr('width', end[0] - start[0] + this.MARGINH + 'px');
+      this.isDragging = true;
     }
   }
 
