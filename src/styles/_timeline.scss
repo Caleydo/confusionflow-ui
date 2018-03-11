@@ -1,7 +1,13 @@
 @import "vars";
 
 .timeline-view {
-  .epoch {
-
+  .timeline {
+    .selection {
+      position: absolute;
+      y: -3px;
+      height: 16px;
+      fill: $select-color;
+      z-index: -1;
+    }
   }
 }

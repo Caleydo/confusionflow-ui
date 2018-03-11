@@ -92,9 +92,8 @@ export class Timeline implements IDragSelection {
   data:TimelineData = null;
 
   constructor(public datasetName: string, $parent: d3.Selection<any>) {
-    this.$node = $parent.append('g');
+    this.$node = $parent.append('g').classed('timeline', true);
     this.createLabel(datasetName);
-    this.rangeBand = new Rangeband(this.$node);
   }
 
   createLabel(datasetName: string) {
@@ -114,6 +113,7 @@ export class Timeline implements IDragSelection {
   }
 
   createRangeSelector() {
+    this.rangeBand = new Rangeband(this.$rectangles);
     this.rangeSelector = new TimelineRangeSelector(this.MAX_DRAG_TOLERANCE, this.$rectangles, 'rect.epoch');
     this.rangeSelector.addListener(this);
     this.rangeSelector.addListener(this.rangeBand);
@@ -127,7 +127,6 @@ export class Timeline implements IDragSelection {
       this.$rectangles = null;
     }
     this.$rectangles = this.$node.append('g');
-    this.createRangeSelector();
     this.$rectangles.attr('transform', 'translate(' + offsetH + ',' + 7 + ')')
       .selectAll('rect')
       .data(this.data.datapoints.filter((x) => !x.canBeRemoved))
@@ -145,6 +144,7 @@ export class Timeline implements IDragSelection {
         }
         this.setAttribute('x', x);
       });
+    this.createRangeSelector();
   }
 
   dragEnd(sel: d3.Selection<any>) {
