@@ -1,38 +1,7 @@
 @import "vars";
 
 .timeline-view {
-  z-index: 30;
-  display: block;
-  visibility: visible;
-  position: relative;
+  .epoch {
 
-  .tml-axis {
-    font: 10px sans-serif;
-  }
-
-  .tml-axis path,
-  .tml-axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-  }
-
-  .x.axis path {
-    display: none;
-  }
-
-  .resize path {
-    fill: #666;
-    fill-opacity: .8;
-    stroke: #000;
-    stroke-width: 1.5px;
-  }
-
-  .brush .extent {
-    stroke: #fff;
-    stroke-opacity: .6;
-    stroke-width: 2px;
-    fill-opacity: .1;
-    shape-rendering: crispEdges;
   }
 }

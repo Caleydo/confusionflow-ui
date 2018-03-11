@@ -8,6 +8,7 @@ import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
 import {IAppView} from './app';
 import {extractEpochId} from './utils';
+import {TimelineRangeSelector} from './RangeSelector';
 
 class NodeWrapper {
   public canBeRemoved = false;
@@ -237,11 +238,13 @@ class Timeline {
   private $label: d3.Selection<any> = null;
   private $axisX: d3.Selection<any> = null;
   private $rectangles: d3.Selection<any> = null;
+  private rangeSelector: TimelineRangeSelector;
 
   data:TimelineData = null;
 
   constructor(public datasetName: string, $parent: d3.Selection<any>) {
     this.$node = $parent.append('g');
+    this.rangeSelector = new TimelineRangeSelector(this.$node, 'rect.epoch');
     this.build(datasetName);
   }
 
@@ -273,7 +276,7 @@ class Timeline {
       .selectAll('rect')
       .data(this.data.datapoints.filter((x) => !x.canBeRemoved))
       .enter().append('rect')
-        .attr('class', 'bar')
+        .attr('class', 'epoch')
         .attr('y', 0)
         .attr('height', AppConstants.TML_BAR_HEIGHT)
         .attr('width', (d) => d.condense ? AppConstants.TML_CONDENSED_BAR_WIDTH : AppConstants.TML_BAR_WIDTH)

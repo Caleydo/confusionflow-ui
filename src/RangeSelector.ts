@@ -38,7 +38,7 @@ export class TimelineRangeSelector {
   private readonly OFFSET = 10; // Offset from the left border
   private candidates: d3.Selection<any>;
 
-  constructor($node: d3.Selection<any>, ) {
+  constructor(private $node: d3.Selection<any>, private selector: string) {
     this.setup($node);
     this.resetSelectionRect();
   }
@@ -58,8 +58,8 @@ export class TimelineRangeSelector {
   private getSelectionCandidates(dragStart: [number, number], dragEnd: [number, number], $candidates: d3.Selection<any>) {
     const isInRange = (element: HTMLElement, startPx: number, endPx: number): boolean => {
       //todo calculate bounds outside and pass them here
-      const leftBounds = element.offsetLeft + this.OFFSET;
-      const rightBounds = element.offsetLeft + this.OFFSET + this.ELEMENT_WIDTH;
+      const leftBounds = +element.getAttribute('width');
+      const rightBounds = +element.getAttribute('width') + +element.getAttribute('width');
       return startPx <= rightBounds && endPx >= leftBounds;
     };
     const res = $candidates.filter(function(d, i) {
@@ -94,11 +94,15 @@ export class TimelineRangeSelector {
   private dragEnd(ele: HTMLElement) {
     this.selectionRect.end(d3.mouse(ele));
     const range = this.selectionRect.getOrderByX();
-    if(!this.candidates) { return; }
-    const selection = this.getSelectionCandidates(range[0], range[1], this.candidates);
+    const candidates = this.getCandidates();
+    if(!candidates) { return; }
+    const selection = this.getSelectionCandidates(range[0], range[1], candidates);
     this.listeners.forEach((l) => l.dragEnd(selection));
   }
 
+  private getCandidates() {
+    return this.$node.selectAll(this.selector);
+  }
 
 }
 
