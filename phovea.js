@@ -16,7 +16,7 @@ module.exports = function(registry) {
     'name': 'Data Set Selector'
   });
 
-  registry.push('malevoView', 'TimelineView', function() { return System.import('./src/Timeline'); }, {
+  registry.push('malevoView', 'TimelineView', function() { return System.import('./src/timeline/TimelineView'); }, {
     'name': 'TimelineView'
   });
 

@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 export interface IDragSelection {
   dragEnd(sel: d3.Selection<any>);
   dragStart();
-  dragging(start, end);
+  dragging(start, end, maxDragTolerance);
 }
 
 class SelectionRect {
@@ -38,7 +38,7 @@ export class TimelineRangeSelector {
   private readonly OFFSET = 10; // Offset from the left border
   private candidates: d3.Selection<any>;
 
-  constructor(private $node: d3.Selection<any>, private selector: string) {
+  constructor(private readonly MAX_DRAG_TOLERANCE, private $node: d3.Selection<any>, private selector: string) {
     this.setup($node);
     this.resetSelectionRect();
   }
@@ -58,8 +58,8 @@ export class TimelineRangeSelector {
   private getSelectionCandidates(dragStart: [number, number], dragEnd: [number, number], $candidates: d3.Selection<any>) {
     const isInRange = (element: HTMLElement, startPx: number, endPx: number): boolean => {
       //todo calculate bounds outside and pass them here
-      const leftBounds = +element.getAttribute('width');
-      const rightBounds = +element.getAttribute('width') + +element.getAttribute('width');
+      const leftBounds = +element.getAttribute('x');
+      const rightBounds = +element.getAttribute('x') + +element.getAttribute('width');
       return startPx <= rightBounds && endPx >= leftBounds;
     };
     const res = $candidates.filter(function(d, i) {
@@ -88,7 +88,7 @@ export class TimelineRangeSelector {
     const p = d3.mouse(ele);
     this.selectionRect.end(p);
     const range = this.selectionRect.getOrderByX();
-    this.listeners.forEach((l) => l.dragging(range[0], range[1]));
+    this.listeners.forEach((l) => l.dragging(range[0], range[1], this.MAX_DRAG_TOLERANCE));
   }
 
   private dragEnd(ele: HTMLElement) {
