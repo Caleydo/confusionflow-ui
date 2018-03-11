@@ -57,9 +57,9 @@ export class TimelineRangeSelector {
 
   private getSelectionCandidates(dragStart: [number, number], dragEnd: [number, number], $candidates: d3.Selection<any>) {
     const isInRange = (element: HTMLElement, startPx: number, endPx: number): boolean => {
-      //todo calculate bounds outside and pass them here
-      const leftBounds = +element.getAttribute('x');
-      const rightBounds = +element.getAttribute('x') + +element.getAttribute('width');
+      const $element = d3.select(element);
+      const leftBounds = d3.transform($element.attr('transform')).translate[0];
+      const rightBounds = leftBounds + +$element.select('rect').attr('width');
       return startPx <= rightBounds && endPx >= leftBounds;
     };
     const res = $candidates.filter(function(d, i) {

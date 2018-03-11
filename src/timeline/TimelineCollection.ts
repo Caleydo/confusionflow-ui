@@ -1,6 +1,7 @@
 import {AppConstants} from '../AppConstants';
 import {IMalevoEpochInfo, MalevoDataset} from '../MalevoDataset';
 import {NodeWrapper, OverallTimeline, Timeline, TimelineData} from './Timeline';
+import * as d3 from 'd3';
 
 export class TimelineCollection {
   private timelines:Timeline[] = [];
@@ -49,7 +50,7 @@ export class TimelineCollection {
       x.render(maxDSLabelWidth + labelMargin, i * AppConstants.TML_HEIGHT);
     });
     if(this.timelines.length > 0) {
-      this.renderLabels(maxDSLabelWidth + labelMargin, 24);
+      this.renderLabels(12, this.timelines[this.timelines.length - 1]);
     }
   }
 
@@ -59,13 +60,26 @@ export class TimelineCollection {
       }, 0);
   }
 
-  private renderLabels(offsetH: number, offsetV: number) {
+  private renderLabels(offsetV: number, lastTimeline: Timeline) {
     if(this.$labels) {
       this.$labels.remove();
       this.$labels = null;
     }
 
-    this.$labels = this.timelines[this.timelines.length - 1].node()
+    const $g = lastTimeline.node()
+      .selectAll('g.epoch')
+      .data(this.otl.dataPoints.filter((x) => !x.canBeRemoved));
+
+    $g.each(function(d, i) {
+      const $node = d3.select(this);
+      $node.append('text')
+      .attr('dy', '.71em')
+      .style('text-anchor', 'middle')
+        .text((d) => d.condense ? '' : d.name)
+        .attr('transform',`translate(${+d3.select(this).select('rect').attr('width') / 2}, ${offsetV})`);
+    });
+
+/*    this.$labels = this.timelines[this.timelines.length - 1].node()
       .append('g');
 
     const $g = this.$labels.classed('x axis', true)
@@ -88,7 +102,7 @@ export class TimelineCollection {
           }
           this.setAttribute('x', x);
           this.setAttribute('transform',`translate(${this.getAttribute('width') / 2}, 0)`);
-        });
+        });*/
   }
 
   private getMaxEpoch() {

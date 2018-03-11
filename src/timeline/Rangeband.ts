@@ -1,6 +1,7 @@
 import {IDragSelection} from '../RangeSelector';
-export class Rangeband implements IDragSelection {
+import * as d3 from 'd3';
 
+export class Rangeband implements IDragSelection {
   private $node: d3.Selection<any>;
   private readonly MARGINH: number = 3;
   private isDragging = false;
@@ -44,11 +45,12 @@ export class Rangeband implements IDragSelection {
 
   private snapBand(sel: d3.Selection<any>) {
     console.assert(sel[0].length > 1);
-    const first = <HTMLElement>sel[0][0];
-    const last = <HTMLElement>sel[0][sel.size() - 1];
-    const start = +first.getAttribute('x');
-    const width = +last.getAttribute('x') - start + +last.getAttribute('width');
-    this.$node.attr('x',start  - this.MARGINH + 'px');
+    const $first = d3.select(<HTMLElement>sel[0][0]);
+    const $last = d3.select(<HTMLElement>sel[0][sel.size() - 1]);
+    const leftBounds = d3.transform($first.attr('transform')).translate[0];
+    const rightBounds = d3.transform($last.attr('transform')).translate[0] + +$last.select('rect').attr('width');
+    const width = rightBounds - leftBounds;
+    this.$node.attr('x',leftBounds  - this.MARGINH + 'px');
     this.$node.attr('width', width + 2*this.MARGINH + 'px');
   }
 }

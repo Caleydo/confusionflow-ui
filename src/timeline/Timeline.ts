@@ -88,7 +88,7 @@ export class Timeline implements IDragSelection {
   private rangeSelector: TimelineRangeSelector;
   private rangeBand: Rangeband;
   private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interpreted as click until it switches to drag
-
+  private readonly rectSelector = '.epoch';
   data:TimelineData = null;
 
   constructor(public datasetName: string, $parent: d3.Selection<any>) {
@@ -114,7 +114,7 @@ export class Timeline implements IDragSelection {
 
   createRangeSelector() {
     this.rangeBand = new Rangeband(this.$rectangles);
-    this.rangeSelector = new TimelineRangeSelector(this.MAX_DRAG_TOLERANCE, this.$rectangles, 'rect.epoch');
+    this.rangeSelector = new TimelineRangeSelector(this.MAX_DRAG_TOLERANCE, this.$rectangles, this.rectSelector);
     this.rangeSelector.addListener(this);
     this.rangeSelector.addListener(this.rangeBand);
   }
@@ -127,23 +127,27 @@ export class Timeline implements IDragSelection {
       this.$rectangles = null;
     }
     this.$rectangles = this.$node.append('g');
-    this.$rectangles.attr('transform', 'translate(' + offsetH + ',' + 7 + ')')
-      .selectAll('rect')
-      .data(this.data.datapoints.filter((x) => !x.canBeRemoved))
-      .enter().append('rect')
-        .attr('class', 'epoch')
-        .attr('y', 0)
-        .attr('height', AppConstants.TML_BAR_HEIGHT)
-        .attr('width', (d) => d.condense ? AppConstants.TML_CONDENSED_BAR_WIDTH : AppConstants.TML_BAR_WIDTH)
-        .classed('hidden', (d) => !d.exists)
-      .each(function () {
-        let x = 0;
-        if(this.previousSibling) {
-          x = +this.previousSibling.getAttribute('x') + +this.previousSibling.getAttribute('width');
-          x += AppConstants.TML_BAR_MARGIN;
-        }
-        this.setAttribute('x', x);
-      });
+
+    const $g = this.$rectangles.attr('transform', 'translate(' + offsetH + ',' + 7 + ')')
+      .selectAll('g').data(this.data.datapoints.filter((x) => !x.canBeRemoved))
+      .enter().append('g').attr('class', 'epoch');
+
+    $g.append('rect')
+      .attr('y', 0)
+      .attr('height', AppConstants.TML_BAR_HEIGHT)
+      .attr('width', (d) => d.condense ? AppConstants.TML_CONDENSED_BAR_WIDTH : AppConstants.TML_BAR_WIDTH)
+      .classed('hidden', (d) => !d.exists);
+
+    $g.each(function () {
+      let x = 0;
+      if(this.previousSibling) {
+        const $g = d3.select(this.previousSibling);
+        x += d3.transform($g.attr('transform')).translate[0];
+        x += +$g.select('rect').attr('width');
+        x += AppConstants.TML_BAR_MARGIN;
+      }
+      d3.select(this).attr('transform', 'translate(' + x + ',' + 0 + ')');
+    });
     this.createRangeSelector();
   }
 
@@ -152,7 +156,7 @@ export class Timeline implements IDragSelection {
       DataStoreEpochSelection.multiSelected = sel.data();
     } else if(sel[0].length === 1) {
       const curSelection = DataStoreEpochSelection.singleSelected;
-      this.$node.selectAll('rect.epoch').classed('single-selected', false);
+      this.$node.selectAll(this.rectSelector).classed('single-selected', false);
       DataStoreEpochSelection.clearSingleSelection();
       if(sel.data()[0] !== curSelection) { // if sel.data()[0] === curSelection => current node will be deselected
         sel.classed('single-selected', true);
