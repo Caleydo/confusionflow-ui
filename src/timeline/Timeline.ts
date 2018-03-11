@@ -9,6 +9,7 @@ import {AppConstants} from '../AppConstants';
 import {DataStoreEpochSelection} from '../DataStore';
 import {extractEpochId} from '../utils';
 import {IDragSelection, TimelineRangeSelector} from '../RangeSelector';
+import {Rangeband} from './Rangeband';
 
 export class NodeWrapper {
   public canBeRemoved = false;
@@ -83,20 +84,20 @@ class DataPoint {
 export class Timeline implements IDragSelection {
   private $node: d3.Selection<any> = null;
   private $label: d3.Selection<any> = null;
-  private $axisX: d3.Selection<any> = null;
   private $rectangles: d3.Selection<any> = null;
   private rangeSelector: TimelineRangeSelector;
+  private rangeBand: Rangeband;
   private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interpreted as click until it switches to drag
 
   data:TimelineData = null;
 
   constructor(public datasetName: string, $parent: d3.Selection<any>) {
     this.$node = $parent.append('g');
-    this.build(datasetName);
-    this.rangeSelector.addListener(this);
+    this.createLabel(datasetName);
+    this.rangeBand = new Rangeband(this.$node);
   }
 
-  build(datasetName: string) {
+  createLabel(datasetName: string) {
     this.$label = this.$node.append('g')
       .attr('transform', 'translate(0,' + 15 +')')
       .append('text')
@@ -112,6 +113,12 @@ export class Timeline implements IDragSelection {
     return this.$node;
   }
 
+  createRangeSelector() {
+    this.rangeSelector = new TimelineRangeSelector(this.MAX_DRAG_TOLERANCE, this.$rectangles, 'rect.epoch');
+    this.rangeSelector.addListener(this);
+    this.rangeSelector.addListener(this.rangeBand);
+  }
+
   render(offsetH: number, offsetV: number) {
     this.$node.attr('transform', 'translate(0,' + offsetV + ')');
     // Add a group for each cause.
@@ -120,7 +127,7 @@ export class Timeline implements IDragSelection {
       this.$rectangles = null;
     }
     this.$rectangles = this.$node.append('g');
-    this.rangeSelector = new TimelineRangeSelector(this.MAX_DRAG_TOLERANCE, this.$rectangles, 'rect.epoch');
+    this.createRangeSelector();
     this.$rectangles.attr('transform', 'translate(' + offsetH + ',' + 7 + ')')
       .selectAll('rect')
       .data(this.data.datapoints.filter((x) => !x.canBeRemoved))
@@ -152,7 +159,7 @@ export class Timeline implements IDragSelection {
         DataStoreEpochSelection.singleSelected = sel.data()[0];
       }
     }
-    events.fire(AppConstants.EVENT_EPOCH_SELECTED);
+    //events.fire(AppConstants.EVENT_EPOCH_SELECTED);
   }
 
   dragStart() {

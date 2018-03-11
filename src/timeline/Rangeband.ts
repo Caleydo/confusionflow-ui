@@ -11,6 +11,11 @@ export class Rangeband implements IDragSelection {
   }
 
   dragEnd(sel: d3.Selection<any>) {
+    // corner case: if the selection range contains just one node or no node at all => don't show rangeband
+    if(sel[0].length === 1 || sel[0].length === 0) {
+      this.hide(true);
+      return;
+    }
     this.snapBand(sel);
   }
 
@@ -20,7 +25,7 @@ export class Rangeband implements IDragSelection {
 
   dragging(start: [number, number], end: [number, number], maxDragTolerance: number) {
     if(end[0] - start[0] > maxDragTolerance) {
-      this.$node.style('visibility', 'visible');
+      this.hide(false);
       this.$node.style('left', start[0] + 'px');
       this.$node.style('width', end[0] - start[0] + 'px');
     }
@@ -36,3 +41,8 @@ export class Rangeband implements IDragSelection {
     this.$node.style('width', width + 'px');
   }
 }
+
+
+
+// WEBPACK FOOTER //
+// ./src/timeline/Rangeband.ts
