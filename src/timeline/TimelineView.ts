@@ -36,9 +36,9 @@ export default class TimelineView implements IAppView {
   private attachListener() {
     events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds:MalevoDataset) => {
       DataStoreEpochSelection.clearSelection();
-      const ts = new Timeline(ds.name, this.$node);
+
       this.updateSvg(this.timelineData.timelineCount() + 1);
-      this.timelineData.add(ts, ds.epochInfos);
+      this.timelineData.add(this.$node, ds);
     });
 
     events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds:MalevoDataset) => {

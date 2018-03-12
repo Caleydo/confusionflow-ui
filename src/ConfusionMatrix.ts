@@ -185,7 +185,9 @@ export class ConfusionMatrix implements IAppView {
   private updateEpochRange() {
     const promMultiEpoch = [];
     for(const item of DataStoreEpochSelection.multiSelected) {
-      promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
+      if(item) {
+        promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
+      }
     }
     const promLabels = this.loadLabels(DataStoreEpochSelection.labels);
     promMultiEpoch.push(promLabels);
@@ -214,7 +216,9 @@ export class ConfusionMatrix implements IAppView {
   private updateSingleAndEpochRange() {
     const promMultiEpoch = [];
     for(const item of DataStoreEpochSelection.multiSelected) {
-      promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
+      if(item) {
+        promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
+      }
     }
     const promSingleEpoch = this.loadConfusionData(DataStoreEpochSelection.singleSelected.confusionInfo);
     const promLabels = this.loadLabels(DataStoreEpochSelection.labels);

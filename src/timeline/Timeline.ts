@@ -61,13 +61,15 @@ export class TimelineData {
   datapoints: DataPoint[] = [];
 
   build(epochs: IMalevoEpochInfo[]) {
-    function sortNumber(a,b) {
-      return a - b;
+    function sortNumber(a: IMalevoEpochInfo, b: IMalevoEpochInfo) {
+      return extractEpochId(a) - extractEpochId(b);
     }
-    const ids = epochs.map((x) => extractEpochId(x));
-    ids.sort(sortNumber);
-    for(let i = 0; i <= ids[ids.length - 1]; i++) {
-      const dp = ids.includes(i) ? new DataPoint(true, i) : new DataPoint(false, i);
+
+    epochs.sort(sortNumber);
+    const length = extractEpochId(epochs[epochs.length - 1]);
+    for(let i = 0; i <= length; i++) {
+      const epoch = epochs.find((x) => extractEpochId(x) === i);
+      const dp = epoch ? new DataPoint(true, i, epoch) : new DataPoint(false, i, epoch);
       this.datapoints.push(dp);
     }
   }
@@ -76,7 +78,7 @@ export class TimelineData {
 class DataPoint {
   public canBeRemoved = false;
   public condense = false;
-  constructor(public exists: boolean, public position: number) {
+  constructor(public exists: boolean, public position: number, public epoch: IMalevoEpochInfo) {
 
   }
 }
@@ -128,15 +130,16 @@ export class Timeline implements IDragSelection {
     }
     this.$rectangles = this.$node.append('g');
 
-    const $g = this.$rectangles.attr('transform', 'translate(' + offsetH + ',' + 7 + ')')
+    const $g = this.$rectangles.attr('transform', 'translate(' + offsetH + ',' + 5 + ')')
       .selectAll('g').data(this.data.datapoints.filter((x) => !x.canBeRemoved))
       .enter().append('g').attr('class', 'epoch');
 
     $g.append('rect')
-      .attr('y', 0)
       .attr('height', AppConstants.TML_BAR_HEIGHT)
       .attr('width', (d) => d.condense ? AppConstants.TML_CONDENSED_BAR_WIDTH : AppConstants.TML_BAR_WIDTH)
-      .classed('hidden', (d) => !d.exists);
+      .classed('hidden', (d) => !d.exists)
+      .append('title')
+		    .text((d) => d.position);
 
     $g.each(function () {
       let x = 0;
@@ -153,17 +156,17 @@ export class Timeline implements IDragSelection {
 
   dragEnd(sel: d3.Selection<any>) {
     if(sel[0].length > 1) {
-      DataStoreEpochSelection.multiSelected = sel.data();
+      DataStoreEpochSelection.multiSelected = sel.data().map((x) => x.epoch);
     } else if(sel[0].length === 1) {
       const curSelection = DataStoreEpochSelection.singleSelected;
       this.$node.selectAll(this.rectSelector).classed('single-selected', false);
       DataStoreEpochSelection.clearSingleSelection();
-      if(sel.data()[0] !== curSelection) { // if sel.data()[0] === curSelection => current node will be deselected
+      if(sel.data()[0].epoch !== curSelection) { // if sel.data()[0] === curSelection => current node will be deselected
         sel.classed('single-selected', true);
-        DataStoreEpochSelection.singleSelected = sel.data()[0];
+        DataStoreEpochSelection.singleSelected = sel.data()[0].epoch;
       }
     }
-    //events.fire(AppConstants.EVENT_EPOCH_SELECTED);
+    events.fire(AppConstants.EVENT_EPOCH_SELECTED);
   }
 
   dragStart() {
