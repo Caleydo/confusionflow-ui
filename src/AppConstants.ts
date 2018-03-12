@@ -83,8 +83,9 @@ export class AppConstants {
    */
   static TML_DS_LABEL_HEIGHT = 15;
   static TML_BAR_HEIGHT = 10;
-  static TML_CONDENSED_BAR_WIDTH = 2;
-  static TML_BAR_WIDTH = 26;
+  static TML_CONDENSED_BAR_HEIGHT = 5;
+  static TML_CONDENSED_BAR_WIDTH = 1;
+  static TML_BAR_WIDTH = 1;
   static TML_HEIGHT = 35;
   static TML_BAR_MARGIN = 5;
   static TML_NODE_DENSITY_DISTANCE = 5;

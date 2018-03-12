@@ -135,7 +135,7 @@ export class Timeline implements IDragSelection {
       .enter().append('g').attr('class', 'epoch');
 
     $g.append('rect')
-      .attr('height', AppConstants.TML_BAR_HEIGHT)
+      .attr('height', (d) => d.condense ? AppConstants.TML_CONDENSED_BAR_HEIGHT : AppConstants.TML_BAR_HEIGHT)
       .attr('width', (d) => d.condense ? AppConstants.TML_CONDENSED_BAR_WIDTH : AppConstants.TML_BAR_WIDTH)
       .classed('hidden', (d) => !d.exists)
       .append('title')
