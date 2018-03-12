@@ -92,9 +92,11 @@ export class Timeline implements IDragSelection {
   private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interpreted as click until it switches to drag
   private readonly rectSelector = '.epoch';
   data:TimelineData = null;
+  private brush: d3.svg.Brush<any>;
 
   constructor(public datasetName: string, $parent: d3.Selection<any>) {
-    this.$node = $parent.append('g').classed('timeline', true);
+    this.$node = $parent.append('g')
+      .classed('timeline', true);
     this.createLabel(datasetName);
   }
 
@@ -121,37 +123,83 @@ export class Timeline implements IDragSelection {
     this.rangeSelector.addListener(this.rangeBand);
   }
 
-  render(offsetH: number, offsetV: number) {
+  render(offsetH: number, offsetV: number, otl: OverallTimeline) {
     this.$node.attr('transform', 'translate(0,' + offsetV + ')');
-    // Add a group for each cause.
+
+    const width = otl.dataPoints.length * 5;
+    const x = d3.scale.ordinal().rangePoints([0, width]);
+    x.domain(otl.dataPoints.map(function (d) {
+        return String(d.name);
+    }));
+
+    const xAxis = d3.svg.axis()
+      .scale(x)
+      .tickValues(x.domain().filter((d, i) => {
+        const cond = i < this.data.datapoints.length && this.data.datapoints[i].exists;
+        return cond;
+      }))
+      .orient('bottom')
+      .tickSize(-7);
+
     if(this.$rectangles) {
       this.$rectangles.remove();
       this.$rectangles = null;
     }
-    this.$rectangles = this.$node.append('g');
 
-    const $g = this.$rectangles.attr('transform', 'translate(' + offsetH + ',' + 5 + ')')
-      .selectAll('g').data(this.data.datapoints.filter((x) => !x.canBeRemoved))
-      .enter().append('g').attr('class', 'epoch');
+    this.$rectangles = this.$node.append('g')
+      .attr('class', 'axis')
+      .attr('transform', `translate(${offsetH}, 15)`)
+      .call(xAxis);
 
-    $g.append('rect')
-      .attr('height', (d) => d.condense ? AppConstants.TML_CONDENSED_BAR_HEIGHT : AppConstants.TML_BAR_HEIGHT)
-      .attr('width', (d) => d.condense ? AppConstants.TML_CONDENSED_BAR_WIDTH : AppConstants.TML_BAR_WIDTH)
-      .classed('hidden', (d) => !d.exists)
-      .append('title')
-		    .text((d) => d.position);
+    // Draw the brush
+    this.brush = d3.svg.brush()
+        .x(<any>x)
+        .on('brush', this.brushmove)
+        .on('brushend', this.brushend);
 
-    $g.each(function () {
-      let x = 0;
-      if(this.previousSibling) {
-        const $g = d3.select(this.previousSibling);
-        x += d3.transform($g.attr('transform')).translate[0];
-        x += +$g.select('rect').attr('width');
-        x += AppConstants.TML_BAR_MARGIN;
-      }
-      d3.select(this).attr('transform', 'translate(' + x + ',' + 0 + ')');
-    });
-    this.createRangeSelector();
+    const brushg = this.$node.append('g')
+      .attr('class', 'brush')
+      .call(this.brush);
+
+    brushg.selectAll('rect')
+        .attr('height', 15);
+  }
+
+  brushmove() {
+    console.log('moving brush');
+   /* y.domain(x.range()).range(x.domain());
+    b = this.brush.extent();
+
+    var localBrushYearStart = (this.brush.empty()) ? brushYearStart : Math.ceil(y(b[0])),
+        localBrushYearEnd = (this.brush.empty()) ? brushYearEnd : Math.ceil(y(b[1]));
+
+    // Snap to rect edge
+    d3.select('g.brush').call((this.brush.empty()) ? this.brush.clear() : this.brush.extent([y.invert(localBrushYearStart), y.invert(localBrushYearEnd)]));
+
+    // Fade all years in the histogram not within the brush
+    d3.selectAll('rect.bar').style('opacity', function(d, i) {
+      return d.x >= localBrushYearStart && d.x < localBrushYearEnd || brush.empty() ? '1' : '.4';
+    });*/
+  }
+
+  brushend() {
+    console.log('finishing brush');
+
+   /* const localBrushYearStart = (brush.empty()) ? brushYearStart : Math.ceil(y(b[0])),
+        localBrushYearEnd = (brush.empty()) ? brushYearEnd : Math.floor(y(b[1]));
+
+      d3.selectAll('rect.bar').style('opacity', function(d, i) {
+        return d.x >= localBrushYearStart && d.x <= localBrushYearEnd || brush.empty() ? '1' : '.4';
+      });
+
+    // Additional calculations happen here...
+    // filterPoints();
+    // colorPoints();
+    // styleOpacity();
+
+    // Update start and end years in upper right-hand corner of the map
+    d3.select('#brushYears').text(localBrushYearStart == localBrushYearEnd ? localBrushYearStart : localBrushYearStart + ' - ' + localBrushYearEnd);
+*/
   }
 
   dragEnd(sel: d3.Selection<any>) {
