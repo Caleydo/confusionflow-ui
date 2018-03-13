@@ -4,11 +4,8 @@
 
 import {MalevoDataset, IMalevoEpochInfo} from '../MalevoDataset';
 import * as d3 from 'd3';
-import * as events from 'phovea_core/src/event';
 import {AppConstants} from '../AppConstants';
-import {DataStoreEpochSelection} from '../DataStore';
 import {extractEpochId} from '../utils';
-import {IDragSelection, TimelineRangeSelector} from '../RangeSelector';
 import {Rangeband} from './Rangeband';
 
 export class NodeWrapper {
@@ -83,12 +80,10 @@ class DataPoint {
   }
 }
 
-export class Timeline implements IDragSelection {
+export class Timeline {
   private $node: d3.Selection<any> = null;
   private $label: d3.Selection<any> = null;
   private $rectangles: d3.Selection<any> = null;
-  private rangeSelector: TimelineRangeSelector;
-  private rangeBand: Rangeband;
   private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interpreted as click until it switches to drag
   private readonly rectSelector = '.epoch';
   data:TimelineData = null;
@@ -116,21 +111,16 @@ export class Timeline implements IDragSelection {
     return this.$node;
   }
 
-  createRangeSelector() {
-    this.rangeBand = new Rangeband(this.$rectangles);
-    this.rangeSelector = new TimelineRangeSelector(this.MAX_DRAG_TOLERANCE, this.$rectangles, this.rectSelector);
-    this.rangeSelector.addListener(this);
-    this.rangeSelector.addListener(this.rangeBand);
-  }
-
   render(offsetH: number, offsetV: number, otl: OverallTimeline) {
     this.$node.attr('transform', 'translate(0,' + offsetV + ')');
 
+    offsetH += 10;
     const width = otl.dataPoints.length * 5;
-    const x = d3.scale.ordinal().rangePoints([0, width]);
-    x.domain(otl.dataPoints.map(function (d) {
+    const x = d3.scale.ordinal()
+      .rangePoints([0, width])
+      .domain(otl.dataPoints.map(function (d) {
         return String(d.name);
-    }));
+      }));
 
     const xAxis = d3.svg.axis()
       .scale(x)
@@ -154,10 +144,11 @@ export class Timeline implements IDragSelection {
     // Draw the brush
     this.brush = d3.svg.brush()
         .x(<any>x)
-        .on('brush', this.brushmove)
-        .on('brushend', this.brushend);
+        .on('brush', () => this.brushmove(x, this))
+        .on('brushend', () => this.brushend(x, otl));
 
     const brushg = this.$node.append('g')
+      .attr('transform', `translate(${offsetH}, 0)`)
       .attr('class', 'brush')
       .call(this.brush);
 
@@ -165,66 +156,56 @@ export class Timeline implements IDragSelection {
         .attr('height', 15);
   }
 
-  brushmove() {
-    console.log('moving brush');
-   /* y.domain(x.range()).range(x.domain());
-    b = this.brush.extent();
-
-    var localBrushYearStart = (this.brush.empty()) ? brushYearStart : Math.ceil(y(b[0])),
-        localBrushYearEnd = (this.brush.empty()) ? brushYearEnd : Math.ceil(y(b[1]));
-
-    // Snap to rect edge
-    d3.select('g.brush').call((this.brush.empty()) ? this.brush.clear() : this.brush.extent([y.invert(localBrushYearStart), y.invert(localBrushYearEnd)]));
-
-    // Fade all years in the histogram not within the brush
-    d3.selectAll('rect.bar').style('opacity', function(d, i) {
-      return d.x >= localBrushYearStart && d.x < localBrushYearEnd || brush.empty() ? '1' : '.4';
-    });*/
-  }
-
-  brushend() {
-    console.log('finishing brush');
-
-   /* const localBrushYearStart = (brush.empty()) ? brushYearStart : Math.ceil(y(b[0])),
-        localBrushYearEnd = (brush.empty()) ? brushYearEnd : Math.floor(y(b[1]));
-
-      d3.selectAll('rect.bar').style('opacity', function(d, i) {
-        return d.x >= localBrushYearStart && d.x <= localBrushYearEnd || brush.empty() ? '1' : '.4';
-      });
-
-    // Additional calculations happen here...
-    // filterPoints();
-    // colorPoints();
-    // styleOpacity();
-
-    // Update start and end years in upper right-hand corner of the map
-    d3.select('#brushYears').text(localBrushYearStart == localBrushYearEnd ? localBrushYearStart : localBrushYearStart + ' - ' + localBrushYearEnd);
-*/
-  }
-
-  dragEnd(sel: d3.Selection<any>) {
-    if(sel[0].length > 1) {
-      DataStoreEpochSelection.multiSelected = sel.data().map((x) => x.epoch);
-    } else if(sel[0].length === 1) {
-      const curSelection = DataStoreEpochSelection.singleSelected;
-      this.$node.selectAll(this.rectSelector).classed('single-selected', false);
-      DataStoreEpochSelection.clearSingleSelection();
-      if(sel.data()[0].epoch !== curSelection) { // if sel.data()[0] === curSelection => current node will be deselected
-        sel.classed('single-selected', true);
-        DataStoreEpochSelection.singleSelected = sel.data()[0].epoch;
+  ceil(val: number, timeline: Timeline) {
+    for(let i = val; i < timeline.data.datapoints.length; i++) {
+      if(timeline.data.datapoints[i].exists) {
+        return i;
       }
     }
-    events.fire(AppConstants.EVENT_EPOCH_SELECTED);
+    return null;
   }
 
-  dragStart() {
-     // nothing
-  }
-
-  dragging(start: [number, number], end: [number, number], maxDragTolerance: number) {
-    console.assert(start[0] <= end[0]);
-    if(end[0] - start[0] > maxDragTolerance) {
-      DataStoreEpochSelection.clearMultiSelection(); // we start a new multi selection here so the old one is obsolete
+  floor(val: number, timeline: Timeline) {
+    for(let i = val; i >= 0; i--) {
+      if(timeline.data.datapoints[i].exists) {
+        return i;
+      }
     }
+    return null;
+  }
+
+  brushmove(x: any, timeline: Timeline) {
+    const b = this.brush.extent();
+    console.log(b);
+
+    const y = d3.scale.linear().range(x.domain()).domain(x.range());
+    //const invert = (val: number) => d3.scale.quantize().domain(x.range()).range(x.domain())(val);
+
+    if(!this.brush.empty()) {
+      let n0 = +y(<number>b[0]);
+      let n1 = +y(<number>b[1]);
+
+
+      if(n0 > n1) {
+        const tmp = n1;
+        n1 = n0;
+        n0 = tmp;
+      }
+      const brushStart = this.ceil(Math.ceil(n0), timeline);
+      const brushEnd =  this.ceil(Math.ceil(n1), timeline);
+
+      if(brushStart < brushEnd) {
+        d3.select('g.brush').call(<any>this.brush.extent([y.invert(brushStart), y.invert(brushEnd)]));
+        console.log('Brush: ' + this.brush.extent());
+      } else {
+        d3.select('g.brush').call(<any>this.brush.clear());
+      }
+    } else {
+    }
+
+  }
+
+  brushend(x: any, otl: OverallTimeline) {
+    console.log('end');
   }
 }

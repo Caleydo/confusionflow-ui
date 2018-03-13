@@ -25,7 +25,7 @@ export class TimelineCollection {
 
   remove(ds: MalevoDataset) {
     const ts = this.timelines.find((x) => x.data.epochs === ds.epochInfos);
-    console.assert(ts);
+    console.assert(!!ts);
     ts.node().remove();
     this.timelines = this.timelines.filter((x) => x !== ts); // remove from list
     this.updateTimelines();
