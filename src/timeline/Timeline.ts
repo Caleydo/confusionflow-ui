@@ -179,21 +179,26 @@ export class Timeline {
 
     const rect2 = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', 2).attr('height', 20).attr('y', 0)
       .attr('transform', `translate(${offsetH}, 0)`);
+    const rect3 = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', 2).attr('height', 20).attr('y', 0)
+      .attr('transform', `translate(${offsetH}, 0)`)
+      .classed('hidden', true);
     this.$node.append('rect').attr('transform', `translate(${offsetH}, ${16})`)
       .attr('width', width)
       .attr('height', 20)
       .style('opacity', 0)
-      //.attr('x', offsetH)
       .on('mousemove', function() {
         const coordinates = d3.mouse(this);
         const num = invert(coordinates[0]);
-        if(tml.isNearlyInt(num)) {
-          rect2.attr('x', coordinates[0]);
-        }
+        rect2.attr('x',x(String(Math.round(num))));
+
+      })
+      .on('mouseup', function() {
+        const coordinates = d3.mouse(this);
+        const num = invert(coordinates[0]);
+        rect3.attr('x',x(String(Math.round(num))));
+        rect3.classed('hidden', !rect3.classed('hidden'));
       });
   }
-
-  mouseDownPos = null;
 
   isNearlyInt(num: number) {
     const rounded = Math.round(num);
@@ -233,7 +238,7 @@ export class Timeline {
         console.log(brushStart, brushEnd);
         d3.select('g.brush').call(<any>brush.extent([y.invert(brushStart), y.invert(brushEnd)]));
       } else {
-        //d3.select('g.brush').call(<any>brush.clear());
+        d3.select('g.brush').call(<any>brush.clear());
       }
     }
 
