@@ -6,13 +6,32 @@ import {MalevoDataset, IMalevoEpochInfo} from '../MalevoDataset';
 import * as d3 from 'd3';
 import {AppConstants} from '../AppConstants';
 import {extractEpochId} from '../utils';
-import {Rangeband} from './Rangeband';
+
+class SingleEpochSelector {
+  public $node: d3.Selection<any>;
+  public hidden = true;
+  curPos = -1;
+  constructor($parent: d3.Selection<any>, offsetH: number) {
+    this.$node = $parent.append('rect').classed('single-epoch-selector', true).attr('width', 2).attr('height', 20).attr('y', 0)
+      .attr('transform', `translate(${offsetH}, 0)`)
+      .classed('hidden', this.hidden);
+  }
+
+  setPosition(pos: number) {
+    if(this.curPos !== pos) {
+      this.hidden = false;
+    } else {
+      this.hidden = true;
+    }
+    this.curPos = pos;
+    this.$node.classed('hidden', this.hidden);
+  }
+}
 
 export class NodeWrapper {
   public canBeRemoved = false;
   public condense = false;
   constructor(public name, public dps: DataPoint[]) {
-
   }
 }
 
@@ -53,6 +72,7 @@ export class Timeline {
   private $node: d3.Selection<any> = null;
   private $label: d3.Selection<any> = null;
   data:TimelineData = null;
+  singleEpochSelector = null;
 
   constructor(public datasetName: string, $parent: d3.Selection<any>) {
    this.build($parent);
@@ -148,9 +168,8 @@ export class Timeline {
 
     const rect2 = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', 2).attr('height', 20).attr('y', 0)
       .attr('transform', `translate(${offsetH}, 0)`);
-    const rect3 = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', 2).attr('height', 20).attr('y', 0)
-      .attr('transform', `translate(${offsetH}, 0)`)
-      .classed('hidden', true);
+
+    this.singleEpochSelector = new SingleEpochSelector(this.$node, offsetH);
     this.$node.append('rect').attr('transform', `translate(${offsetH}, ${16})`)
       .attr('width', width)
       .attr('height', 20)
@@ -164,8 +183,9 @@ export class Timeline {
       .on('mouseup', function() {
         const coordinates = d3.mouse(this);
         const num = invert(coordinates[0]);
-        rect3.attr('x',x(String(Math.round(num))));
-        rect3.classed('hidden', !rect3.classed('hidden'));
+        const posX = x(String(Math.round(num)));
+        tml.singleEpochSelector.$node.attr('x', posX);
+        tml.singleEpochSelector.setPosition(posX);
       });
   }
 

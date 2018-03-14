@@ -21,5 +21,9 @@
       fill-opacity: .1;
       shape-rendering: crispEdges;
     }
+
+    .single-epoch-selector {
+      fill: $select-color
+    }
   }
 }
