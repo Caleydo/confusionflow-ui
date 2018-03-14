@@ -175,13 +175,30 @@ export class Timeline {
       })
       .on('mouseleave', () => {
         rect.classed('hidden', true);
-      })
-      .on('mousedown', function() {
-        tml.mouseDownPos = d3.mouse(this);
+      });
+
+    const rect2 = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', 2).attr('height', 20).attr('y', 0)
+      .attr('transform', `translate(${offsetH}, 0)`);
+    this.$node.append('rect').attr('transform', `translate(${offsetH}, ${16})`)
+      .attr('width', width)
+      .attr('height', 20)
+      .style('opacity', 0)
+      //.attr('x', offsetH)
+      .on('mousemove', function() {
+        const coordinates = d3.mouse(this);
+        const num = invert(coordinates[0]);
+        if(tml.isNearlyInt(num)) {
+          rect2.attr('x', coordinates[0]);
+        }
       });
   }
 
   mouseDownPos = null;
+
+  isNearlyInt(num: number) {
+    const rounded = Math.round(num);
+    return Math.abs(rounded - num) < 0.1;
+  }
 
   ceil(val: number, timeline: Timeline) {
     for(let i = val; i < timeline.data.datapoints.length; i++) {
@@ -197,6 +214,8 @@ export class Timeline {
 
     const y = d3.scale.linear().range(x.domain()).domain(x.range());
 
+    console.log(b);
+    console.log((<any>d3.event).selection);
     if(!brush.empty()) {
       let n0 = +y(<number>b[0]);
       let n1 = +y(<number>b[1]);
@@ -206,22 +225,24 @@ export class Timeline {
         n1 = n0;
         n0 = tmp;
       }
+      console.log(n0, n1);
       const brushStart = this.ceil(Math.ceil(n0), timeline);
       const brushEnd =  this.ceil(Math.ceil(n1), timeline);
 
       if(brushStart < brushEnd) {
-        console.log('multi selection');
+        console.log(brushStart, brushEnd);
         d3.select('g.brush').call(<any>brush.extent([y.invert(brushStart), y.invert(brushEnd)]));
       } else {
-        d3.select('g.brush').call(<any>brush.clear());
+        //d3.select('g.brush').call(<any>brush.clear());
       }
     }
 
   }
 
   brushend(x: any, otl: OverallTimeline, ele: HTMLElement, brush) {
-
-    console.log('brush end');
+    if (!(<any>d3.event).sourceEvent) {return;} // Only transition after input.
+    if (!(<any>d3.event).selection) {return;} // Ignore empty selections.
+    /*console.log('brush end');
     const y = d3.scale.linear().range(x.domain()).domain(x.range());
     const b = brush.extent();
 
@@ -229,6 +250,6 @@ export class Timeline {
       console.log('single selection');
     } if(Math.round(y(this.mouseDownPos[0])) === Math.round(y(b[1]))) {
       console.log('single selection1');
-    }
+    }*/
   }
 }
