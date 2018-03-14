@@ -150,23 +150,8 @@ export class Timeline {
     const rect = $brushg.append('text').attr('font-size', '15').style('fill', 'rgb(0,0.255').style('pointer-events', 'none');
     const invert = d3.scale.linear().range(<any>x.domain()).domain(x.range());
     const tml = this;
-    $brushg
-      .on('mousemove', function() {
-        rect.classed('hidden', false);
-        const coordinates = d3.mouse(this);
-        const x = coordinates[0];
-        const y = coordinates[1];
-        rect.attr('x', x + 3);
-        rect.attr('y', y - 3);
-        const rounded = Math.round(invert(x));
-        rect.text(rounded);
 
-      })
-      .on('mouseleave', () => {
-        rect.classed('hidden', true);
-      });
-
-    const rect2 = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', 2).attr('height', 20).attr('y', 0)
+    const $singleSelectionArea = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', 2).attr('height', 20).attr('y', 0)
       .attr('transform', `translate(${offsetH}, 0)`);
 
     this.singleEpochSelector = new SingleEpochSelector(this.$node, offsetH);
@@ -175,9 +160,10 @@ export class Timeline {
       .attr('height', 20)
       .style('opacity', 0)
       .on('mousemove', function() {
+        $singleSelectionArea.classed('hidden', false);
         const coordinates = d3.mouse(this);
         const num = invert(coordinates[0]);
-        rect2.attr('x',x(String(Math.round(num))));
+        $singleSelectionArea.attr('x',x(String(Math.round(num))));
 
       })
       .on('mouseup', function() {
@@ -186,6 +172,9 @@ export class Timeline {
         const posX = x(String(Math.round(num)));
         tml.singleEpochSelector.$node.attr('x', posX);
         tml.singleEpochSelector.setPosition(posX);
+      })
+      .on('mouseleave', function() {
+        $singleSelectionArea.classed('hidden', true);
       });
   }
 
