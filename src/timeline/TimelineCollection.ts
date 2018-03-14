@@ -51,7 +51,7 @@ export class TimelineCollection {
     //this.otl.shrinkTimelines();
     const maxDSLabelWidth = this.findMaxDSLabelWidth();
     this.timelines.forEach((x, i) => {
-      x.render(maxDSLabelWidth, i * AppConstants.TML_HEIGHT, this.otl);
+      x.render(this.$node, maxDSLabelWidth, i * AppConstants.TML_HEIGHT, this.otl);
     });
    // if(this.timelines.length > 0) {
    //   this.renderLabels(maxDSLabelWidth, (this.timelines.length - 1) * AppConstants.TML_HEIGHT + 18);

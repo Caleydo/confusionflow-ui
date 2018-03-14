@@ -83,16 +83,21 @@ class DataPoint {
 export class Timeline {
   private $node: d3.Selection<any> = null;
   private $label: d3.Selection<any> = null;
-  private $rectangles: d3.Selection<any> = null;
-  private readonly MAX_DRAG_TOLERANCE = 10; // defines how many pixels are interpreted as click until it switches to drag
-  private readonly rectSelector = '.epoch';
   data:TimelineData = null;
-  private brush: d3.svg.Brush<any>;
 
   constructor(public datasetName: string, $parent: d3.Selection<any>) {
+   this.build($parent);
+  }
+
+  build($parent) {
+    if(this.$node) {
+      this.$node.remove();
+      const sel = d3.select('.tml-brush');
+      sel.on('brush', null);
+    }
     this.$node = $parent.append('g')
       .classed('timeline', true);
-    this.createLabel(datasetName);
+    this.createLabel(this.datasetName);
   }
 
   createLabel(datasetName: string) {
@@ -111,7 +116,8 @@ export class Timeline {
     return this.$node;
   }
 
-  render(offsetH: number, offsetV: number, otl: OverallTimeline) {
+  render($parent, offsetH: number, offsetV: number, otl: OverallTimeline) {
+    this.build($parent);
     this.$node.attr('transform', 'translate(0,' + offsetV + ')');
 
     offsetH += 10;
@@ -131,29 +137,44 @@ export class Timeline {
       .orient('bottom')
       .tickSize(-7);
 
-    if(this.$rectangles) {
-      this.$rectangles.remove();
-      this.$rectangles = null;
-    }
-
-    this.$rectangles = this.$node.append('g')
+    this.$node.append('g')
       .attr('class', 'axis')
       .attr('transform', `translate(${offsetH}, 15)`)
       .call(xAxis);
 
+    const that = this;
     // Draw the brush
-    this.brush = d3.svg.brush()
+    const brush = d3.svg.brush()
         .x(<any>x)
-        .on('brush', () => this.brushmove(x, this))
-        .on('brushend', () => this.brushend(x, otl));
+        .on('brush', function() {that.brushmove(x, that, brush, this);})
+        .on('brushend', function() {that.brushend(x, otl, this, brush);});
 
-    const brushg = this.$node.append('g')
+    const $brushg = this.$node.append('g')
       .attr('transform', `translate(${offsetH}, 0)`)
       .attr('class', 'brush')
-      .call(this.brush);
+      .call(brush);
 
-    brushg.selectAll('rect')
+    $brushg.selectAll('rect')
         .attr('height', 15);
+
+    const rect = $brushg.append('text').attr('font-size', '10').style('fill', 'rgb(0,0.255').style('cursor', 'crosshair');
+    const invert = d3.scale.linear().range(<any>x.domain()).domain(x.range());
+    const tml = this;
+    $brushg
+      .on('mousemove', function() {
+        rect.classed('hidden', false);
+        const coordinates = d3.mouse(this);
+        const x = coordinates[0];
+        const y = coordinates[1];
+        rect.attr('x', x);
+        rect.attr('y', y);
+        const rounded = Math.round(invert(x));
+        rect.text(rounded);
+
+      })
+      .on('mouseleave', () => {
+        rect.classed('hidden', true);
+      });
   }
 
   ceil(val: number, timeline: Timeline) {
@@ -165,26 +186,14 @@ export class Timeline {
     return null;
   }
 
-  floor(val: number, timeline: Timeline) {
-    for(let i = val; i >= 0; i--) {
-      if(timeline.data.datapoints[i].exists) {
-        return i;
-      }
-    }
-    return null;
-  }
-
-  brushmove(x: any, timeline: Timeline) {
-    const b = this.brush.extent();
-    console.log(b);
+  brushmove(x: any, timeline: Timeline, brush:any, ele: HTMLElement) {
+    const b = brush.extent();
 
     const y = d3.scale.linear().range(x.domain()).domain(x.range());
-    //const invert = (val: number) => d3.scale.quantize().domain(x.range()).range(x.domain())(val);
 
-    if(!this.brush.empty()) {
+    if(!brush.empty()) {
       let n0 = +y(<number>b[0]);
       let n1 = +y(<number>b[1]);
-
 
       if(n0 > n1) {
         const tmp = n1;
@@ -195,17 +204,22 @@ export class Timeline {
       const brushEnd =  this.ceil(Math.ceil(n1), timeline);
 
       if(brushStart < brushEnd) {
-        d3.select('g.brush').call(<any>this.brush.extent([y.invert(brushStart), y.invert(brushEnd)]));
-        console.log('Brush: ' + this.brush.extent());
+        console.log('multi selection');
+        d3.select('g.brush').call(<any>brush.extent([y.invert(brushStart), y.invert(brushEnd)]));
       } else {
-        d3.select('g.brush').call(<any>this.brush.clear());
+        //d3.select('g.brush').call(<any>brush.clear());
       }
-    } else {
     }
 
   }
 
-  brushend(x: any, otl: OverallTimeline) {
-    console.log('end');
+  brushend(x: any, otl: OverallTimeline, ele: HTMLElement, brush) {
+
+    const y = d3.scale.linear().range(x.domain()).domain(x.range());
+    const b = brush.extent();
+
+    if(Math.round(y(b[0])) === Math.round(y(b[1]))) {
+      console.log('single selection');
+    }
   }
 }
