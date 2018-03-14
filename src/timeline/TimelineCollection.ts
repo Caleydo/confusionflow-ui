@@ -8,19 +8,26 @@ export class TimelineCollection {
   private timelines:Timeline[] = [];
   private $labels: d3.Selection<any> = null;
   private otl: OverallTimeline;
-  private $node: d3.Selection<any>;
+
+  constructor(private $node: d3.Selection<any>) {
+
+  }
 
   timelineCount(): number {
     return this.timelines.length;
   }
-  add($node: d3.Selection<any>, ds:MalevoDataset) {
+
+  add($node: d3.Selection<any>, ds: MalevoDataset) {
     DataStoreEpochSelection.labels = ds.classLabels;
-    this.$node = $node;
+    this.createNewTimeline(ds);
+    this.updateTimelines();
+  }
+
+  createNewTimeline(ds: MalevoDataset) {
     const timeline = new Timeline(ds.name, this.$node);
     this.timelines.push(timeline);
     const tmData = new TimelineData(ds.epochInfos);
     timeline.data = tmData;
-    this.updateTimelines();
   }
 
   remove(ds: MalevoDataset) {

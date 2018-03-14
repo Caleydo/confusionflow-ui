@@ -16,15 +16,15 @@ export default class TimelineView implements IAppView {
   private width: number;
 
   constructor(parent: Element) {
-    this.timelineData = new TimelineCollection();
     this.width = parent.clientWidth;
-
     this.$node = d3.select(parent)
       .append('svg')
       .classed('timeline-view', true)
       .attr('width', '100%')
       .attr('height', '0px')
       .attr('viewBox', `0 0 ${this.width} ${0}`);
+
+    this.timelineData = new TimelineCollection(this.$node);
   }
 
   updateSvg(timeLineCount: number) {

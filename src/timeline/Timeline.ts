@@ -18,37 +18,6 @@ export class NodeWrapper {
 
 export class OverallTimeline {
   public dataPoints: NodeWrapper[] = [];
-
-  shrinkTimelines() {
-    let visibleNodeCounter = 0;
-    for(const dp of this.dataPoints) {
-      this.removeEmpty(dp);
-      if(dp.canBeRemoved) {
-        continue;
-      }
-      this.consdenseNodes(dp, visibleNodeCounter);
-      visibleNodeCounter++;
-    }
-  }
-
-  removeEmpty(epochsAti: NodeWrapper) {
-    const existingEpochs = epochsAti.dps.filter((x) => x && x.exists);
-    let val = false;
-    if(existingEpochs.length === 0) {
-      val = true;
-    }
-    epochsAti.canBeRemoved = val;
-    epochsAti.dps.map((x) => x.canBeRemoved = val);
-  }
-
-  consdenseNodes(epochsAti: NodeWrapper, visibleNodeCounter: number) {
-    let val = false;
-    if(visibleNodeCounter % AppConstants.TML_NODE_DENSITY_DISTANCE !== 0) {
-      val = true;
-    }
-    epochsAti.condense = val;
-    epochsAti.dps.map((x) => x.condense = val);
-  }
 }
 
 export class TimelineData {
@@ -92,8 +61,6 @@ export class Timeline {
   build($parent) {
     if(this.$node) {
       this.$node.remove();
-      const sel = d3.select('.tml-brush');
-      sel.on('brush', null);
     }
     this.$node = $parent.append('g')
       .classed('timeline', true);
@@ -145,14 +112,16 @@ export class Timeline {
     const that = this;
     // Draw the brush
     const brush = d3.svg.brush()
-        .x(<any>x)
-        .on('brush', function() {that.brushmove(x, that, brush, this);})
-        .on('brushend', function() {that.brushend(x, otl, this, brush);});
+        .x(<any>x);
 
     const $brushg = this.$node.append('g')
       .attr('transform', `translate(${offsetH}, 0)`)
       .attr('class', 'brush')
       .call(brush);
+      brush.on('brush', () => {
+          this.brushmove(x, brush);
+        })
+        .on('brushend', function() {that.brushend(x, otl, this, brush);});
 
     $brushg.selectAll('rect')
         .attr('height', 15);
@@ -214,13 +183,11 @@ export class Timeline {
     return null;
   }
 
-  brushmove(x: any, timeline: Timeline, brush:any, ele: HTMLElement) {
+  brushmove(x: any, brush:any) {
     const b = brush.extent();
 
     const y = d3.scale.linear().range(x.domain()).domain(x.range());
 
-    console.log(b);
-    console.log((<any>d3.event).selection);
     if(!brush.empty()) {
       let n0 = +y(<number>b[0]);
       let n1 = +y(<number>b[1]);
@@ -230,31 +197,17 @@ export class Timeline {
         n1 = n0;
         n0 = tmp;
       }
-      console.log(n0, n1);
-      const brushStart = this.ceil(Math.ceil(n0), timeline);
-      const brushEnd =  this.ceil(Math.ceil(n1), timeline);
+      const brushStart = this.ceil(Math.ceil(n0), this);
+      const brushEnd =  this.ceil(Math.ceil(n1), this);
 
       if(brushStart < brushEnd) {
-        console.log(brushStart, brushEnd);
-        d3.select('g.brush').call(<any>brush.extent([y.invert(brushStart), y.invert(brushEnd)]));
+        this.$node.select('g.brush').call(<any>brush.extent([y.invert(brushStart), y.invert(brushEnd)]));
       } else {
-        d3.select('g.brush').call(<any>brush.clear());
+        this.$node.select('g.brush').call(<any>brush.clear());
       }
     }
-
   }
 
   brushend(x: any, otl: OverallTimeline, ele: HTMLElement, brush) {
-    if (!(<any>d3.event).sourceEvent) {return;} // Only transition after input.
-    if (!(<any>d3.event).selection) {return;} // Ignore empty selections.
-    /*console.log('brush end');
-    const y = d3.scale.linear().range(x.domain()).domain(x.range());
-    const b = brush.extent();
-
-    if(Math.round(y(b[0])) === Math.round(y(b[1]))) {
-      console.log('single selection');
-    } if(Math.round(y(this.mouseDownPos[0])) === Math.round(y(b[1]))) {
-      console.log('single selection1');
-    }*/
   }
 }
