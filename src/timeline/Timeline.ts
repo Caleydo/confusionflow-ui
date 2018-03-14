@@ -157,7 +157,8 @@ export class Timeline {
     $brushg.selectAll('rect')
         .attr('height', 15);
 
-    const rect = $brushg.append('text').attr('font-size', '10').style('fill', 'rgb(0,0.255').style('cursor', 'crosshair');
+
+    const rect = $brushg.append('text').attr('font-size', '15').style('fill', 'rgb(0,0.255').style('pointer-events', 'none');
     const invert = d3.scale.linear().range(<any>x.domain()).domain(x.range());
     const tml = this;
     $brushg
@@ -166,16 +167,21 @@ export class Timeline {
         const coordinates = d3.mouse(this);
         const x = coordinates[0];
         const y = coordinates[1];
-        rect.attr('x', x);
-        rect.attr('y', y);
+        rect.attr('x', x + 3);
+        rect.attr('y', y - 3);
         const rounded = Math.round(invert(x));
         rect.text(rounded);
 
       })
       .on('mouseleave', () => {
         rect.classed('hidden', true);
+      })
+      .on('mousedown', function() {
+        tml.mouseDownPos = d3.mouse(this);
       });
   }
+
+  mouseDownPos = null;
 
   ceil(val: number, timeline: Timeline) {
     for(let i = val; i < timeline.data.datapoints.length; i++) {
@@ -207,7 +213,7 @@ export class Timeline {
         console.log('multi selection');
         d3.select('g.brush').call(<any>brush.extent([y.invert(brushStart), y.invert(brushEnd)]));
       } else {
-        //d3.select('g.brush').call(<any>brush.clear());
+        d3.select('g.brush').call(<any>brush.clear());
       }
     }
 
@@ -215,11 +221,14 @@ export class Timeline {
 
   brushend(x: any, otl: OverallTimeline, ele: HTMLElement, brush) {
 
+    console.log('brush end');
     const y = d3.scale.linear().range(x.domain()).domain(x.range());
     const b = brush.extent();
 
     if(Math.round(y(b[0])) === Math.round(y(b[1]))) {
       console.log('single selection');
+    } if(Math.round(y(this.mouseDownPos[0])) === Math.round(y(b[1]))) {
+      console.log('single selection1');
     }
   }
 }
