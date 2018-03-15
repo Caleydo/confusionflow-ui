@@ -97,7 +97,7 @@ export class Timeline {
     this.$label = this.$node.append('g')
       .attr('transform', 'translate(0,' + 15 +')')
       .append('text')
-      .attr('font-size', AppConstants.TML_DS_LABEL_HEIGHT)
+      .classed('tml-label', true)
       .text(datasetName);
   }
 

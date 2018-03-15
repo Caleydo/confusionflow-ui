@@ -2,6 +2,12 @@
 
 .timeline-view {
   .timeline {
+    .tml-label {
+      font-size: 15px;
+      cursor: default;
+      user-select: none;
+    }
+
     .axis .domain {
       fill: none;
       stroke: black;
