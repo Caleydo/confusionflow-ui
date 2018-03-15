@@ -153,10 +153,19 @@ export class Timeline {
       .attr('height', 15);
 
     this.createSingleSelector(width, offsetH, x);
-    this.initBrush(brush, x, width);
+    this.setBrush(brush, x, width);
+
+    this.$label.on('dblclick', () => {
+      // if at least 1 epoch was selected
+      if(!brush.empty()) {
+        //to clear the brush, call this.setBrush(brush, x, 0);
+        this.setBrush(brush, x, width);
+      }
+
+    });
   }
 
-  initBrush(brush: any, x: any, width: number) {
+  setBrush(brush: any, x: any, width: number) {
     brush.extent([0, width]);
     this.brushmove(x, brush);
     this.brushend(x, brush);
@@ -199,6 +208,7 @@ export class Timeline {
           tml.setSingleEpochSelector(x, num);
           tml.singleEpochSelector.hideNode(tml.singleEpochSelector.hidden);
           tml.updateSingleSelection(tml.singleEpochSelector);
+          events.fire(AppConstants.EVENT_EPOCH_SELECTED);
         }
       })
       .on('mouseleave', function () {
@@ -238,28 +248,37 @@ export class Timeline {
   }
 
   brushend(x: any, brush: any) {
-    const extent = brush.extent();
-    const y = d3.scale.linear().range(x.domain()).domain(x.range());
-
+    // if at least 1 epoch was selected
     if(!brush.empty()) {
+      const extent = brush.extent();
+      const y = d3.scale.linear().range(x.domain()).domain(x.range());
       const range = this.getDataIndices(+y(<number>extent[0]), +y(<number>extent[1]));
+      const selEpochs = this.getSelectedEpochs(range)
 
-      const selEpochs = [];
-      for(let i = range[0]; i <= range[1]; i++) {
-        if(this.data.datapoints[i].exists) {
-          selEpochs.push(this.data.datapoints[i].epoch);
-        }
-      }
       DataStoreEpochSelection.multiSelected = selEpochs;
 
       // set single epoch selector to the end
       this.setSingleEpochSelector(x, range[1]);
       this.singleEpochSelector.hideNode(false);
       this.updateSingleSelection(this.singleEpochSelector);
+    } else {
+      DataStoreEpochSelection.clearMultiSelection();
+      this.$node.select('g.brush').call(<any>brush.clear());
     }
+    events.fire(AppConstants.EVENT_EPOCH_SELECTED);
   }
 
-  getDataIndices(n0: number, n1: number) {
+  getSelectedEpochs(range: [number, number]) {
+    const selEpochs = [];
+    for(let i = range[0]; i <= range[1]; i++) {
+      if(this.data.datapoints[i].exists) {
+        selEpochs.push(this.data.datapoints[i].epoch);
+      }
+    }
+    return selEpochs;
+  }
+
+  getDataIndices(n0: number, n1: number): [number, number] {
     if(n0 > n1) {
       const tmp = n1;
       n1 = n0;
@@ -282,6 +301,5 @@ export class Timeline {
       console.assert(!!epoch);
       DataStoreEpochSelection.singleSelected = epoch;
     }
-    events.fire(AppConstants.EVENT_EPOCH_SELECTED);
   }
 }
