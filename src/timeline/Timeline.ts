@@ -20,11 +20,7 @@ class SingleEpochSelector {
   }
 
   setPosition(pos: number) {
-    if(this.curPos !== pos || this.hidden === true) {
-      this.hidden = false;
-    } else {
-      this.hidden = true;
-    }
+    this.hidden = !(this.curPos !== pos || this.hidden === true);
     this.curPos = pos;
   }
 
@@ -34,10 +30,9 @@ class SingleEpochSelector {
   }
 }
 
+// TODO remove/refactor since it's just a string `name` that is used
 export class NodeWrapper {
-  public canBeRemoved = false;
-  public condense = false;
-  constructor(public name, public dps: DataPoint[]) {
+  constructor(public name) {
   }
 }
 
@@ -67,8 +62,6 @@ export class TimelineData {
 }
 
 class DataPoint {
-  public canBeRemoved = false;
-  public condense = false;
   constructor(public exists: boolean, public position: number, public epoch: IMalevoEpochInfo) {
 
   }
@@ -253,9 +246,8 @@ export class Timeline {
       const extent = brush.extent();
       const y = d3.scale.linear().range(x.domain()).domain(x.range());
       const range = this.getDataIndices(+y(<number>extent[0]), +y(<number>extent[1]));
-      const selEpochs = this.getSelectedEpochs(range)
 
-      DataStoreEpochSelection.multiSelected = selEpochs;
+      DataStoreEpochSelection.multiSelected = this.getSelectedEpochs(range);
 
       // set single epoch selector to the end
       this.setSingleEpochSelector(x, range[1]);

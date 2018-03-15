@@ -26,13 +26,13 @@ export class AppConstants {
    * Fires when the use selects a dataset from the selector
    * @type {string}
    */
-  static EVENT_DATA_SET_ADDED = 'eventDataCollectionSelected';
+  static EVENT_DATA_SET_ADDED = 'eventDataSetAdded';
 
   /**
    * Fires when the use unselects a dataset from the selector
    * @type {string}
    */
-  static EVENT_DATA_SET_REMOVED = 'eventDataCollectionUnselected';
+  static EVENT_DATA_SET_REMOVED = 'eventDataSetRemoved';
 
   /**
    * Fires when the detail view should be cleared
