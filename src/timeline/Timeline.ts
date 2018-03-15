@@ -140,12 +140,11 @@ export class Timeline {
       .attr('transform', `translate(${offsetH}, 0)`)
       .attr('class', 'brush')
       .call(brush);
-      brush.on('brush', () => {
-          this.brushmove(x, brush);
-        })
-        .on('brushend', function() {that.brushend(x, otl, this, brush);});
 
-    $brushg.selectAll('rect')
+      brush.on('brush', () => this.brushmove(x, brush))
+           .on('brushend', () => that.brushend(x, brush));
+
+      $brushg.selectAll('rect')
         .attr('height', 15);
 
     this.createSingleSelector(width, offsetH, x);
@@ -219,23 +218,37 @@ export class Timeline {
     }
   }
 
-  getDataIndices(n0: number, n1: number) {
-      if(n0 > n1) {
-        const tmp = n1;
-        n1 = n0;
-        n0 = tmp;
+  brushend(x: any, brush: any) {
+    const extent = brush.extent();
+    const y = d3.scale.linear().range(x.domain()).domain(x.range());
+
+    if(!brush.empty()) {
+      const range = this.getDataIndices(+y(<number>extent[0]), +y(<number>extent[1]));
+
+      const selEpochs = [];
+      for(let i = range[0]; i <= range[1]; i++) {
+        if(this.data.datapoints[i].exists) {
+          selEpochs.push(this.data.datapoints[i].epoch);
+        }
       }
-
-      n0 = Math.round(n0);
-      n1 = Math.round(n1);
-      const brushStart = this.ceil(Math.ceil(n0), this);
-      const brushEnd =  this.ceil(Math.ceil(n1), this);
-
-      return [brushStart, brushEnd];
+      DataStoreEpochSelection.multiSelected = selEpochs;
+      events.fire(AppConstants.EVENT_EPOCH_SELECTED);
+    }
   }
 
-  brushend(x: any, otl: OverallTimeline, ele: HTMLElement, brush) {
+  getDataIndices(n0: number, n1: number) {
+    if(n0 > n1) {
+      const tmp = n1;
+      n1 = n0;
+      n0 = tmp;
+    }
 
+    n0 = Math.round(n0);
+    n1 = Math.round(n1);
+    const brushStart = this.ceil(Math.ceil(n0), this);
+    const brushEnd =  this.ceil(Math.ceil(n1), this);
+
+    return [brushStart, brushEnd];
   }
 
   updateSingleSelection(seSelector: SingleEpochSelector) {
