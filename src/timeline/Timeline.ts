@@ -6,11 +6,13 @@ import {MalevoDataset, IMalevoEpochInfo} from '../MalevoDataset';
 import * as d3 from 'd3';
 import {AppConstants} from '../AppConstants';
 import {extractEpochId} from '../utils';
+import {DataStoreEpochSelection} from '../DataStore';
+import * as events from 'phovea_core/src/event';
 
 class SingleEpochSelector {
   public $node: d3.Selection<any>;
   public hidden = true;
-  curPos = -1;
+  public curPos = -1;
   constructor($parent: d3.Selection<any>, offsetH: number) {
     this.$node = $parent.append('rect').classed('single-epoch-selector', true).attr('width', 2).attr('height', 30).attr('y', 0)
       .attr('transform', `translate(${offsetH}, 0)`)
@@ -18,7 +20,7 @@ class SingleEpochSelector {
   }
 
   setPosition(pos: number) {
-    if(this.curPos !== pos) {
+    if(this.curPos !== pos || this.hidden === true) {
       this.hidden = false;
     } else {
       this.hidden = true;
@@ -40,7 +42,7 @@ export class OverallTimeline {
 }
 
 export class TimelineData {
-  constructor(public epochs: IMalevoEpochInfo[]) {
+  constructor(epochs: IMalevoEpochInfo[]) {
     this.build(epochs);
   }
   datapoints: DataPoint[] = [];
@@ -182,10 +184,11 @@ export class Timeline {
       })
       .on('mouseup', function () {
         const num = posFromCoordinates(this);
-        if(isValidPos(Math.round(+num))) {
+        if(isValidPos(num)) {
           const posX = x(String(Math.round(num)));
           tml.singleEpochSelector.$node.attr('x', posX);
-          tml.singleEpochSelector.setPosition(posX);
+          tml.singleEpochSelector.setPosition(num);
+          tml.updateSingleSelection(tml.singleEpochSelector);
         }
       })
       .on('mouseleave', function () {
@@ -233,5 +236,16 @@ export class Timeline {
 
   brushend(x: any, otl: OverallTimeline, ele: HTMLElement, brush) {
 
+  }
+
+  updateSingleSelection(seSelector: SingleEpochSelector) {
+    DataStoreEpochSelection.clearSingleSelection();
+    if(!seSelector.hidden) {
+      console.assert(this.data.datapoints[seSelector.curPos].exists);
+      const epoch = this.data.datapoints[seSelector.curPos].epoch;
+      console.assert(epoch);
+      DataStoreEpochSelection.singleSelected = epoch;
+    }
+    events.fire(AppConstants.EVENT_EPOCH_SELECTED);
   }
 }
