@@ -138,8 +138,7 @@ export class Timeline {
     const that = this;
     // Draw the brush
     const brush = d3.svg.brush()
-      //.extent([[0, 15], [width, 15]])
-        .x(<any>x);
+      .x(<any>x);
 
 
     const $brushg = this.$node.append('g')
@@ -147,13 +146,20 @@ export class Timeline {
       .attr('class', 'brush')
       .call(brush);
 
-      brush.on('brush', () => this.brushmove(x, brush))
-           .on('brushend', () => that.brushend(x, brush));
+    brush.on('brush', () => this.brushmove(x, brush))
+         .on('brushend', () => that.brushend(x, brush));
 
-      $brushg.selectAll('rect')
-        .attr('height', 15);
+    $brushg.selectAll('rect')
+      .attr('height', 15);
 
     this.createSingleSelector(width, offsetH, x);
+    this.initBrush(brush, x, width);
+  }
+
+  initBrush(brush: any, x: any, width: number) {
+    brush.extent([0, width]);
+    this.brushmove(x, brush);
+    this.brushend(x, brush);
   }
 
   createSingleSelector(width: number, offsetH: number, x: any) {
