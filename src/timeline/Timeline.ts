@@ -12,7 +12,7 @@ class SingleEpochSelector {
   public hidden = true;
   curPos = -1;
   constructor($parent: d3.Selection<any>, offsetH: number) {
-    this.$node = $parent.append('rect').classed('single-epoch-selector', true).attr('width', 2).attr('height', 20).attr('y', 0)
+    this.$node = $parent.append('rect').classed('single-epoch-selector', true).attr('width', 2).attr('height', 30).attr('y', 0)
       .attr('transform', `translate(${offsetH}, 0)`)
       .classed('hidden', this.hidden);
   }
@@ -118,7 +118,7 @@ export class Timeline {
     const xAxis = d3.svg.axis()
       .scale(x)
       .tickValues(x.domain().filter((d, i) => {
-        const cond = i < this.data.datapoints.length && this.data.datapoints[i].exists;
+        const cond = i < this.data.datapoints.length && this.data.datapoints[i].exists && i % 5 === 0;
         return cond;
       }))
       .orient('bottom')
@@ -147,13 +147,11 @@ export class Timeline {
         .attr('height', 15);
 
 
-    const rect = $brushg.append('text').attr('font-size', '15').style('fill', 'rgb(0,0.255').style('pointer-events', 'none');
     const invert = d3.scale.linear().range(<any>x.domain()).domain(x.range());
-    const tml = this;
-
     const $singleSelectionArea = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', 2).attr('height', 20).attr('y', 0)
       .attr('transform', `translate(${offsetH}, 0)`);
 
+    const tml = this;
     this.singleEpochSelector = new SingleEpochSelector(this.$node, offsetH);
     this.$node.append('rect').attr('transform', `translate(${offsetH}, ${16})`)
       .attr('width', width)
@@ -178,11 +176,6 @@ export class Timeline {
       });
   }
 
-  isNearlyInt(num: number) {
-    const rounded = Math.round(num);
-    return Math.abs(rounded - num) < 0.1;
-  }
-
   ceil(val: number, timeline: Timeline) {
     for(let i = val; i < timeline.data.datapoints.length; i++) {
       if(timeline.data.datapoints[i].exists) {
@@ -193,8 +186,9 @@ export class Timeline {
   }
 
   brushmove(x: any, brush:any) {
+    console.log('called');
     const b = brush.extent();
-
+    console.log('brush old' + b);
     const y = d3.scale.linear().range(x.domain()).domain(x.range());
 
     if(!brush.empty()) {
@@ -206,14 +200,22 @@ export class Timeline {
         n1 = n0;
         n0 = tmp;
       }
+
+      console.log('n0 n1' + n0, n1);
+      n0 = Math.round(n0);
+      n1 = Math.round(n1);
       const brushStart = this.ceil(Math.ceil(n0), this);
       const brushEnd =  this.ceil(Math.ceil(n1), this);
+      console.log('brushRange:' + brushStart, brushEnd);
 
+      console.log('brush new' + y.invert(brushStart), y.invert(brushEnd));
       if(brushStart < brushEnd) {
         this.$node.select('g.brush').call(<any>brush.extent([y.invert(brushStart), y.invert(brushEnd)]));
       } else {
+        console.log('clear');
         this.$node.select('g.brush').call(<any>brush.clear());
       }
+      console.log('brush new set' + brush.extent());
     }
   }
 
