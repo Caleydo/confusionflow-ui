@@ -11,7 +11,7 @@ import * as events from 'phovea_core/src/event';
 
 class SingleEpochSelector {
   public $node: d3.Selection<any>;
-  public hidden = true;
+  hidden = true;
   public curPos = -1;
   constructor($parent: d3.Selection<any>, offsetH: number) {
     this.$node = $parent.append('rect').classed('single-epoch-selector', true).attr('width', 2).attr('height', 30).attr('y', 0)
@@ -26,7 +26,11 @@ class SingleEpochSelector {
       this.hidden = true;
     }
     this.curPos = pos;
-    this.$node.classed('hidden', this.hidden);
+  }
+
+  hideNode(val: boolean) {
+    this.hidden = val;
+    this.$node.classed('hidden', val);
   }
 }
 
@@ -134,7 +138,9 @@ export class Timeline {
     const that = this;
     // Draw the brush
     const brush = d3.svg.brush()
+      //.extent([[0, 15], [width, 15]])
         .x(<any>x);
+
 
     const $brushg = this.$node.append('g')
       .attr('transform', `translate(${offsetH}, 0)`)
@@ -184,15 +190,20 @@ export class Timeline {
       .on('mouseup', function () {
         const num = posFromCoordinates(this);
         if(isValidPos(num)) {
-          const posX = x(String(Math.round(num)));
-          tml.singleEpochSelector.$node.attr('x', posX);
-          tml.singleEpochSelector.setPosition(num);
+          tml.setSingleEpochSelector(x, num);
+          tml.singleEpochSelector.hideNode(tml.singleEpochSelector.hidden);
           tml.updateSingleSelection(tml.singleEpochSelector);
         }
       })
       .on('mouseleave', function () {
         $singleSelectionArea.classed('hidden', true);
       });
+  }
+
+  setSingleEpochSelector(x: any, pos: number) {
+    const posX = x(String(Math.round(pos)));
+    this.singleEpochSelector.$node.attr('x', posX);
+    this.singleEpochSelector.setPosition(pos);
   }
 
   ceil(val: number, timeline: Timeline) {
@@ -212,6 +223,8 @@ export class Timeline {
       const range = this.getDataIndices(+y(<number>extent[0]), +y(<number>extent[1]));
       if(range[0] < range[1]) {
         this.$node.select('g.brush').call(<any>brush.extent([y.invert(range[0]), y.invert(range[1])]));
+        this.setSingleEpochSelector(x, range[1]);
+        this.singleEpochSelector.hideNode(false);
       } else {
         this.$node.select('g.brush').call(<any>brush.clear());
       }
@@ -232,7 +245,11 @@ export class Timeline {
         }
       }
       DataStoreEpochSelection.multiSelected = selEpochs;
-      events.fire(AppConstants.EVENT_EPOCH_SELECTED);
+
+      // set single epoch selector to the end
+      this.setSingleEpochSelector(x, range[1]);
+      this.singleEpochSelector.hideNode(false);
+      this.updateSingleSelection(this.singleEpochSelector);
     }
   }
 
