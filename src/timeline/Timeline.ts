@@ -146,32 +146,49 @@ export class Timeline {
     $brushg.selectAll('rect')
         .attr('height', 15);
 
+    this.createSingleSelector(width, offsetH, x);
+  }
 
+  createSingleSelector(width: number, offsetH: number, x: any) {
     const invert = d3.scale.linear().range(<any>x.domain()).domain(x.range());
-    const $singleSelectionArea = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', 2).attr('height', 20).attr('y', 0)
+    const posFromCoordinates = (elem: HTMLElement) => {
+      const coordinates = d3.mouse(elem);
+      let pos = invert(coordinates[0]);
+      pos = Math.round(pos);
+      return pos;
+    };
+
+    const isValidPos = (pos: number) => {
+      return pos < this.data.datapoints.length && this.data.datapoints[pos].exists;
+    };
+
+    const $singleSelectionArea = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', 2).attr('height', 15).attr('y', 0)
       .attr('transform', `translate(${offsetH}, 0)`);
 
     const tml = this;
     this.singleEpochSelector = new SingleEpochSelector(this.$node, offsetH);
     this.$node.append('rect').attr('transform', `translate(${offsetH}, ${16})`)
       .attr('width', width)
-      .attr('height', 20)
+      .attr('height', 15)
       .style('opacity', 0)
-      .on('mousemove', function() {
-        $singleSelectionArea.classed('hidden', false);
-        const coordinates = d3.mouse(this);
-        const num = invert(coordinates[0]);
-        $singleSelectionArea.attr('x',x(String(Math.round(num))));
-
+      .on('mousemove', function () {
+        const num = posFromCoordinates(this);
+        if(isValidPos(num)) {
+          $singleSelectionArea.classed('hidden', false);
+          $singleSelectionArea.attr('x', x(String(num)));
+        } else {
+          $singleSelectionArea.classed('hidden', true);
+        }
       })
-      .on('mouseup', function() {
-        const coordinates = d3.mouse(this);
-        const num = invert(coordinates[0]);
-        const posX = x(String(Math.round(num)));
-        tml.singleEpochSelector.$node.attr('x', posX);
-        tml.singleEpochSelector.setPosition(posX);
+      .on('mouseup', function () {
+        const num = posFromCoordinates(this);
+        if(isValidPos(Math.round(+num))) {
+          const posX = x(String(Math.round(num)));
+          tml.singleEpochSelector.$node.attr('x', posX);
+          tml.singleEpochSelector.setPosition(posX);
+        }
       })
-      .on('mouseleave', function() {
+      .on('mouseleave', function () {
         $singleSelectionArea.classed('hidden', true);
       });
   }
@@ -186,39 +203,35 @@ export class Timeline {
   }
 
   brushmove(x: any, brush:any) {
-    console.log('called');
-    const b = brush.extent();
-    console.log('brush old' + b);
+    const extent = brush.extent();
     const y = d3.scale.linear().range(x.domain()).domain(x.range());
 
     if(!brush.empty()) {
-      let n0 = +y(<number>b[0]);
-      let n1 = +y(<number>b[1]);
+      const range = this.getDataIndices(+y(<number>extent[0]), +y(<number>extent[1]));
+      if(range[0] < range[1]) {
+        this.$node.select('g.brush').call(<any>brush.extent([y.invert(range[0]), y.invert(range[1])]));
+      } else {
+        this.$node.select('g.brush').call(<any>brush.clear());
+      }
+    }
+  }
 
+  getDataIndices(n0: number, n1: number) {
       if(n0 > n1) {
         const tmp = n1;
         n1 = n0;
         n0 = tmp;
       }
 
-      console.log('n0 n1' + n0, n1);
       n0 = Math.round(n0);
       n1 = Math.round(n1);
       const brushStart = this.ceil(Math.ceil(n0), this);
       const brushEnd =  this.ceil(Math.ceil(n1), this);
-      console.log('brushRange:' + brushStart, brushEnd);
 
-      console.log('brush new' + y.invert(brushStart), y.invert(brushEnd));
-      if(brushStart < brushEnd) {
-        this.$node.select('g.brush').call(<any>brush.extent([y.invert(brushStart), y.invert(brushEnd)]));
-      } else {
-        console.log('clear');
-        this.$node.select('g.brush').call(<any>brush.clear());
-      }
-      console.log('brush new set' + brush.extent());
-    }
+      return [brushStart, brushEnd];
   }
 
   brushend(x: any, otl: OverallTimeline, ele: HTMLElement, brush) {
+
   }
 }
