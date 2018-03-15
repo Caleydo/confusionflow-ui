@@ -6,7 +6,6 @@ import {DataStoreEpochSelection} from '../DataStore';
 
 export class TimelineCollection {
   private timelines:Timeline[] = [];
-  private $labels: d3.Selection<any> = null;
   private otl: OverallTimeline;
 
   constructor(private $node: d3.Selection<any>) {
@@ -31,7 +30,7 @@ export class TimelineCollection {
   }
 
   remove(ds: MalevoDataset) {
-    const ts = this.timelines.find((x) => x.data.epochs === ds.epochInfos);
+    const ts = this.timelines.find((x) => x.datasetName === ds.name);
     console.assert(!!ts);
     ts.node().remove();
     this.timelines = this.timelines.filter((x) => x !== ts); // remove from list
@@ -60,43 +59,12 @@ export class TimelineCollection {
     this.timelines.forEach((x, i) => {
       x.render(this.$node, maxDSLabelWidth, i * AppConstants.TML_HEIGHT, this.otl);
     });
-   // if(this.timelines.length > 0) {
-   //   this.renderLabels(maxDSLabelWidth, (this.timelines.length - 1) * AppConstants.TML_HEIGHT + 18);
-   // }
   }
 
   private findMaxDSLabelWidth() {
       return this.timelines.reduce((acc, val) => {
         return acc > val.getDSLabelWidth() ? acc : val.getDSLabelWidth();
       }, 0);
-  }
-
-  private renderLabels(offsetH: number, offsetV: number) {
-    if(this.$labels) {
-      this.$labels.remove();
-      this.$labels = null;
-    }
-
-    this.$labels = this.$node.append('g');
-    this.$labels.classed('labels', true)
-      .attr('transform', 'translate(' + offsetH + ',' + offsetV + ')')
-      .selectAll('text')
-      .data(this.otl.dataPoints.filter((x) => !x.canBeRemoved))
-      .enter()
-      .append('text')
-      .attr('dy', '.71em')
-      .style('text-anchor', 'middle')
-      .attr('width', (d) => d.condense ? AppConstants.TML_CONDENSED_BAR_WIDTH : AppConstants.TML_BAR_WIDTH)
-      .text((d) => d.condense ? '' : d.name)
-      .each(function (d, i) {
-          let x = 0;
-          if(this.previousSibling) {
-            x = +this.previousSibling.getAttribute('x') + +this.previousSibling.getAttribute('width');
-            x += AppConstants.TML_BAR_MARGIN ;
-          }
-          this.setAttribute('x', x);
-          this.setAttribute('transform',`translate(${this.getAttribute('width') / 2}, 0)`);
-        });
   }
 
   private getMaxEpoch() {

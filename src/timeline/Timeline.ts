@@ -256,7 +256,7 @@ export class Timeline {
     if(!seSelector.hidden) {
       console.assert(this.data.datapoints[seSelector.curPos].exists);
       const epoch = this.data.datapoints[seSelector.curPos].epoch;
-      console.assert(epoch);
+      console.assert(!!epoch);
       DataStoreEpochSelection.singleSelected = epoch;
     }
     events.fire(AppConstants.EVENT_EPOCH_SELECTED);
