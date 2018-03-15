@@ -31,7 +31,7 @@ export class DataStoreEpochSelection {
   static singleSelected: IMalevoEpochInfo = null;
   static multiSelected: IMalevoEpochInfo[] = [];
   static labels:ITable = null;
-  static selectedDataset:MalevoDataset = null;
+  static datasetName:string = null;
 
   static isJustOneEpochSelected(): boolean {
     return DataStoreEpochSelection.singleSelected !== null && DataStoreEpochSelection.multiSelected.length === 0;
@@ -56,13 +56,6 @@ export class DataStoreEpochSelection {
 
   static clearSingleSelection() {
     DataStoreEpochSelection.singleSelected = null;
-  }
-
-  static isFullRangeSelected() {
-    if(DataStoreEpochSelection.selectedDataset === null || DataStoreEpochSelection.multiSelected === []) {
-      return false;
-    }
-    return DataStoreEpochSelection.selectedDataset.epochInfos.length === DataStoreEpochSelection.multiSelected.length;
   }
 }
 

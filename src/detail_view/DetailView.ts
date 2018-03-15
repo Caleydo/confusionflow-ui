@@ -3,31 +3,23 @@ import {IAppView} from '../app';
 import {ConfusionMatrix} from '../ConfusionMatrix';
 import {AppConstants} from '../AppConstants';
 import * as events from 'phovea_core/src/event';
-import {DetailChartTab} from './DetailChartTab';
-import {DetailImageWindow} from './DetailImageTab';
-import {SoftmaxStampTab} from './SoftmaxStampTab';
+import * as plugins from 'phovea_core/src/plugin';
 import {ADetailViewTab} from './ADetailViewTab';
-import {Language} from '../language';
 
 
 export class DetailView implements IAppView {
 
   private readonly $selectionPanel: d3.Selection<any>;
   private readonly $viewbody: d3.Selection<any>;
-  private panelCollection: Map<string, ADetailViewTab> = new Map();
   private selectedDetailView: ADetailViewTab = null;
 
-  constructor(parent:Element) {
+  constructor(parent: Element) {
     this.$selectionPanel = d3.select(parent)
       .append('div')
       .classed('selection-panel-wrapper', true);
     this.$viewbody = d3.select(parent)
       .append('div')
       .classed('view-body', true);
-
-    this.panelCollection.set(AppConstants.CHART_VIEW, new DetailChartTab(AppConstants.CHART_VIEW, Language.CHART_VIEW, this.$viewbody));
-    this.panelCollection.set(AppConstants.IMAGE_VIEW,  new DetailImageWindow(AppConstants.IMAGE_VIEW, Language.IMAGE_VIEW, this.$viewbody));
-    this.panelCollection.set(AppConstants.SOFTMAX_STAMP_VIEW,  new SoftmaxStampTab(AppConstants.SOFTMAX_STAMP_VIEW, Language.SOFTMAX_STAMP_VIEW ,this.$viewbody));
   }
 
   /**
@@ -37,9 +29,7 @@ export class DetailView implements IAppView {
    */
   init() {
     this.attachListeners();
-    this.createSelectionPanel();
-    // return the promise directly as long there is no dynamical data to update
-    return Promise.resolve(this);
+    return this.build();
   }
 
   private attachListeners() {
@@ -53,19 +43,53 @@ export class DetailView implements IAppView {
       AppConstants.COMBINED_CHART_CELL_PRECISION;
 
     events.on(e, () => {
-      if(this.selectedDetailView !== null && this.selectedDetailView.id === AppConstants.CHART_VIEW) {
+      if(this.selectedDetailView !== null) {
         this.selectedDetailView.render();
       }
     });
 
-	events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
-		this.selectedDetailView.clear();
-	});
+    events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
+      this.selectedDetailView.clear();
+    });
   }
 
-  private createSelectionPanel() {
+  /**
+   * Load and initialize all necessary views
+   * @returns {Promise<App>}
+   */
+  private build() {
+    // wrap view ids from package.json as plugin and load the necessary files
+    const pluginPromises = plugins.list()
+      .filter((d) => d.type === AppConstants.VIEW && d.isDetailWindow !== undefined)
+      .sort((a, b) => d3.ascending(a.order, b.order))
+      .map((d) => plugins.get(AppConstants.VIEW, d.id))
+      .filter((d) => d !== undefined) // filter views that does not exists
+      .map((d) => d.load());
 
-    const $div = this.$selectionPanel.selectAll('div').data(Array.from(this.panelCollection.values()));
+    // when everything is loaded, then create and init the views
+    const buildPromise = Promise.all(pluginPromises)
+      .then((plugins) => {
+        const initPromises = plugins.map((p, index): Promise<ADetailViewTab> => {
+          const view = p.factory(
+            this.$viewbody.node(), // parent node
+            {} // options
+          );
+          return view.init();
+        });
+
+        // wait until all views are initialized, before going to next then
+        return Promise.all(initPromises);
+      })
+      .then((viewInstances) => {
+        this.selectedDetailView = viewInstances[0];
+        this.createSelectionPanel(viewInstances);
+        return this;
+      });
+    return buildPromise;
+  }
+
+  private createSelectionPanel(views: ADetailViewTab[]) {
+    const $div = this.$selectionPanel.selectAll('div').data(views);
 
     const that = this;
     $div.enter().append('a')
@@ -83,8 +107,7 @@ export class DetailView implements IAppView {
     $div.exit().remove();
 
     // set a default view
-    const defaultView = AppConstants.CHART_VIEW;
-    this.selectView(this.panelCollection.get(defaultView), $div.filter((x) => x.id === defaultView));
+    this.selectView(views[0], $div.filter((x) => x.id === views[0].id));
   }
 
   private selectView(tab: ADetailViewTab, $node: d3.Selection<any>) {

@@ -36,6 +36,11 @@
     .viewpanel-content {
       > svg {
         position: relative;
+
+        path {
+          stroke-width: 1;
+          vector-effect: non-scaling-stroke; // prevent stroke scaling on resize
+        }
       }
 
       .chart-name {

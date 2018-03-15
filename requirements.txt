@@ -1,1 +1,4 @@
 -e git+https://github.com/phovea/phovea_server.git@develop#egg=phovea_server
+numpy==1.11.3
+lmdb==0.93
+pillow==4.0.0

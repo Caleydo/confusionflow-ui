@@ -30,14 +30,14 @@ export class DetailChartTab extends ADetailViewTab {
   private $g: d3.Selection<any> = null;
   private $svg: d3.Selection<any> = null;
   private $header: d3.Selection<any> = null;
-  private readonly STROKE_WIDTH = 3;
-  private $focus: d3.Selection<any>;
+  public id: string = AppConstants.CHART_VIEW;
+  public name: string = Language.CHART_VIEW;
 
-  constructor(id: string, name: string, $parent: d3.Selection<any>) {
-    super(id, name, $parent);
+  constructor(parent: Element) {
+    super(parent);
 
-    this.width = (<any>$parent[0][0]).clientWidth;
-    this.height = (<any>$parent[0][0]).clientHeight;
+    this.width = parent.clientWidth;
+    this.height = parent.clientHeight;
 
     this.$header = this.$node
       .append('div')
@@ -46,6 +46,11 @@ export class DetailChartTab extends ADetailViewTab {
     this.$svg = this.$node
       .append('svg')
       .attr('viewBox', `0 0 ${this.width} 500`);
+  }
+
+  init(): Promise<DetailChartTab> {
+    this.$node.attr('id', this.id);
+    return Promise.resolve(this);
   }
 
   createHeaderText() {
@@ -87,8 +92,8 @@ export class DetailChartTab extends ADetailViewTab {
 
   clear() {
 	  if(this.$g !== null) {
-		this.$g.remove();
-		this.$g = null;
+		  this.$g.remove();
+		  this.$g = null;
 	  }
   }
 
@@ -186,9 +191,7 @@ export class DetailChartTab extends ADetailViewTab {
 
     this.$g.append('path')
       .classed('detail-view-line', true)
-      .attr('d', line(lineDataOneCell.values))
-      .style('stroke-width', this.STROKE_WIDTH);
-
+      .attr('d', line(lineDataOneCell.values));
     if (singleEpochIndex > -1) {
       addDashedLines(this.$g, x, singleEpochIndex, this.height, this.width);
     }
@@ -209,7 +212,6 @@ export class DetailChartTab extends ADetailViewTab {
       .classed('detail-view-line', true)
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d) => z(d.label))
-      .style('stroke-width', this.STROKE_WIDTH)
       .append('title')
       .text((d) => d.label);
 
@@ -217,4 +219,14 @@ export class DetailChartTab extends ADetailViewTab {
       addDashedLines(this.$g, x, singleEpochIndex, this.height, this.width);
     }
   }
+}
+
+/**
+ * Factory method to create a new HeatMap instance
+ * @param parent
+ * @param options
+ * @returns {DetailChartWindow}
+ */
+export function create(parent:Element, options:any) {
+  return new DetailChartTab(parent);
 }

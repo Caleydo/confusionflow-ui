@@ -18,6 +18,7 @@ export class TimelineCollection {
 
   add($node: d3.Selection<any>, ds: MalevoDataset) {
     DataStoreEpochSelection.labels = ds.classLabels;
+    DataStoreEpochSelection.datasetName = ds.name;
     this.createNewTimeline(ds);
     this.updateTimelines();
   }

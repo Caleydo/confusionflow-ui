@@ -28,7 +28,7 @@ export class AppConstants {
    */
   static EVENT_DATA_SET_ADDED = 'eventDataCollectionSelected';
 
-    /**
+  /**
    * Fires when the use unselects a dataset from the selector
    * @type {string}
    */
