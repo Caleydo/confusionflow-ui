@@ -6,7 +6,6 @@ import * as plugins from 'phovea_core/src/plugin';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
-import Timeline from './Timeline';
 
 /**
  * Interface for all Views
@@ -64,7 +63,7 @@ export class App implements IAppView {
       }
     },
     {
-      view: 'Timeline',
+      view: 'TimelineView',
       parent: 'timeline-wrapper',
       options: {
         eventName: ''

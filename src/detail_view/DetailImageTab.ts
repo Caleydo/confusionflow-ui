@@ -1,5 +1,5 @@
 import {ADetailViewTab} from './ADetailViewTab';
-import {DataStoreCellSelection, DataStoreEpoch} from '../DataStore';
+import {DataStoreCellSelection, DataStoreEpochSelection} from '../DataStore';
 import {getAPIData, getAPIJSON} from 'phovea_core/src/ajax';
 import {AppConstants} from '../AppConstants';
 import {Language} from '../language';
@@ -34,8 +34,8 @@ export class DetailImageTab extends ADetailViewTab {
     this.$node.select('.title')
         .html(`<strong>${labels[groundTruth][1]}</strong> ${Language.PREDICTED_AS} <strong>${labels[predicted][1]}</strong>`);
 
-    const runId = DataStoreEpoch.selectedDataset.name;
-    const epochId = extractEpochId(DataStoreEpoch.singleSelected);
+    const runId = DataStoreEpochSelection.datasetName;
+    const epochId = extractEpochId(DataStoreEpochSelection.singleSelected);
 
     getAPIJSON(`/malevo/confmat/cell/imageIds?runId=${runId}&epochId=${epochId}&groundTruthId=${groundTruth}&predictedId=${predicted}`)
       .then((data: number[]) => {

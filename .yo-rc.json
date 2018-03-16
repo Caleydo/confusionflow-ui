@@ -66,10 +66,10 @@
       },
       {
         "type": "malevoView",
-        "id": "Timeline",
+        "id": "TimelineView",
         "module": "timeline",
         "extras": {
-          "name": "Timeline",
+          "name": "TimelineView",
           "factory": "create"
         }
       }

@@ -2,6 +2,7 @@
  * Created by Holger Stitz on 26.08.2016.
  */
 
+import 'select2';
 import * as data from 'phovea_core/src/data';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
@@ -12,6 +13,8 @@ import * as d3 from 'd3';
 import Format = d3.time.Format;
 import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './MalevoDataset';
 import {ITable} from 'phovea_core/src/table';
+import * as $ from 'jquery';
+import {DataStoreDatasetSelection} from './DataStore';
 
 /**
  * Shows a list of available datasets and lets the user choose one.
@@ -47,26 +50,31 @@ class DataSetSelector implements IAppView {
    * Build the basic DOM elements and binds the change function
    */
   private build() {
-    this.$node.append('label')
-      .attr('for', 'ds')
-      .text(Language.DATA_SET);
+    this.$node.append('select')
+      .attr('id', 'dataset-selector')
+      .attr('multiple', 'multiple')
+      .style('width', '800px');
 
-    // create select and update hash on property change
-    this.$select = this.$node.append('select')
-      .attr('id', 'ds')
-      .classed('form-control', true)
-      .on('change', () => {
-        const selectedData = this.$select.selectAll('option')
-            .filter((d, i) => i === this.$select.property('selectedIndex'))
-            .data();
+    this.$node.html(`
+      <select id="dataset-selector" multiple="multiple" style="width:800px">
+      </select> `);
 
-        if(selectedData.length > 0) {
-          events.fire(AppConstants.EVENT_DATA_COLLECTION_SELECTED, selectedData[0]);
-        }
+    this.$select = this.$node.select('#dataset-selector');
+
+    (<any>$(this.$select.node()))
+      .select2({
+        maximumSelectionLength: AppConstants.MAX_DATASET_COUNT,
+        placeholder: Language.DATASET
+      })
+      .on('select2:select', (evt) => {
+        const dataset = d3.select(evt.params.data.element).data()[0];
+        DataStoreDatasetSelection.datasetAdded(dataset);
+      })
+      .on('select2:unselect', (evt) => {
+        const dataset = d3.select(evt.params.data.element).data()[0];
+        DataStoreDatasetSelection.datasetRemoved(dataset);
       });
   }
-
-
 
   /**
    * Update the list of datasets and returns a promise
@@ -83,16 +91,20 @@ class DataSetSelector implements IAppView {
         $options.enter().append('option');
 
         $options
-          .attr('value', (d) => d)
+          .attr('value', (d) => d.name)
           .text((d) =>
             `${d.name}`
           );
 
         $options.exit().remove();
-        if(Object.keys(data).length > 0) {
-          events.fire(AppConstants.EVENT_DATA_COLLECTION_SELECTED, data[Object.keys(data)[0]]);
-        }
         this.$node.classed('hidden', false);
+
+        // set initial dataset
+        if(Object.keys(data).length > 0) {
+          const x = data[Object.keys(data)[0]];
+          $('#dataset-selector').select2().val(x.name).trigger('change');
+          DataStoreDatasetSelection.datasetAdded(x);
+        }
         return this;
       });
   }
@@ -137,8 +149,6 @@ class DataProvider {
   }
 
   prepareEpochData(data: INumericalMatrix[]): IMalevoDatasetCollection {
-
-
     const getOrCreateMalevoDataset = (dsc: IMalevoDatasetCollection, datasetName: string) => {
       if(!dsc[datasetName]) {
         const ds = new MalevoDataset();

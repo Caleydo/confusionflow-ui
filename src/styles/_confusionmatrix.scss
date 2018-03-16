@@ -15,14 +15,14 @@ $num-columns-right-area: 3;
   grid-template-rows: 40px 50px auto minmax(60px, 1fr);
 }
 
-.axis,
+.cfm-axis,
 .malevo-label {
   font-weight: 500;
   font-size: 16px;
 }
 
 
-.axis {
+.cfm-axis {
   background: $label-bg;
 
   display: flex;
