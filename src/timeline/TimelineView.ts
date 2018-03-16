@@ -22,7 +22,7 @@ export default class TimelineView implements IAppView {
       .classed('timeline-view', true)
       .attr('width', '100%')
       .attr('height', '0px')
-      .attr('viewBox', `0 0 ${this.width} ${0}`);
+      .attr('viewBox', `0 0 ${this.width} 0`);
 
     this.timelineData = new TimelineCollection(this.$node);
   }

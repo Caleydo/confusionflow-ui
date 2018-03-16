@@ -13,8 +13,10 @@ class SingleEpochSelector {
   public $node: d3.Selection<any>;
   hidden = true;
   public curPos = -1;
+  readonly selectorWidth = 2;
+  readonly selectorHEIGHT = 30;
   constructor($parent: d3.Selection<any>, offsetH: number) {
-    this.$node = $parent.append('rect').classed('single-epoch-selector', true).attr('width', 2).attr('height', 30).attr('y', 0)
+    this.$node = $parent.append('rect').classed('single-epoch-selector', true).attr('width', this.selectorWidth).attr('height', this.selectorHEIGHT)
       .attr('transform', `translate(${offsetH}, 0)`)
       .classed('hidden', this.hidden);
   }
@@ -30,14 +32,9 @@ class SingleEpochSelector {
   }
 }
 
-// TODO remove/refactor since it's just a string `name` that is used
-export class NodeWrapper {
-  constructor(public name) {
-  }
-}
 
 export class OverallTimeline {
-  public dataPoints: NodeWrapper[] = [];
+  public dataPoints:string[] = [];
 }
 
 export class TimelineData {
@@ -72,6 +69,9 @@ export class Timeline {
   private $label: d3.Selection<any> = null;
   data:TimelineData = null;
   singleEpochSelector = null;
+  MARGIN_LEFT = 20; // 20 pixel margin from left border
+  readonly tickmarkDistance = 5; // show ticks every 5 epoch
+  readonly globalOffsetV = 15;
 
   constructor(public datasetName: string, $parent: d3.Selection<any>) {
    this.build($parent);
@@ -87,8 +87,9 @@ export class Timeline {
   }
 
   createLabel(datasetName: string) {
+
     this.$label = this.$node.append('g')
-      .attr('transform', 'translate(0,' + 15 +')')
+      .attr('transform', 'translate(0,' + this.globalOffsetV +')')
       .append('text')
       .classed('tml-label', true)
       .text(datasetName);
@@ -104,20 +105,19 @@ export class Timeline {
 
   render($parent, offsetH: number, offsetV: number, otl: OverallTimeline) {
     this.build($parent);
-    this.$node.attr('transform', 'translate(0,' + offsetV + ')');
+    this.$node.attr('transform', `translate(${this.MARGIN_LEFT}, ${offsetV})`);
 
-    offsetH += 10;
     const width = otl.dataPoints.length * 5;
     const x = d3.scale.ordinal()
       .rangePoints([0, width])
       .domain(otl.dataPoints.map(function (d) {
-        return String(d.name);
+        return String(d);
       }));
 
     const xAxis = d3.svg.axis()
       .scale(x)
       .tickValues(x.domain().filter((d, i) => {
-        const cond = i < this.data.datapoints.length && this.data.datapoints[i].exists && i % 5 === 0;
+        const cond = i < this.data.datapoints.length && this.data.datapoints[i].exists && i % this.tickmarkDistance === 0;
         return cond;
       }))
       .orient('bottom')
@@ -125,7 +125,7 @@ export class Timeline {
 
     this.$node.append('g')
       .attr('class', 'axis')
-      .attr('transform', `translate(${offsetH}, 15)`)
+      .attr('transform', `translate(${offsetH}, ${this.globalOffsetV})`)
       .call(xAxis);
 
     const that = this;
@@ -142,8 +142,9 @@ export class Timeline {
     brush.on('brush', () => this.brushmove(x, brush))
          .on('brushend', () => that.brushend(x, brush));
 
+    const brushHeight = 15;
     $brushg.selectAll('rect')
-      .attr('height', 15);
+      .attr('height', brushHeight);
 
     this.createSingleSelector(width, offsetH, x);
     this.setBrush(brush, x, width);
@@ -166,46 +167,61 @@ export class Timeline {
 
   createSingleSelector(width: number, offsetH: number, x: any) {
     const invert = d3.scale.linear().range(<any>x.domain()).domain(x.range());
-    const posFromCoordinates = (elem: HTMLElement) => {
-      const coordinates = d3.mouse(elem);
+
+    const posFromCoordinates = (coordinates: [number, number]) => {
       let pos = invert(coordinates[0]);
       pos = Math.round(pos);
       return pos;
     };
 
-    const isValidPos = (pos: number) => {
-      return pos < this.data.datapoints.length && this.data.datapoints[pos].exists;
+    const getNearestExistPos = (pos: number) => {
+
+      // this can happen when the timeline  is too long and has no tickmarks
+      // the timeline needs to be cropped (see https://github.com/Caleydo/malevo/pull/87)
+      if(pos >= this.data.datapoints.length) {
+        pos = this.data.datapoints.length - 1;
+      }
+      const upperIndex = this.ceil(pos);
+      const lowerIndex = this.floor(pos);
+
+      console.assert(upperIndex >= pos && pos >= lowerIndex);
+      if(upperIndex - pos > pos - lowerIndex) {
+        return lowerIndex;
+      } else {
+        return upperIndex;
+      }
     };
 
-    const $singleSelectionArea = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', 2).attr('height', 15).attr('y', 0)
+    const markerWidth = 2;
+    const markerHeight = 15;
+    const $singleSelectionMarker = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', markerWidth)
+      .attr('height', markerHeight)
       .attr('transform', `translate(${offsetH}, 0)`);
 
     const tml = this;
     this.singleEpochSelector = new SingleEpochSelector(this.$node, offsetH);
-    this.$node.append('rect').attr('transform', `translate(${offsetH}, ${16})`)
+    const areaHeight = 15;
+    this.$node.append('rect').attr('transform', `translate(${offsetH}, ${areaHeight + 1})`)
       .attr('width', width)
-      .attr('height', 15)
+      .attr('height', areaHeight)
       .style('opacity', 0)
       .on('mousemove', function () {
-        const num = posFromCoordinates(this);
-        if(isValidPos(num)) {
-          $singleSelectionArea.classed('hidden', false);
-          $singleSelectionArea.attr('x', x(String(num)));
-        } else {
-          $singleSelectionArea.classed('hidden', true);
-        }
+        $singleSelectionMarker.classed('hidden', false);
+        let pos = posFromCoordinates(d3.mouse(this));
+        pos = getNearestExistPos(pos);
+        $singleSelectionMarker.attr('x', x(pos.toString()));
       })
       .on('mouseup', function () {
-        const num = posFromCoordinates(this);
-        if(isValidPos(num)) {
-          tml.setSingleEpochSelector(x, num);
+          let pos = posFromCoordinates(d3.mouse(this));
+          pos = getNearestExistPos(pos);
+          tml.setSingleEpochSelector(x, pos);
+          // toggle single epoch selector
           tml.singleEpochSelector.hideNode(tml.singleEpochSelector.hidden);
           tml.updateSingleSelection(tml.singleEpochSelector);
           events.fire(AppConstants.EVENT_EPOCH_SELECTED);
-        }
       })
       .on('mouseleave', function () {
-        $singleSelectionArea.classed('hidden', true);
+        $singleSelectionMarker.classed('hidden', true);
       });
   }
 
@@ -215,9 +231,28 @@ export class Timeline {
     this.singleEpochSelector.setPosition(pos);
   }
 
-  ceil(val: number, timeline: Timeline) {
-    for(let i = val; i < timeline.data.datapoints.length; i++) {
-      if(timeline.data.datapoints[i].exists) {
+  ceil(val: number) {
+    if(val < 0) {
+      return 0;
+    } else if(val >= this.data.datapoints.length) {
+      return this.data.datapoints.length - 1;
+    }
+    for(let i = val; i < this.data.datapoints.length; i++) {
+      if(this.data.datapoints[i].exists) {
+        return i;
+      }
+    }
+    return null;
+  }
+
+  floor(val: number) {
+    if(val < 0) {
+      return 0;
+    } else if(val >= this.data.datapoints.length) {
+      return this.data.datapoints.length - 1;
+    }
+    for(let i = val; i >= 0; i--) {
+      if(this.data.datapoints[i].exists) {
         return i;
       }
     }
@@ -279,8 +314,8 @@ export class Timeline {
 
     n0 = Math.round(n0);
     n1 = Math.round(n1);
-    const brushStart = this.ceil(Math.ceil(n0), this);
-    const brushEnd =  this.ceil(Math.ceil(n1), this);
+    const brushStart = this.ceil(Math.ceil(n0));
+    const brushEnd =  this.ceil(Math.ceil(n1));
 
     return [brushStart, brushEnd];
   }

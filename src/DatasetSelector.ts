@@ -91,13 +91,20 @@ class DataSetSelector implements IAppView {
         $options.enter().append('option');
 
         $options
-          .attr('value', (d) => d)
+          .attr('value', (d) => d.name)
           .text((d) =>
             `${d.name}`
           );
 
         $options.exit().remove();
         this.$node.classed('hidden', false);
+
+        // set initial dataset
+        if(Object.keys(data).length > 0) {
+          const x = data[Object.keys(data)[0]];
+          $('#dataset-selector').select2().val(x.name).trigger('change');
+          DataStoreDatasetSelection.datasetAdded(x);
+        }
         return this;
       });
   }

@@ -1,6 +1,6 @@
 import {AppConstants} from '../AppConstants';
 import {IMalevoEpochInfo, MalevoDataset} from '../MalevoDataset';
-import {NodeWrapper, OverallTimeline, Timeline, TimelineData} from './Timeline';
+import {OverallTimeline, Timeline, TimelineData} from './Timeline';
 import * as d3 from 'd3';
 import {DataStoreEpochSelection} from '../DataStore';
 
@@ -42,23 +42,16 @@ export class TimelineCollection {
     this.otl = new OverallTimeline();
     const largestValue = this.getMaxEpoch();
     for(let i = 0; i <= largestValue; i++) {
-      const epochsAti = [];
-      this.timelines.forEach((x) => {
-        if (i < x.data.datapoints.length) {
-          epochsAti.push(x.data.datapoints[i]);
-        }
-      });
-
-      this.otl.dataPoints.push(new NodeWrapper(i, epochsAti));
+      this.otl.dataPoints.push(i.toString());
     }
   }
 
   updateTimelines() {
     this.updateOverallTimeline();
-    //this.otl.shrinkTimelines();
     const maxDSLabelWidth = this.findMaxDSLabelWidth();
+    const marginLabelTimeline = 10; // 10 pixel margin between label and timeline
     this.timelines.forEach((x, i) => {
-      x.render(this.$node, maxDSLabelWidth, i * AppConstants.TML_HEIGHT, this.otl);
+      x.render(this.$node, maxDSLabelWidth + marginLabelTimeline, i * AppConstants.TML_HEIGHT, this.otl);
     });
   }
 
