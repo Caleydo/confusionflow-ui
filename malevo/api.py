@@ -53,12 +53,13 @@ def initialize_lmdb():
   if os.path.isfile(lock_file):
     shutil.move(lock_file, os.path.join(lmdbpath, 'lock.mdb'))
 
+
 initialize_lmdb()
 
 
 @app.route("/confmat/cell/imageIds", methods=['GET'])
 def _get_image_ids():
-    run_id = request.args.get('runId', 'cifar10_vgg19')
+    run_id = request.args.get('runId', 'cifar10_vgg19_sgd_1')
     epoch_id = request.args.get('epochId', 0)
     ground_truth_id = request.args.get('groundTruthId', 0)
     predicted_id = request.args.get('predictedId', 0)
@@ -71,7 +72,15 @@ def _get_image_ids():
 
     conn = sqlite3.connect(dbpath)
     c = conn.cursor()
-    c.execute("SELECT img_id FROM logs WHERE run_id = ? AND epoch_id = ? AND ground_truth = ? AND predicted = ?", query)
+    # TODO: fix run_id to run_code and update API
+    c.execute('''
+              SELECT img_id FROM logs
+                  WHERE run_id is (SELECT run_id FROM runmap
+                                      WHERE run_code is ?) AND
+                        epoch_id is ? AND
+                        ground_truth is ? AND
+                        predicted is ?
+              ''', query)
     img_ids_tuples = c.fetchall()[:num_count]
     conn.close()
 
