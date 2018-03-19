@@ -27,35 +27,42 @@ export class DataStoreDatasetSelection {
 /**
  * Stores selection from dataset/run selector and timeline
  */
-export class DataStoreEpochSelection {
-  static singleSelected: IMalevoEpochInfo = null;
-  static multiSelected: IMalevoEpochInfo[] = [];
-  static labels:ITable = null;
-  static datasetName:string = null;
+export class DataStoreTimelineSelection {
+  singleSelected: IMalevoEpochInfo = null;
+  multiSelected: IMalevoEpochInfo[] = [];
+  labels:ITable = null;
+  selectedDataset:MalevoDataset = null;
 
-  static isJustOneEpochSelected(): boolean {
-    return DataStoreEpochSelection.singleSelected !== null && DataStoreEpochSelection.multiSelected.length === 0;
+  isJustOneEpochSelected(): boolean {
+    return this.singleSelected !== null && this.multiSelected.length === 0;
   }
 
-  static isRangeSelected(): boolean {
-    return DataStoreEpochSelection.singleSelected === null && DataStoreEpochSelection.multiSelected.length !== 0;
+  isRangeSelected(): boolean {
+    return this.singleSelected === null && this.multiSelected.length !== 0;
   }
 
-  static isSingleAndRangeSelected(): boolean {
-    return DataStoreEpochSelection.singleSelected !== null && DataStoreEpochSelection.multiSelected.length !== 0;
+  isSingleAndRangeSelected(): boolean {
+    return this.singleSelected !== null && this.multiSelected.length !== 0;
   }
 
-  static clearSelection() {
-    DataStoreEpochSelection.clearSingleSelection();
-    DataStoreEpochSelection.clearMultiSelection();
+  clearSelection() {
+    this.clearSingleSelection();
+    this.clearMultiSelection();
   }
 
-  static clearMultiSelection() {
-    DataStoreEpochSelection.multiSelected = [];
+  clearMultiSelection() {
+    this.multiSelected = [];
   }
 
-  static clearSingleSelection() {
-    DataStoreEpochSelection.singleSelected = null;
+  clearSingleSelection() {
+    this.singleSelected = null;
+  }
+
+  isFullRangeSelected() {
+    if(this.selectedDataset === null || this.multiSelected === []) {
+      return false;
+    }
+    return this.selectedDataset.epochInfos.length === this.multiSelected.length;
   }
 }
 
@@ -111,3 +118,5 @@ export class DataStoreCellSelection {
       DataStoreCellSelection.type === AppConstants.SINGLE_LINE_PRECISION;
   }
 }
+
+export const dataStoreTimelines:Map<String, DataStoreTimelineSelection> = new Map<String, DataStoreTimelineSelection>();

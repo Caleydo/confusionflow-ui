@@ -6,7 +6,7 @@ import {MalevoDataset, IMalevoEpochInfo} from '../MalevoDataset';
 import * as d3 from 'd3';
 import {AppConstants} from '../AppConstants';
 import {extractEpochId} from '../utils';
-import {DataStoreEpochSelection} from '../DataStore';
+import {dataStoreTimelines, DataStoreTimelineSelection} from '../DataStore';
 import * as events from 'phovea_core/src/event';
 
 class SingleEpochSelector {
@@ -282,14 +282,14 @@ export class Timeline {
       const y = d3.scale.linear().range(x.domain()).domain(x.range());
       const range = this.getDataIndices(+y(<number>extent[0]), +y(<number>extent[1]));
 
-      DataStoreEpochSelection.multiSelected = this.getSelectedEpochs(range);
+      dataStoreTimelines.get(this.datasetName).multiSelected = this.getSelectedEpochs(range);
 
       // set single epoch selector to the end
       this.setSingleEpochSelector(x, range[1]);
       this.singleEpochSelector.hideNode(false);
       this.updateSingleSelection(this.singleEpochSelector);
     } else {
-      DataStoreEpochSelection.clearMultiSelection();
+      dataStoreTimelines.get(this.datasetName).clearMultiSelection();
       this.$node.select('g.brush').call(<any>brush.clear());
     }
     events.fire(AppConstants.EVENT_EPOCH_SELECTED);
@@ -321,12 +321,12 @@ export class Timeline {
   }
 
   updateSingleSelection(seSelector: SingleEpochSelector) {
-    DataStoreEpochSelection.clearSingleSelection();
+    dataStoreTimelines.get(this.datasetName).clearSingleSelection();
     if(!seSelector.hidden) {
       console.assert(this.data.datapoints[seSelector.curPos].exists);
       const epoch = this.data.datapoints[seSelector.curPos].epoch;
       console.assert(!!epoch);
-      DataStoreEpochSelection.singleSelected = epoch;
+      dataStoreTimelines.get(this.datasetName).singleSelected = epoch;
     }
   }
 }

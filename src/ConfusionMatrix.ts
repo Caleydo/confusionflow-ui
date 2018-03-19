@@ -15,7 +15,7 @@ import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
-import {DataStoreCellSelection, DataStoreEpochSelection} from './DataStore';
+import {DataStoreCellSelection, dataStoreTimelines, DataStoreTimelineSelection} from './DataStore';
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -115,30 +115,39 @@ export class ConfusionMatrix implements IAppView {
   }
 
   updateViews() {
-    if(DataStoreEpochSelection.isJustOneEpochSelected() === true) {
-      this.updateSingleEpoch();
-    } else if(DataStoreEpochSelection.isRangeSelected() === true) {
-      this.updateEpochRange();
-    } else if(DataStoreEpochSelection.isSingleAndRangeSelected() === true) {
-      this.updateSingleAndEpochRange();
-    } else {
-      this.clearViews();
-    }
+    // if mutliple datasets are selected
+    // => just show multi epoch selection
+    const loadDataPromises = [];
+    dataStoreTimelines.forEach((value: DataStoreTimelineSelection, key, map) => {
+      loadDataPromises.push(this.loadEpochs(value.multiSelected, value.selectedDataset));
+      loadDataPromises.push(this.loadLabels(value.labels, value.selectedDataset));
+    });
+
+    Promise.all(loadDataPromises).then(() => {
+      // action start goes here
+      console.log('here');
+      //this.checkDataSanity([x[0]], x[1]);
+      //this.addRowAndColumnLabels(x[1]);
+    });
   }
 
-  private loadConfusionData(matrix: INumericalMatrix) : Promise<NumberMatrix> {
-    return matrix.data()
-      .then((x: number[][]) => {
-        const m = new SquareMatrix<number>(x.length);
-        m.init(x);
-        return m;
-      });
+  private loadEpochs(matrix: IMalevoEpochInfo[], dataset: MalevoDataset) {
+    const res = matrix.map((x) => x.confusionInfo.data());
+    return Promise.all(res).then((loadedEpochData: number[][][]) => {
+      console.assert(loadedEpochData.length === matrix.length);
+      if(loadedEpochData.length !== matrix.length) {
+        throw new Error('The loaded epoch data does not conform with its description');
+      }
+      dataset.loadedMalevoEpochs = loadedEpochData.map((val, index) => {
+        return {name: matrix[index].name, confusionData: val};
+        });
+    });
   }
 
-  private loadLabels(table: ITable) : Promise<any> {
+  private loadLabels(table: ITable, dataset: MalevoDataset) : Promise<any> {
     return table.data()
-      .then((x) => {
-        return x;
+      .then((x: [[number, string]]) => {
+        dataset.loadedClassLabels = x.map((x) => x[1]);
       });
   }
 
@@ -184,12 +193,12 @@ export class ConfusionMatrix implements IAppView {
 
   private updateEpochRange() {
     const promMultiEpoch = [];
-    for(const item of DataStoreEpochSelection.multiSelected) {
+    for(const item of DataStoreTimelineSelection.multiSelected) {
       if(item) {
         promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
       }
     }
-    const promLabels = this.loadLabels(DataStoreEpochSelection.labels);
+    const promLabels = this.loadLabels(DataStoreTimelineSelection.labels);
     promMultiEpoch.push(promLabels);
 
     Promise.all(promMultiEpoch).then((x: any) => {
@@ -202,8 +211,8 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private updateSingleEpoch() {
-    const confusionData = this.loadConfusionData(DataStoreEpochSelection.singleSelected.confusionInfo);
-    const promLabels = this.loadLabels(DataStoreEpochSelection.labels);
+    const confusionData = this.loadConfusionData(DataStoreTimelineSelection.singleSelected.confusionInfo);
+    const promLabels = this.loadLabels(DataStoreTimelineSelection.labels);
 
     Promise.all([confusionData, promLabels]).then((x:any) => {
       this.checkDataSanity([x[0]], x[1]);
@@ -215,18 +224,18 @@ export class ConfusionMatrix implements IAppView {
 
   private updateSingleAndEpochRange() {
     const promMultiEpoch = [];
-    for(const item of DataStoreEpochSelection.multiSelected) {
+    for(const item of DataStoreTimelineSelection.multiSelected) {
       if(item) {
         promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
       }
     }
-    const promSingleEpoch = this.loadConfusionData(DataStoreEpochSelection.singleSelected.confusionInfo);
-    const promLabels = this.loadLabels(DataStoreEpochSelection.labels);
+    const promSingleEpoch = this.loadConfusionData(DataStoreTimelineSelection.singleSelected.confusionInfo);
+    const promLabels = this.loadLabels(DataStoreTimelineSelection.labels);
 
     promMultiEpoch.push(promSingleEpoch);
     promMultiEpoch.push(promLabels);
 
-    const singleEpochIndex = DataStoreEpochSelection.multiSelected.findIndex((x) => x === DataStoreEpochSelection.singleSelected);
+    const singleEpochIndex = DataStoreTimelineSelection.multiSelected.findIndex((x) => x === DataStoreTimelineSelection.singleSelected);
 
     Promise.all(promMultiEpoch).then((x: any) => {
       const labels = x.splice(-1,1)[0];

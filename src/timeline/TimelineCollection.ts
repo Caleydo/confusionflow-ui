@@ -2,7 +2,8 @@ import {AppConstants} from '../AppConstants';
 import {IMalevoEpochInfo, MalevoDataset} from '../MalevoDataset';
 import {OverallTimeline, Timeline, TimelineData} from './Timeline';
 import * as d3 from 'd3';
-import {DataStoreEpochSelection} from '../DataStore';
+import {DataStoreTimelineSelection, dataStoreTimelines} from '../DataStore';
+import * as events from 'phovea_core/src/event';
 
 export class TimelineCollection {
   private timelines:Timeline[] = [];
@@ -17,9 +18,9 @@ export class TimelineCollection {
   }
 
   add($node: d3.Selection<any>, ds: MalevoDataset) {
-    DataStoreEpochSelection.labels = ds.classLabels;
-    DataStoreEpochSelection.datasetName = ds.name;
     this.createNewTimeline(ds);
+    dataStoreTimelines.get(ds.name).labels = ds.classLabels;
+    dataStoreTimelines.get(ds.name).selectedDataset = ds;
     this.updateTimelines();
   }
 
@@ -28,6 +29,7 @@ export class TimelineCollection {
     this.timelines.push(timeline);
     const tmData = new TimelineData(ds.epochInfos);
     timeline.data = tmData;
+    dataStoreTimelines.set(ds.name, new DataStoreTimelineSelection());
   }
 
   remove(ds: MalevoDataset) {
@@ -36,6 +38,9 @@ export class TimelineCollection {
     ts.node().remove();
     this.timelines = this.timelines.filter((x) => x !== ts); // remove from list
     this.updateTimelines();
+    console.assert(dataStoreTimelines.get(ts.datasetName) != null);
+    dataStoreTimelines.delete(ts.datasetName);
+    events.fire(AppConstants.EVENT_EPOCH_SELECTED);
   }
 
   updateOverallTimeline() {

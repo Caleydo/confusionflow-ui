@@ -1,5 +1,5 @@
 import {ADetailViewTab} from './ADetailViewTab';
-import {DataStoreCellSelection, DataStoreEpochSelection} from '../DataStore';
+import {DataStoreCellSelection, DataStoreTimelineSelection} from '../DataStore';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
@@ -136,7 +136,7 @@ export class DetailChartTab extends ADetailViewTab {
   }
 
   renderAxis(y: any) {
-    const values = DataStoreEpochSelection.multiSelected.map((x) => x.name);
+    const values = DataStoreTimelineSelection.multiSelected.map((x) => x.name);
     const x = d3.scale.ordinal()
       .domain(values)
       .rangePoints([0, this.width]);

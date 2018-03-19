@@ -16,6 +16,8 @@ export class MalevoDataset {
   name: string;
   epochInfos: IMalevoEpochInfo[];
   classLabels: ITable;
+  loadedMalevoEpochs: ILoadedMalevoEpoch[];
+  loadedClassLabels: string[];
 }
 
 /**
@@ -23,4 +25,9 @@ export class MalevoDataset {
  */
 export interface IMalevoDatasetCollection {
   [key: string]: MalevoDataset;
+}
+
+export interface ILoadedMalevoEpoch {
+  name: string;
+  confusionData: number[][];
 }
