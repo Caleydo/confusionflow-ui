@@ -140,13 +140,24 @@ $num-columns-right-area: 3;
   position: relative;
   border: 1px solid #fff;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+
+  &.label-cell {
+    align-items: center;
+    justify-content: center;
+  }
 
   > svg {
     position: absolute;
     height: 100%;
     width: 100%;
+  }
+
+  > div {
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    display: flex;
   }
 }
 

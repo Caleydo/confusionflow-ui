@@ -40,10 +40,10 @@ export class AppConstants {
   static CLEAR_DETAIL_VIEW = 'clearDetailView';
 
   /**
-   * Fires when the user selects a timepoint (epoch)
+   * Fires when the confusion matrix has to be redrawn
    * @type {string}
    */
-  static EVENT_EPOCH_SELECTED = 'eventEpochSelected';
+  static EVENT_REDRAW = 'eventRedraw';
 
   /**
    * Represent the different cell types

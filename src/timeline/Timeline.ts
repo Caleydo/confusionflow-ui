@@ -140,7 +140,7 @@ export class Timeline {
       .call(brush);
 
     brush.on('brush', () => this.brushmove(x, brush))
-         .on('brushend', () => that.brushend(x, brush));
+         .on('brushend', () => that.brushAndFire(x, brush));
 
     const brushHeight = 15;
     $brushg.selectAll('rect')
@@ -218,7 +218,7 @@ export class Timeline {
           // toggle single epoch selector
           tml.singleEpochSelector.hideNode(tml.singleEpochSelector.hidden);
           tml.updateSingleSelection(tml.singleEpochSelector);
-          events.fire(AppConstants.EVENT_EPOCH_SELECTED);
+          events.fire(AppConstants.EVENT_REDRAW);
       })
       .on('mouseleave', function () {
         $singleSelectionMarker.classed('hidden', true);
@@ -275,6 +275,11 @@ export class Timeline {
     }
   }
 
+  brushAndFire(x: any, brush: any) {
+    this.brushend(x, brush);
+    events.fire(AppConstants.EVENT_REDRAW);
+  }
+
   brushend(x: any, brush: any) {
     // if at least 1 epoch was selected
     if(!brush.empty()) {
@@ -292,7 +297,6 @@ export class Timeline {
       dataStoreTimelines.get(this.datasetName).clearMultiSelection();
       this.$node.select('g.brush').call(<any>brush.clear());
     }
-    events.fire(AppConstants.EVENT_EPOCH_SELECTED);
   }
 
   getSelectedEpochs(range: [number, number]) {

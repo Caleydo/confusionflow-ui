@@ -19,9 +19,9 @@ export class TimelineCollection {
 
   add($node: d3.Selection<any>, ds: MalevoDataset) {
     this.createNewTimeline(ds);
-    dataStoreTimelines.get(ds.name).labels = ds.classLabels;
     dataStoreTimelines.get(ds.name).selectedDataset = ds;
     this.updateTimelines();
+    events.fire(AppConstants.EVENT_REDRAW);
   }
 
   createNewTimeline(ds: MalevoDataset) {
@@ -40,7 +40,7 @@ export class TimelineCollection {
     this.updateTimelines();
     console.assert(dataStoreTimelines.get(ts.datasetName) != null);
     dataStoreTimelines.delete(ts.datasetName);
-    events.fire(AppConstants.EVENT_EPOCH_SELECTED);
+    events.fire(AppConstants.EVENT_REDRAW);
   }
 
   updateOverallTimeline() {

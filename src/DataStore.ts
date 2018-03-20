@@ -11,15 +11,12 @@ import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, min, Numb
  * Stores the selected datasets
  */
 export class DataStoreDatasetSelection {
-  static datasets: MalevoDataset[] = [];
 
   static datasetAdded(ds: MalevoDataset) {
-    DataStoreDatasetSelection.datasets.push(ds);
     events.fire(AppConstants.EVENT_DATA_SET_ADDED, ds);
   }
 
   static datasetRemoved(ds: MalevoDataset) {
-    DataStoreDatasetSelection.datasets = DataStoreDatasetSelection.datasets.filter((x) => x !== ds);
     events.fire(AppConstants.EVENT_DATA_SET_REMOVED, ds);
   }
 }
@@ -30,7 +27,6 @@ export class DataStoreDatasetSelection {
 export class DataStoreTimelineSelection {
   singleSelected: IMalevoEpochInfo = null;
   multiSelected: IMalevoEpochInfo[] = [];
-  labels:ITable = null;
   selectedDataset:MalevoDataset = null;
 
   isJustOneEpochSelected(): boolean {
@@ -74,6 +70,7 @@ export class DataStoreCellSelection {
 
   static rowIndex = -1;
   static colIndex = -1;
+  //todo the cell should store its epoch data and just use cell id here
   static multiEpochData: Matrix<IClassEvolution> = null;
   static singleEpochData: Matrix<number> = null;
   static labels: [number, string];

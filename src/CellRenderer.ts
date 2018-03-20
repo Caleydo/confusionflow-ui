@@ -9,6 +9,7 @@ import * as d3 from 'd3';
 import {adaptTextColorToBgColor} from './utils';
 import {AppConstants} from './AppConstants';
 import {DataStoreCellSelection} from './DataStore';
+import {ICellContent} from './confusion_matrix_cell/CellContent';
 
 export abstract class ACellRenderer {
   constructor(public type: string) {
@@ -179,7 +180,7 @@ export class LabelCellRenderer extends ACellRenderer {
 
 export class HeatCellRenderer extends ACellRenderer {
 
-  constructor(private data: number[], protected $parent: d3.Selection<any>, type: string) {
+  constructor(private data: ICellContent, protected $parent: d3.Selection<any>, type: string) {
     super(type);
   }
 
