@@ -176,11 +176,21 @@ export class ConfusionMatrix implements IAppView {
     });
 
     Promise.all(allPromises1).then((x) => {
+      this.synchronizeData(allDatasets);
       this.chooseRenderMode(allDatasets);
       this.renderCMCells(allDatasets);
       this.addRowAndColumnLabels(allDatasets[0].labels);
       //this.renderCMPanels();
     });
+  }
+
+  private synchronizeData(ds: ILoadedMalevoDataset[]) {
+    // find shortest timeline-selection
+    const smallestValue = ds.reduce((acc, val) => {
+      return val.multiEpochData.length < acc ? val.multiEpochData.length : acc;
+    }, Number.MAX_VALUE);
+
+    ds.forEach((x) => x.multiEpochData = x.multiEpochData.slice(0, smallestValue));
   }
 
   private loadEpochs(matrix: IMalevoEpochInfo[], dataset: MalevoDataset) {
@@ -264,58 +274,75 @@ export class ConfusionMatrix implements IAppView {
     this.$confusionMatrix
       .selectAll('div')
       .remove();
+
+    if(this.renderMode === RenderMode.CLEAR) {
+      return;
+    }
+
+    const heatmapContent = new HeatCellCalculator().calculate(datasets);
+
+    const lineContent = new LineCellCalculator().calculate(datasets);
+
+    let $cells = null;
+    let data = null;
+    let renderer = null;
     if(this.renderMode === RenderMode.COMBINED) {
-      const heatmapContent = new HeatCellCalculator().calculate(datasets);
-      const lineContent = new LineCellCalculator().calculate(datasets);
-
-      heatmapContent.map((x: MatrixHeatCellContent, i: number) => {
-        if(i % 11 === 0) {
-          x.colorValues = x.colorValues.map(() => '#00000');
-          x.counts = x.counts.map(() => 0);
-          x.classLabels = x.classLabels.map(() => '');
-        }
-      });
-
-      lineContent.map((x: Line[], i: number) => {
-        if(i % 11 === 0) {
-          x.map((y) => {
-            y.classLabel = '';
-            y.max = 0;
-            y.values = [];
-          });
-        }
-      });
-
-      const y = zip([heatmapContent, lineContent]);
-      const $cells = this.$confusionMatrix
+      const zippedData = zip([heatmapContent, lineContent]);
+      $cells = this.$confusionMatrix
       .selectAll('div')
-      .data(y.map((x) => {
+      .data(zippedData.map((x) => {
         return 0;
       }));
 
-      const data = y.map((x) => {
+      data = zippedData.map((x) => {
         return {heatcell: x[0], linecell: x[1]};
       });
 
-      $cells.enter()
-        .append('div')
-        .classed('cell', true)
-        .each(function (datum, index) {
-          const renderer = new HeatCellRenderer();
-          renderer.setNextRenderer(new MatrixLineCellRenderer());
-          renderer.renderNext(new ACell(data[index], d3.select(this)));
+      renderer = new HeatCellRenderer();
+      renderer.setNextRenderer(new MatrixLineCellRenderer());
+    } else if(this.renderMode === RenderMode.SINGLE) {
+      $cells = this.$confusionMatrix
+        .selectAll('div')
+        .data(heatmapContent.map((x) => {
+          return 0;
+        }));
+      data = heatmapContent;
+      renderer = new HeatCellRenderer();
+    } else if(this.renderMode === RenderMode.MULTI) {
+      $cells = this.$confusionMatrix
+        .selectAll('div')
+        .data(heatmapContent.map((x) => {
+          return 0;
+        }));
+      renderer = new MatrixLineCellRenderer();
+    }
+
+    $cells.enter()
+      .append('div')
+      .classed('cell', true)
+      .each(function (datum, index) {
+        renderer.renderNext(new ACell(data[index], d3.select(this)));
+      });
+  }
+
+  filterDiagonals(heatmapContent: {}[], lineContent: {}[]) {
+    heatmapContent.map((x: MatrixHeatCellContent, i: number) => {
+      if(i % 11 === 0) {
+        x.colorValues = x.colorValues.map(() => '#00000');
+        x.counts = x.counts.map(() => 0);
+        x.classLabels = x.classLabels.map(() => '');
+      }
+    });
+
+    lineContent.map((x: Line[], i: number) => {
+      if(i % 11 === 0) {
+        x.map((y) => {
+          y.classLabel = '';
+          y.max = 0;
+          y.values = [];
         });
-
-    }
-    if(this.renderMode === RenderMode.SINGLE) {
-      //const bc = new HeatCellCalculator();
-      //const content = bc.calculate(datasets, 100);
-    }
-
-    if(this.renderMode === RenderMode.MULTI) {
-      //const bc = new LineCellCalculator();
-      //const content = bc.calculate(datasets);
-    }
+      }
+    });
   }
 }
 
