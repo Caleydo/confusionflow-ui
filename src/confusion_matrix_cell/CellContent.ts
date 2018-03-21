@@ -1,28 +1,22 @@
 import {ILoadedMalevoDataset} from '../MalevoDataset';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
+import {zip} from '../utils';
 
 /**
  * Created by Martin on 19.03.2018.
  */
 
-function zip (rows): number[][] {
-  return rows[0].map((_,c)=>rows.map((row)=>row[c]));
-}
-
 export class MatrixHeatCellContent {
   colorValues: string[];
   counts: number[];
-  labels: string[];
+  classLabels: string[];
 }
 
 export class Line {
   values: number[];
   max: number;
-}
-
-export class MatrixLineCellContent {
-  lines: Line[];
+  classLabel: string;
 }
 
 abstract class ACellContentCalculator {
@@ -46,7 +40,7 @@ export class HeatCellCalculator extends ACellContentCalculator {
       .interpolate(<any>d3.interpolateHcl);
 
     return res.map((x) => {
-      return {colorValues: x.map((y) => heatmapColorScale(y)), counts: x, labels: x.map((y) => String(y))};
+      return {colorValues: x.map((y) => heatmapColorScale(y)), counts: x, classLabels: x.map((y) => String(y))};
     });
   }
 }
@@ -60,10 +54,14 @@ export class LineCellCalculator extends ACellContentCalculator {
       const confData = ds.multiEpochData.map((x) => x.confusionData.to1DArray());
       datasetData.push(zip(confData));
     });
-    const a = zip(datasetData);
-    const b = a.map((x) => x.map((y) => {
-      return {values: y, max: maxVal};
-    }));
-    return b;
+    const zipped = zip(datasetData);
+    const lineCells = [];
+    zipped.map((x, i) => {
+      const label = datasets[0].labels[i % datasets[0].labels.length];
+      return lineCells.push(x.map((y) => {
+        return {values: y, max: maxVal, classLabel: label};
+      }));
+    });
+    return lineCells;
   }
 }

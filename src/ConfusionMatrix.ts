@@ -6,15 +6,18 @@ import {MalevoDataset, IMalevoEpochInfo, ILoadedMalevoEpoch, ILoadedMalevoDatase
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
-import {HeatCellRenderer} from './confusion_matrix_cell/ACellRenderer';
+import {HeatCellRenderer, MatrixLineCellRenderer} from './confusion_matrix_cell/ACellRenderer';
 import {ACell} from './confusion_matrix_cell/Cell';
-import {adaptTextColorToBgColor} from './utils';
+import {adaptTextColorToBgColor, zip} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
 import {DataStoreCellSelection, dataStoreTimelines, DataStoreTimelineSelection} from './DataStore';
-import {HeatCellCalculator, LineCellCalculator, MatrixHeatCellContent} from './confusion_matrix_cell/CellContent';
+import {
+  HeatCellCalculator, LineCellCalculator, MatrixHeatCellContent,
+  MatrixLineCellContent
+} from './confusion_matrix_cell/CellContent';
 
 
 enum RenderMode {
@@ -274,19 +277,28 @@ export class ConfusionMatrix implements IAppView {
         if(i % 11 === 0) {
           x.colorValues = x.colorValues.map(() => '#00000');
           x.counts = x.counts.map(() => 0);
-          x.labels = x.labels.map(() => '');
+          x.classLabels = x.classLabels.map(() => '');
         }
       });
 
+      const y = zip([content, content2]);
       const $cells = this.$confusionMatrix
       .selectAll('div')
-      .data(content);
+      .data(y.map((x) => {
+        return 0;
+      }));
+
+      const data = y.map((x) => {
+        return {heatcell: x[0], linecell: x[1]};
+      });
 
       $cells.enter()
         .append('div')
         .classed('cell', true)
-        .each(function (content: {}) {
-          new HeatCellRenderer().renderNext(new ACell(content, d3.select(this)));
+        .each(function (datum, index) {
+          const renderer = new HeatCellRenderer();
+          renderer.setNextRenderer(new MatrixLineCellRenderer());
+          renderer.renderNext(new ACell(data[index], d3.select(this)));
         });
 
     }
