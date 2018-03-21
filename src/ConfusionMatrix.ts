@@ -6,7 +6,7 @@ import {MalevoDataset, IMalevoEpochInfo, ILoadedMalevoEpoch, ILoadedMalevoDatase
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
-import {HeatCellRenderer, MatrixLineCellRenderer} from './confusion_matrix_cell/ACellRenderer';
+import {ACellRenderer, HeatCellRenderer, MatrixLineCellRenderer} from './confusion_matrix_cell/ACellRenderer';
 import {ACell} from './confusion_matrix_cell/Cell';
 import {adaptTextColorToBgColor, zip} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
@@ -35,6 +35,7 @@ export class ConfusionMatrix implements IAppView {
   private precisionColumn: ChartColumn;
   private classSizeColumn: ChartColumn;
   private renderMode: RenderMode = RenderMode.COMBINED;
+  private readonly CONF_SIZE = 10;
 
   constructor(parent:Element) {
     this.$node = d3.select(parent)
@@ -154,7 +155,6 @@ export class ConfusionMatrix implements IAppView {
   }
 
   updateViews() {
-
     const allPromises0 = [];
 
     dataStoreTimelines.forEach((value: DataStoreTimelineSelection) => {
@@ -180,7 +180,6 @@ export class ConfusionMatrix implements IAppView {
       this.chooseRenderMode(allDatasets);
       this.renderCMCells(allDatasets);
       this.addRowAndColumnLabels(allDatasets[0].labels);
-      //this.renderCMPanels();
     });
   }
 
@@ -275,57 +274,115 @@ export class ConfusionMatrix implements IAppView {
       .selectAll('div')
       .remove();
 
+    this.fpColumn.$node.selectAll('div').remove();
+    this.fnColumn.$node.selectAll('div').remove();
+
     if(this.renderMode === RenderMode.CLEAR) {
       return;
     }
 
     const heatmapContent = new HeatCellCalculator().calculate(datasets);
-
     const lineContent = new LineCellCalculator().calculate(datasets);
 
     let $cells = null;
     let data = null;
-    let renderer = null;
+    let matrixRenderer = null;
+
+    let datafpfn = null;
+    let fpfnRenderer = null;
     if(this.renderMode === RenderMode.COMBINED) {
       const zippedData = zip([heatmapContent, lineContent]);
       $cells = this.$confusionMatrix
       .selectAll('div')
-      .data(zippedData.map((x) => {
-        return 0;
-      }));
+      .data(zippedData.map(() => 0));
 
       data = zippedData.map((x) => {
         return {heatcell: x[0], linecell: x[1]};
       });
 
-      renderer = new HeatCellRenderer();
-      renderer.setNextRenderer(new MatrixLineCellRenderer());
+      datafpfn = lineContent;
+      matrixRenderer = new HeatCellRenderer();
+      matrixRenderer.setNextRenderer(new MatrixLineCellRenderer());
+      fpfnRenderer = new MatrixLineCellRenderer();
     } else if(this.renderMode === RenderMode.SINGLE) {
       $cells = this.$confusionMatrix
         .selectAll('div')
-        .data(heatmapContent.map((x) => {
-          return 0;
-        }));
+        .data(heatmapContent.map(() => 0));
       data = heatmapContent;
-      renderer = new HeatCellRenderer();
+      matrixRenderer = new HeatCellRenderer();
+      datafpfn = heatmapContent;
+     // fpfnRenderer = new BarChartCellRenderer();
     } else if(this.renderMode === RenderMode.MULTI) {
       $cells = this.$confusionMatrix
         .selectAll('div')
-        .data(heatmapContent.map((x) => {
-          return 0;
-        }));
-      renderer = new MatrixLineCellRenderer();
+        .data(heatmapContent.map(() => 0));
+
+      datafpfn = lineContent;
+      matrixRenderer = new MatrixLineCellRenderer();
+      fpfnRenderer = new MatrixLineCellRenderer();
     }
 
     $cells.enter()
       .append('div')
       .classed('cell', true)
       .each(function (datum, index) {
-        renderer.renderNext(new ACell(data[index], d3.select(this)));
+        matrixRenderer.renderNext(new ACell(data[index], d3.select(this)));
+      });
+
+    this.renderPanels(data, fpfnRenderer);
+  }
+
+  renderPanels(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[], renderer: ACellRenderer) {
+
+    const fpData = this.fpColumnData(data);
+    const fnData = this.fnColumnData(data);
+
+    this.fpColumn.$node
+      .selectAll('div')
+      .data(fpData.map(() => 0))
+      .enter()
+      .append('div')
+      .classed('cell', true)
+      .each(function (datum, index) {
+        const y = fpData[index].map((x) => x);
+        const z = y.map((x) => x.linecell);
+        const merged = [].concat.apply([], z);
+        renderer.renderNext(new ACell({linecell: merged, heatcell: null}, d3.select(this)));
+      });
+
+    this.fnColumn.$node
+      .selectAll('div')
+      .data(fnData.map(() => 0))
+      .enter()
+      .append('div')
+      .classed('cell', true)
+      .each(function (datum, index) {
+        const y = fnData[index].map((x) => x);
+        const z = y.map((x) => x.linecell);
+        const merged = [].concat.apply([], z);
+        renderer.renderNext(new ACell({linecell: merged, heatcell: null}, d3.select(this)));
       });
   }
 
-  filterDiagonals(heatmapContent: {}[], lineContent: {}[]) {
+  fpColumnData(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[]) {
+    data = data.slice(0);
+    const arrays = [], size = this.CONF_SIZE;
+    while (data.length > 0) {
+      arrays.push(data.splice(0, size));
+    }
+    return arrays;
+  }
+
+  fnColumnData(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[]) {
+    const res = [];
+    for(let i = 0; i < this.CONF_SIZE; i++) {
+      res.push(data.filter((x, j) => j % 10 === i));
+    }
+    return res;
+  }
+
+
+  /*filterDiagonals(heatmapContent: {}[], lineContent: {}[]) {
     heatmapContent.map((x: MatrixHeatCellContent, i: number) => {
       if(i % 11 === 0) {
         x.colorValues = x.colorValues.map(() => '#00000');
@@ -343,7 +400,7 @@ export class ConfusionMatrix implements IAppView {
         });
       }
     });
-  }
+  }*/
 }
 
 /**

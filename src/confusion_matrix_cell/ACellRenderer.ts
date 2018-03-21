@@ -8,7 +8,7 @@ import * as d3_shape from 'd3-shape';
  * Created by Martin on 19.03.2018.
  */
 
-abstract class ACellRenderer {
+export abstract class ACellRenderer {
   nextRenderer: ACellRenderer = null;
   setNextRenderer(renderer: ACellRenderer) {
     this.nextRenderer = renderer;
