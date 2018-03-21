@@ -14,7 +14,7 @@ import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
 import {DataStoreCellSelection, dataStoreTimelines, DataStoreTimelineSelection} from './DataStore';
-import {HeatCellCalculator, ICellContent} from './confusion_matrix_cell/CellContent';
+import {HeatCellCalculator, MatrixHeatCellContent} from './confusion_matrix_cell/CellContent';
 
 
 enum RenderMode {
@@ -250,7 +250,15 @@ export class ConfusionMatrix implements IAppView {
       .remove();
     if(this.renderMode === RenderMode.COMBINED) {
       const bc = new HeatCellCalculator();
-      const content = bc.calculate(datasets, 100, (datum: number, index: number) => index % 11 === 0 ? 0 : datum);
+      const content = bc.calculate(datasets);
+
+      content.map((x: MatrixHeatCellContent, i: number) => {
+        if(i % 11 === 0) {
+          x.colorValues = x.colorValues.map(() => '#00000');
+          x.counts = x.counts.map(() => 0);
+          x.labels = x.labels.map(() => '');
+        }
+      });
 
       const $cells = this.$confusionMatrix
       .selectAll('div')
@@ -259,7 +267,7 @@ export class ConfusionMatrix implements IAppView {
       $cells.enter()
         .append('div')
         .classed('cell', true)
-        .each(function (content: ICellContent) {
+        .each(function (content: {}) {
           new HeatCellRenderer().renderNext(new ACell(content, d3.select(this)));
         });
 

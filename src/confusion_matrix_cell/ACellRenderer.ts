@@ -1,4 +1,4 @@
-import {HeatCellContent} from './CellContent';
+import {MatrixHeatCellContent} from './CellContent';
 import {ACell} from './Cell';
 import {adaptTextColorToBgColor} from '../utils';
 
@@ -22,13 +22,15 @@ abstract class ACellRenderer {
 
 export class HeatCellRenderer extends ACellRenderer {
   render(cell: ACell) {
-    const $subCells = cell.$node.selectAll('div').data((x) => {
-      return x.content;
+    const $subCells = cell.$node.selectAll('div').data((x: MatrixHeatCellContent, index: number) => {
+      return [{count: x.counts[index], colorValue: x.colorValues[index]}];
     });
 
     $subCells.enter().append('div')
-      .style('background-color', (datum: string) => datum)
-      .style('color', (datum: string) => adaptTextColorToBgColor(datum))
-      .text((d, i) => String(d));
+      .style('background-color', (datum: {count: number, colorValue: string}) => {
+        return datum.colorValue;
+      })
+      .style('color', (datum: {count: number, colorValue: string}) => adaptTextColorToBgColor(datum.colorValue))
+      .text((datum: {count: number, colorValue: string}) => datum.count);
   }
 }
