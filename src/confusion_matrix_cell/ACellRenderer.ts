@@ -1,4 +1,4 @@
-import {MatrixHeatCellContent, MatrixLineCellContent} from './CellContent';
+import {Line, MatrixHeatCellContent} from './CellContent';
 import {ACell} from './Cell';
 import {adaptTextColorToBgColor} from '../utils';
 import * as d3 from 'd3';
@@ -44,7 +44,7 @@ export class HeatCellRenderer extends ACellRenderer {
 
 export class MatrixLineCellRenderer extends ACellRenderer {
   protected render(cell: ACell) {
-    const data: MatrixLineCellContent = cell.data.linecell;
+    const data: Line[] = cell.data.linecell;
     const $svg = cell.$node.append('svg').datum(data);
 
     const width = (<any>cell.$node[0][0]).clientWidth;
@@ -61,7 +61,7 @@ export class MatrixLineCellRenderer extends ACellRenderer {
 
     x.domain([0, data[0].values.length - 1]);
     y.domain([0, data[0].max]);
-    z.domain(data[0].classLabel);
+    z.domain(data.map((x) => x.classLabel));
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -72,14 +72,11 @@ export class MatrixLineCellRenderer extends ACellRenderer {
       });
 
     const $epochLine = $g.selectAll('path')
-    .data(data)
-    .enter().append('path')
+      .data(data)
+      .enter().append('path')
       .attr('d', (d) => line(d.values))
-      .attr('stroke', (d) => z(d.label))
+      .attr('stroke', (d) => z(d.classLabel))
       .append('title')
-      .text((d) => d.label);
-
+      .text((d) => d.classLabel);
   }
-
-
 }

@@ -15,9 +15,7 @@ import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
 import {DataStoreCellSelection, dataStoreTimelines, DataStoreTimelineSelection} from './DataStore';
 import {
-  HeatCellCalculator, LineCellCalculator, MatrixHeatCellContent,
-  MatrixLineCellContent
-} from './confusion_matrix_cell/CellContent';
+  HeatCellCalculator, Line, LineCellCalculator, MatrixHeatCellContent} from './confusion_matrix_cell/CellContent';
 
 
 enum RenderMode {
@@ -267,13 +265,10 @@ export class ConfusionMatrix implements IAppView {
       .selectAll('div')
       .remove();
     if(this.renderMode === RenderMode.COMBINED) {
-      const bc = new HeatCellCalculator();
-      const content = bc.calculate(datasets);
+      const heatmapContent = new HeatCellCalculator().calculate(datasets);
+      const lineContent = new LineCellCalculator().calculate(datasets);
 
-      const lc = new LineCellCalculator();
-      const content2 = lc.calculate(datasets);
-
-      content.map((x: MatrixHeatCellContent, i: number) => {
+      heatmapContent.map((x: MatrixHeatCellContent, i: number) => {
         if(i % 11 === 0) {
           x.colorValues = x.colorValues.map(() => '#00000');
           x.counts = x.counts.map(() => 0);
@@ -281,7 +276,17 @@ export class ConfusionMatrix implements IAppView {
         }
       });
 
-      const y = zip([content, content2]);
+      lineContent.map((x: Line[], i: number) => {
+        if(i % 11 === 0) {
+          x.map((y) => {
+            y.classLabel = '';
+            y.max = 0;
+            y.values = [];
+          });
+        }
+      });
+
+      const y = zip([heatmapContent, lineContent]);
       const $cells = this.$confusionMatrix
       .selectAll('div')
       .data(y.map((x) => {
