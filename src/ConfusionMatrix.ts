@@ -8,9 +8,9 @@ import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {
   ACellRenderer, HeatCellRenderer, MatrixLineCellRenderer,
-  VerticalLineRenderer, BarchartRenderer
+  VerticalLineRenderer, BarchartRenderer, LabelCellRenderer
 } from './confusion_matrix_cell/ACellRenderer';
-import {ACell} from './confusion_matrix_cell/Cell';
+import {ACell, LabelCell} from './confusion_matrix_cell/Cell';
 import {adaptTextColorToBgColor, zip} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
@@ -278,7 +278,7 @@ export class ConfusionMatrix implements IAppView {
     let multiEpochContent = null;
 
     let $cells = null;
-    let data = null;
+    let data: {linecell: Line[], heatcell: MatrixHeatCellContent}[] = null;
     let matrixRenderer = null;
 
     let datafpfn = null;
@@ -329,13 +329,29 @@ export class ConfusionMatrix implements IAppView {
         matrixRenderer.renderNext(new ACell(data[index], d3.select(this)));
       });
 
-    this.renderPanels(data, fpfnRenderer);
+    this.renderFPFN(data, fpfnRenderer);
+    this.renderClassSize(datasets, new LabelCellRenderer());
   }
 
-  renderPanels(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[], renderer: ACellRenderer) {
+  renderClassSize(datasets: ILoadedMalevoDataset[], renderer: ACellRenderer) {
+    const classSizeData = this.classSizeData(datasets);
+    this.classSizeColumn.$node
+      .selectAll('div')
+      .data(classSizeData)
+      .enter()
+      .append('div')
+      .classed('cell', true)
+      .each(function(datum: number, index: number) {
+        renderer.renderNext(new LabelCell({label: String(datum)}, d3.select(this)));
+      });
+    console.log(classSizeData);
+  }
+
+  renderFPFN(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[], renderer: ACellRenderer) {
 
     const fpData = this.fpColumnData(data);
     const fnData = this.fnColumnData(data);
+
 
     this.fpColumn.$node
       .selectAll('div')
@@ -379,6 +395,10 @@ export class ConfusionMatrix implements IAppView {
       res.push(data.filter((x, j) => j % 10 === i));
     }
     return res;
+  }
+
+  classSizeData(datasets: ILoadedMalevoDataset[]) {
+    return confMeasures.calcForMultipleClasses(datasets[0].multiEpochData[0].confusionData, confMeasures.ClassSize);
   }
 
 

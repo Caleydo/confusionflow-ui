@@ -18,3 +18,9 @@ export class ACell {
     });
   }
 }
+
+export class LabelCell extends ACell {
+  constructor(public labelData: {label: string}, public $node: d3.Selection<any>) {
+    super(null, $node);
+  }
+}

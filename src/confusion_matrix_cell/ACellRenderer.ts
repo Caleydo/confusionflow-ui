@@ -1,5 +1,5 @@
 import {Line, MatrixHeatCellContent} from './CellContent';
-import {ACell} from './Cell';
+import {ACell, LabelCell} from './Cell';
 import {adaptTextColorToBgColor} from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
@@ -102,6 +102,14 @@ export class VerticalLineRenderer extends ACellRenderer {
 export class BarchartRenderer extends ACellRenderer {
   protected render(cell: ACell) {
     cell.$node.text('barchart here');
+  }
+}
+
+export class LabelCellRenderer extends ACellRenderer {
+  protected render(cell: LabelCell) {
+    cell.$node
+      .classed('label-cell', true)
+      .text(cell.labelData.label);
   }
 }
 
