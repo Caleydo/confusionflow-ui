@@ -11,6 +11,7 @@ export class MatrixHeatCellContent {
   colorValues: string[];
   counts: number[];
   classLabels: string[];
+  indexInMultiSelection: number[];
 }
 
 export class Line {
@@ -23,7 +24,7 @@ abstract class ACellContentCalculator {
   abstract calculate(datasets: ILoadedMalevoDataset[]): {}[];
 }
 
-export class HeatCellCalculator extends ACellContentCalculator {
+export class SingleEpochCalculator extends ACellContentCalculator {
   calculate(datasets: ILoadedMalevoDataset[]): {}[] {
     const transformedData = datasets.map((x) => x.singleEpochData.confusionData.to1DArray());
     const res = zip(transformedData);
@@ -33,19 +34,19 @@ export class HeatCellCalculator extends ACellContentCalculator {
       return acc > Math.max(...val) ? acc : Math.max(...val);
     }, 0);
 
-
     const heatmapColorScale = d3.scale.linear()
       .domain([0, maxVal])
       .range(<any>AppConstants.BW_COLOR_SCALE)
       .interpolate(<any>d3.interpolateHcl);
 
     return res.map((x) => {
-      return {colorValues: x.map((y) => heatmapColorScale(y)), counts: x, classLabels: x.map((y) => String(y))};
+      return {colorValues: x.map((y) => heatmapColorScale(y)), counts: x, classLabels: x.map((y) => String(y)),
+        indexInMultiSelection: datasets.map((x) => x.multiEpochData.findIndex((y) => y.id === x.singleEpochData.id))};
     });
   }
 }
 
-export class LineCellCalculator extends ACellContentCalculator {
+export class MultiEpochCalculator extends ACellContentCalculator {
   calculate(datasets: ILoadedMalevoDataset[]): {}[] {
     // find max value over all data points
     const maxVal = Math.max(...datasets.map((x) => Math.max(...x.multiEpochData.map((y) => Math.max(...y.confusionData.to1DArray())))));

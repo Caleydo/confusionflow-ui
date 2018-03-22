@@ -49,9 +49,9 @@ export class TimelineData {
     }
 
     epochs.sort(sortNumber);
-    const length = extractEpochId(epochs[epochs.length - 1]);
+    const length = epochs[epochs.length - 1].id;
     for(let i = 0; i <= length; i++) {
-      const epoch = epochs.find((x) => extractEpochId(x) === i);
+      const epoch = epochs.find((x) => x.id === i);
       const dp = epoch ? new DataPoint(true, i, epoch) : new DataPoint(false, i, epoch);
       this.datapoints.push(dp);
     }

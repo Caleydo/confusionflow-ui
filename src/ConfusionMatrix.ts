@@ -6,7 +6,10 @@ import {MalevoDataset, IMalevoEpochInfo, ILoadedMalevoEpoch, ILoadedMalevoDatase
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
-import {ACellRenderer, HeatCellRenderer, MatrixLineCellRenderer} from './confusion_matrix_cell/ACellRenderer';
+import {
+  ACellRenderer, HeatCellRenderer, MatrixLineCellRenderer,
+  VerticalLineRenderer, BarchartRenderer
+} from './confusion_matrix_cell/ACellRenderer';
 import {ACell} from './confusion_matrix_cell/Cell';
 import {adaptTextColorToBgColor, zip} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
@@ -15,7 +18,7 @@ import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
 import {DataStoreCellSelection, dataStoreTimelines, DataStoreTimelineSelection} from './DataStore';
 import {
-  HeatCellCalculator, Line, LineCellCalculator, MatrixHeatCellContent} from './confusion_matrix_cell/CellContent';
+  SingleEpochCalculator, Line, MultiEpochCalculator, MatrixHeatCellContent} from './confusion_matrix_cell/CellContent';
 
 
 enum RenderMode {
@@ -158,41 +161,31 @@ export class ConfusionMatrix implements IAppView {
     const allPromises0 = [];
 
     dataStoreTimelines.forEach((value: DataStoreTimelineSelection) => {
-      const loadDataPromises0 = [];
-      loadDataPromises0.push(this.loadEpochs(value.multiSelected, value.selectedDataset));
-      loadDataPromises0.push(this.loadEpochs([value.singleSelected], value.selectedDataset));
-      loadDataPromises0.push(this.loadLabels(value.selectedDataset.classLabels, value.selectedDataset));
-      allPromises0.push(loadDataPromises0);
+      const loadDataPromises = [];
+      loadDataPromises.push(this.loadEpochs(value.multiSelected, value.selectedDataset));
+      loadDataPromises.push(this.loadEpochs([value.singleSelected], value.selectedDataset));
+      loadDataPromises.push(this.loadLabels(value.selectedDataset.classLabels, value.selectedDataset));
+      allPromises0.push(loadDataPromises);
     });
 
-    const allPromises1 = [];
+    const allPromises = [];
     const allDatasets: ILoadedMalevoDataset[] = [];
     allPromises0.forEach((x) => {
       const pr = Promise.all(x).then((x: [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]) => {
         const ds = {multiEpochData: x[0], singleEpochData: x[1][0], labels: x[2]};
         allDatasets.push(ds);
       });
-      allPromises1.push(pr);
+      allPromises.push(pr);
     });
 
-    Promise.all(allPromises1).then((x) => {
-      this.synchronizeData(allDatasets);
+    Promise.all(allPromises).then((x) => {
       this.chooseRenderMode(allDatasets);
       this.renderCMCells(allDatasets);
       this.addRowAndColumnLabels(allDatasets[0].labels);
     });
   }
 
-  private synchronizeData(ds: ILoadedMalevoDataset[]) {
-    // find shortest timeline-selection
-    const smallestValue = ds.reduce((acc, val) => {
-      return val.multiEpochData.length < acc ? val.multiEpochData.length : acc;
-    }, Number.MAX_VALUE);
-
-    ds.forEach((x) => x.multiEpochData = x.multiEpochData.slice(0, smallestValue));
-  }
-
-  private loadEpochs(matrix: IMalevoEpochInfo[], dataset: MalevoDataset) {
+  private loadEpochs(matrix: IMalevoEpochInfo[], dataset: MalevoDataset): Promise<ILoadedMalevoEpoch[]> {
     if(matrix === null || matrix[0] === null) { // if a single epoch or multiepoch-range was deselected
       return Promise.resolve([]);
     }
@@ -207,8 +200,8 @@ export class ConfusionMatrix implements IAppView {
       return loadedEpochData.map((val: number[][], index: number) => {
         const m = new SquareMatrix<number>(val.length);
         m.init(val);
-        return {name: matrix[index].name, confusionData: m};
-        });
+        return {name: matrix[index].name, confusionData: m, id: matrix[index].id};
+      });
     });
   }
 
@@ -281,8 +274,8 @@ export class ConfusionMatrix implements IAppView {
       return;
     }
 
-    const heatmapContent = new HeatCellCalculator().calculate(datasets);
-    const lineContent = new LineCellCalculator().calculate(datasets);
+    let singleEpochContent = null;
+    let multiEpochContent = null;
 
     let $cells = null;
     let data = null;
@@ -291,7 +284,9 @@ export class ConfusionMatrix implements IAppView {
     let datafpfn = null;
     let fpfnRenderer = null;
     if(this.renderMode === RenderMode.COMBINED) {
-      const zippedData = zip([heatmapContent, lineContent]);
+      singleEpochContent = new SingleEpochCalculator().calculate(datasets);
+      multiEpochContent = new MultiEpochCalculator().calculate(datasets);
+      const zippedData = zip([singleEpochContent, multiEpochContent]);
       $cells = this.$confusionMatrix
       .selectAll('div')
       .data(zippedData.map(() => 0));
@@ -300,24 +295,29 @@ export class ConfusionMatrix implements IAppView {
         return {heatcell: x[0], linecell: x[1]};
       });
 
-      datafpfn = lineContent;
+      datafpfn = multiEpochContent;
       matrixRenderer = new HeatCellRenderer();
-      matrixRenderer.setNextRenderer(new MatrixLineCellRenderer());
+      matrixRenderer
+        .setNextRenderer(new MatrixLineCellRenderer())
+        .setNextRenderer(new VerticalLineRenderer());
       fpfnRenderer = new MatrixLineCellRenderer();
     } else if(this.renderMode === RenderMode.SINGLE) {
+      singleEpochContent = new SingleEpochCalculator().calculate(datasets);
+      data = singleEpochContent.map((x) => {return {heatcell: x, linecell: null};});
       $cells = this.$confusionMatrix
         .selectAll('div')
-        .data(heatmapContent.map(() => 0));
-      data = heatmapContent;
+        .data(singleEpochContent.map(() => 0));
       matrixRenderer = new HeatCellRenderer();
-      datafpfn = heatmapContent;
-     // fpfnRenderer = new BarChartCellRenderer();
+      datafpfn = singleEpochContent;
+      fpfnRenderer = new BarchartRenderer();
     } else if(this.renderMode === RenderMode.MULTI) {
+      multiEpochContent = new MultiEpochCalculator().calculate(datasets);
+      data = multiEpochContent.map((x) => {return {heatcell: null, linecell: x};});
       $cells = this.$confusionMatrix
         .selectAll('div')
-        .data(heatmapContent.map(() => 0));
+        .data(multiEpochContent.map(() => 0));
 
-      datafpfn = lineContent;
+      datafpfn = multiEpochContent;
       matrixRenderer = new MatrixLineCellRenderer();
       fpfnRenderer = new MatrixLineCellRenderer();
     }

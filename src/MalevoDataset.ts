@@ -8,6 +8,7 @@ import {SquareMatrix} from './DataStructures';
 export interface IMalevoEpochInfo {
   name: string;
   confusionInfo: INumericalMatrix;
+  id: number;
 }
 
 /**
@@ -26,12 +27,18 @@ export interface IMalevoDatasetCollection {
   [key: string]: MalevoDataset;
 }
 
-//todo add description
+/**
+ * Data that was loaded from the server for a single epoch
+ */
 export interface ILoadedMalevoEpoch {
   name: string;
   confusionData: SquareMatrix<number>;
+  id: number;
 }
 
+/**
+ * Represents the current status of a single timeline
+ */
 export interface ILoadedMalevoDataset {
   singleEpochData: ILoadedMalevoEpoch;
   multiEpochData: ILoadedMalevoEpoch[];

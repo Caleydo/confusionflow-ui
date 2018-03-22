@@ -10,8 +10,9 @@ import * as d3_shape from 'd3-shape';
 
 export abstract class ACellRenderer {
   nextRenderer: ACellRenderer = null;
-  setNextRenderer(renderer: ACellRenderer) {
+  setNextRenderer(renderer: ACellRenderer): ACellRenderer {
     this.nextRenderer = renderer;
+    return this.nextRenderer;
   }
   renderNext(cell: ACell) {
     this.render(cell);
@@ -79,4 +80,44 @@ export class MatrixLineCellRenderer extends ACellRenderer {
       .append('title')
       .text((d) => d.classLabel);
   }
+}
+
+export class VerticalLineRenderer extends ACellRenderer {
+  protected render(cell: ACell) {
+    const singleEpochIndex = cell.data.heatcell.indexInMultiSelection[0]; // select first single epoch index
+    const $g = cell.$node.select('g');
+    const width = (<any>cell.$node[0][0]).clientWidth;
+    const height = (<any>cell.$node[0][0]).clientHeight;
+    const x = d3.scale.linear().rangeRound([0, width]);
+    const y = d3.scale.linear().rangeRound([height, 0]);
+    const data: Line[] = cell.data.linecell;
+    x.domain([0, data[0].values.length - 1]);
+    y.domain([0, data[0].max]);
+    if(singleEpochIndex > -1) {
+      addDashedLines($g, x, singleEpochIndex, width, height);
+    }
+  }
+}
+
+export class BarchartRenderer extends ACellRenderer {
+  protected render(cell: ACell) {
+    cell.$node.text('barchart here');
+  }
+}
+
+function addDashedLines($g: d3.Selection<any>, x: any, singleEpochIndex: number, width: number, height: number) {
+  const $line = $g.append('line').attr('y1', 0).attr('y2', height);
+  $line.classed('dashed-lines', true);
+  $line.attr('x1', x(singleEpochIndex) + borderOffset($line, x(singleEpochIndex), width)).attr('x2', x(singleEpochIndex) + borderOffset($line, x(singleEpochIndex), width));
+}
+
+function borderOffset($line: d3.Selection<any>, posX: number, width: number) {
+  let sw = parseInt($line.style('stroke-width'), 10);
+  sw /= 2;
+  if(posX === 0) {
+    return sw;
+  } else if(posX === width) {
+    return -sw;
+  }
+  return 0;
 }
