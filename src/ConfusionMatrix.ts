@@ -278,10 +278,12 @@ export class ConfusionMatrix implements IAppView {
     let multiEpochContent = null;
 
     let $cells = null;
-    let data: {linecell: Line[], heatcell: MatrixHeatCellContent}[] = null;
-    let matrixRenderer = null;
 
+    let data: {linecell: Line[], heatcell: MatrixHeatCellContent}[] = null;
     let datafpfn = null;
+    let dataPrecision = null;
+
+    let matrixRenderer = null;
     let fpfnRenderer = null;
     if(this.renderMode === RenderMode.COMBINED) {
       singleEpochContent = new SingleEpochCalculator().calculate(datasets);
@@ -294,8 +296,9 @@ export class ConfusionMatrix implements IAppView {
       data = zippedData.map((x) => {
         return {heatcell: x[0], linecell: x[1]};
       });
-
       datafpfn = multiEpochContent;
+      dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
+
       matrixRenderer = new HeatCellRenderer();
       matrixRenderer
         .setNextRenderer(new MatrixLineCellRenderer())
@@ -307,8 +310,10 @@ export class ConfusionMatrix implements IAppView {
       $cells = this.$confusionMatrix
         .selectAll('div')
         .data(singleEpochContent.map(() => 0));
-      matrixRenderer = new HeatCellRenderer();
       datafpfn = singleEpochContent;
+      dataPrecision = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.PPV));
+
+      matrixRenderer = new HeatCellRenderer();
       fpfnRenderer = new BarchartRenderer();
     } else if(this.renderMode === RenderMode.MULTI) {
       multiEpochContent = new MultiEpochCalculator().calculate(datasets);
@@ -318,6 +323,8 @@ export class ConfusionMatrix implements IAppView {
         .data(multiEpochContent.map(() => 0));
 
       datafpfn = multiEpochContent;
+      dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
+
       matrixRenderer = new MatrixLineCellRenderer();
       fpfnRenderer = new MatrixLineCellRenderer();
     }
@@ -331,24 +338,22 @@ export class ConfusionMatrix implements IAppView {
 
     this.renderFPFN(data, fpfnRenderer);
     this.renderClassSize(datasets, new LabelCellRenderer());
-    this.renderPrecisionColumn(datasets, fpfnRenderer);
+    this.renderPrecisionColumn(dataPrecision, fpfnRenderer, datasets[0].labels);
   }
 
-  renderPrecisionColumn(datasets: ILoadedMalevoDataset[], renderer: ACellRenderer) {
-    let res = [];
-    res = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
-    const maxVal = Math.max(...res.map((x: Matrix<number[]>) => max(x, (d) => Math.max(...d))));
-    res = res.map((x) => x.values.map((y) => y[0]));
-    res = zip(res);
+  renderPrecisionColumn(data: Matrix<number[]>[], renderer: ACellRenderer, labels: string[]) {
+    const maxVal = Math.max(...data.map((x: Matrix<number[]>) => max(x, (d) => Math.max(...d))));
+    let transformedData = data.map((x) => x.to1DArray());
+    transformedData = zip(transformedData);
 
     this.precisionColumn.$node
       .selectAll('div')
-      .data(res)
+      .data(transformedData)
       .enter()
       .append('div')
       .classed('cell', true)
       .each(function(datum, index) {
-        const completeDatum = {linecell: datum.map((x) => {return {values: x, max: maxVal, classLabel: datasets[0].labels[index]};}), heatcell: null};
+        const completeDatum = {linecell: datum.map((x) => {return {values: x, max: maxVal, classLabel: labels[index]};}), heatcell: null};
         renderer.renderNext(new ACell(completeDatum, d3.select(this)));
       });
   }
@@ -367,8 +372,8 @@ export class ConfusionMatrix implements IAppView {
   }
 
   renderFPFN(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[], renderer: ACellRenderer) {
-    const fpData = this.fpColumnData(data);
-    const fnData = this.fnColumnData(data);
+    const fpData = this.fpPanelData(data);
+    const fnData = this.fnPanelData(data);
 
     this.fpColumn.$node
       .selectAll('div')
@@ -397,7 +402,7 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  fpColumnData(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[]) {
+  fpPanelData(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[]) {
     data = data.slice(0);
     const arrays = [], size = this.CONF_SIZE;
     while (data.length > 0) {
@@ -406,7 +411,7 @@ export class ConfusionMatrix implements IAppView {
     return arrays;
   }
 
-  fnColumnData(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[]) {
+  fnPanelData(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[]) {
     const res = [];
     for(let i = 0; i < this.CONF_SIZE; i++) {
       res.push(data.filter((x, j) => j % 10 === i));
@@ -415,6 +420,9 @@ export class ConfusionMatrix implements IAppView {
   }
 
   classSizeData(datasets: ILoadedMalevoDataset[]) {
+    if(datasets[0].singleEpochData !== null) {
+      return confMeasures.calcForMultipleClasses(datasets[0].singleEpochData.confusionData, confMeasures.ClassSize);
+    }
     return confMeasures.calcForMultipleClasses(datasets[0].multiEpochData[0].confusionData, confMeasures.ClassSize);
   }
 
