@@ -301,9 +301,9 @@ export class ConfusionMatrix implements IAppView {
       });
       datafpfn = multiEpochContent;
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
-      singleEpochIndex = data[0].heatcell.indexInMultiSelection;
+      singleEpochIndex = data[1].heatcell.indexInMultiSelection;
 
-      matrixRenderer = new HeatCellRenderer();
+      matrixRenderer = new HeatCellRenderer(false);
       matrixRenderer
         .setNextRenderer(new MatrixLineCellRenderer())
         .setNextRenderer(new VerticalLineRenderer());
@@ -320,7 +320,7 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.PPV));
       singleEpochIndex = data[0].heatcell.indexInMultiSelection;
 
-      matrixRenderer = new HeatCellRenderer();
+      matrixRenderer = new HeatCellRenderer(true);
       fpfnRenderer = new BarchartRenderer();
     } else if(this.renderMode === RenderMode.MULTI) {
       multiEpochContent = new MultiEpochCalculator().calculate(datasets);

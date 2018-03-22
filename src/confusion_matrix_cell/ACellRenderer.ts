@@ -24,6 +24,9 @@ export abstract class ACellRenderer {
 }
 
 export class HeatCellRenderer extends ACellRenderer {
+  constructor(private showNumber: boolean) {
+    super();
+  }
   protected render(cell: ACell) {
      const $subCells = cell.$node
        .selectAll('div')
@@ -39,7 +42,7 @@ export class HeatCellRenderer extends ACellRenderer {
         return datum.colorValue;
       })
       .style('color', (datum: {count: number, colorValue: string}) => adaptTextColorToBgColor(datum.colorValue))
-      .text((datum: {count: number, colorValue: string}) => datum.count);
+      .text((datum: {count: number, colorValue: string}) => this.showNumber ? datum.count : '');
   }
 }
 

@@ -85,30 +85,5 @@ export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMa
   return matrix;
 }
 
-//todo find a better place for this code since it is not related to confusion measures
-export function calcSummedPercent(matrices: NumberMatrix[]): number[] {
-  const order = matrices[0].order();
-  const arr = [];
-  if(matrices.length === 0) {
-    return arr;
-  }
 
-  for(const m of matrices) {
-    const res = calcSums(m);
-    arr.push(res);
-  }
-  return arr;
-}
 
-export function calcSums(matrix: NumberMatrix) {
-  let tpSum = 0;
-  let classSizeSum = 0;
-  for(let i = 0; i < matrix.order(); i++) {
-    tpSum += TP(matrix, i);
-    classSizeSum += ClassSize(matrix, i);
-  }
-  if(classSizeSum === 0) {
-    return 0;
-  }
-  return tpSum / classSizeSum;
-}
