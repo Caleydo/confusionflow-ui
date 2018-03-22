@@ -61,27 +61,27 @@ export function calcForMultipleClasses(matrix: NumberMatrix, funct: (matrix: Num
   return result;
 }
 
-export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMatrix, index: number) => number): Matrix<IClassEvolution> {
-  const order = matrices[0].order() + 1;
+export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMatrix, index: number) => number): Matrix<number[]> {
+  const order = matrices[0].order();
 
   if(matrices.length === 0) {
-    return new Matrix<IClassEvolution>(0, 0);
+    return new Matrix<number[]>(0, 0);
   }
-  const matrix = new Matrix<IClassEvolution>(order, 1);
-  const arr:IClassEvolution[][] = [];
+  const matrix = new Matrix<number[]>(order, 1);
+  const arr:number[][][] = [];
   for(let i = 0; i < order; i++) {
     arr[i] = [];
-    arr[i][0] = {values: [], label: ''};
+    arr[i][0] = [];
   }
   matrix.init(arr);
 
   for(const m of matrices) {
     const res = calcForMultipleClasses(m, funct);
-    matrix.values.map((c, i) => c[0].values.push(res[i]));
+    matrix.values.map((c, i) => c[0].push(res[i]));
   }
 
-  const summedPercent = calcSummedPercent(matrices);
-  matrix.values[order - 1][0].values = summedPercent;
+  //const summedPercent = calcSummedPercent(matrices);
+  //matrix[order - 1][0] = summedPercent;
   return matrix;
 }
 

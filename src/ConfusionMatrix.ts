@@ -337,10 +337,9 @@ export class ConfusionMatrix implements IAppView {
   renderPrecisionColumn(datasets: ILoadedMalevoDataset[], renderer: ACellRenderer) {
     let res = [];
     res = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
-    const maxVal = Math.max(...res.map((x: Matrix<IClassEvolution>) => max(x, (d) => Math.max(...d.values))));
+    const maxVal = Math.max(...res.map((x: Matrix<number[]>) => max(x, (d) => Math.max(...d))));
     res = res.map((x) => x.values.map((y) => y[0]));
     res = zip(res);
-    res = res.map((x) => x.map((y) => y.values));
 
     this.precisionColumn.$node
       .selectAll('div')
