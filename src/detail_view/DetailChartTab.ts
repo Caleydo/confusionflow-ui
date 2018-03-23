@@ -7,7 +7,10 @@ import {IClassEvolution, max} from '../DataStructures';
 import {Language} from '../language';
 import {App} from '../app';
 import {MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
-import {DetailViewRenderer, MatrixLineCellRenderer, VerticalLineRenderer} from '../confusion_matrix_cell/ACellRenderer';
+import {
+  AxisRenderer, DetailViewRenderer, MatrixLineCellRenderer,
+  VerticalLineRenderer
+} from '../confusion_matrix_cell/ACellRenderer';
 
 function addDashedLines($g: d3.Selection<any>, x: any, singleEpochIndex: number, height: number, width: number) {
   const $line = $g.append('line').attr('y1', 0).attr('y2', height);
@@ -103,10 +106,10 @@ export class DetailChartTab extends ADetailViewTab {
     if(!DataStoreCellSelection2.cell) {
       return;
     }
-    const cell = DataStoreCellSelection2.cell;
-    if(!(cell instanceof MatrixCell) && !(cell instanceof PanelCell)) {
+    if(!(DataStoreCellSelection2.cell instanceof MatrixCell) && !(DataStoreCellSelection2.cell instanceof PanelCell)) {
       return;
     }
+    const cell = DataStoreCellSelection2.cell;
     if(cell.data.linecell === null) {
       return;
     }
@@ -135,6 +138,7 @@ export class DetailChartTab extends ADetailViewTab {
     const detailViewCell = new MatrixCell(cell.data, this.$svg);
     const renderer = new DetailViewRenderer(this.width, this.height);
     renderer
+      .setNextRenderer(new AxisRenderer(this.width, this.height))
       .setNextRenderer(new VerticalLineRenderer());
     renderer.renderNext(detailViewCell);
     //this.renderAxis(y);

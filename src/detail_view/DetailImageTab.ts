@@ -1,9 +1,13 @@
 import {ADetailViewTab} from './ADetailViewTab';
-import {DataStoreCellSelection, DataStoreTimelineSelection} from '../DataStore';
+import {
+  DataStoreCellSelection, DataStoreCellSelection2, dataStoreTimelines,
+  DataStoreTimelineSelection
+} from '../DataStore';
 import {getAPIData, getAPIJSON} from 'phovea_core/src/ajax';
 import {AppConstants} from '../AppConstants';
 import {Language} from '../language';
 import {extractEpochId} from '../utils';
+import {MatrixCell} from '../confusion_matrix_cell/Cell';
 
 export class DetailImageTab extends ADetailViewTab {
   public id: string = AppConstants.IMAGE_VIEW;
@@ -19,8 +23,41 @@ export class DetailImageTab extends ADetailViewTab {
   }
 
   render() {
+    if(!DataStoreCellSelection2.cell || !(DataStoreCellSelection2.cell instanceof MatrixCell)) {
+      return;
+    }
+    const cell = DataStoreCellSelection2.cell;
+    if(!cell.data.heatcell) {
+      return;
+    }
+
+    this.$node.html(`
+      <p class="title"></p>
+      <div class="images"><div class="loading">Loading images...</div></div>
+    `);
+    this.$node.select('.title')
+        .html(`<strong>${cell.groundTruth}</strong> ${Language.PREDICTED_AS} <strong>${cell.predicted}</strong>`);
+
+    dataStoreTimelines.forEach((timeline) => {
+      const runId = timeline.selectedDataset.name;
+      const epochId = timeline.singleSelected.id;
+
+      getAPIJSON(`/malevo/confmat/cell/imageIds?runId=${runId}&epochId=${epochId}&groundTruthId=${cell.groundTruth}&predictedId=${cell.predicted}`)
+      .then((data: number[]) => {
+        const imageIds = data.join(',');
+        return getAPIData(`/malevo/images/imageSprite?imageIds=${imageIds}`, {}, 'blob');
+      })
+      .then((imageSprite) => {
+        this.$node.select('.images .loading').classed('hidden', true);
+        const imageUrl = window.URL.createObjectURL(imageSprite);
+        this.$node.select('.images').append('img').attr('src', imageUrl);
+      });
+    });
+
+
+
     // currently, we just show images when clicking on a cm-matrix cell
-    if(!DataStoreCellSelection.isMatrixCell()) {
+   /*if(!DataStoreCellSelection.isMatrixCell()) {
       return;
     }
     const predicted: number = DataStoreCellSelection.colIndex;
@@ -46,7 +83,7 @@ export class DetailImageTab extends ADetailViewTab {
         this.$node.select('.images .loading').classed('hidden', true);
         const imageUrl = window.URL.createObjectURL(imageSprite);
         this.$node.select('.images').append('img').attr('src', imageUrl);
-      });
+      });*/
   }
 
   clear() {

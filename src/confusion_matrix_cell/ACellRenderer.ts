@@ -3,6 +3,7 @@ import {ACell, LabelCell, MatrixCell, PanelCell} from './Cell';
 import {adaptTextColorToBgColor} from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
+import {Language} from '../language';
 
 /**
  * Created by Martin on 19.03.2018.
@@ -143,7 +144,13 @@ export class DetailViewRenderer extends ACellRenderer {
 
 export class VerticalLineRenderer extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
+    if(cell.data.heatcell === null) {
+      return;
+    }
     const singleEpochIndex = cell.data.heatcell.indexInMultiSelection[0]; // select first single epoch index
+    if(singleEpochIndex === null) { //todo improve so that this is not necessary
+      return;
+    }
     const $g = cell.$node.select('g');
     const width = (<any>cell.$node[0][0]).clientWidth;
     const height = (<any>cell.$node[0][0]).clientHeight;
@@ -169,6 +176,68 @@ export class LabelCellRenderer extends ACellRenderer {
     cell.$node
       .classed('label-cell', true)
       .text(cell.labelData.label);
+  }
+}
+
+export class AxisRenderer extends ACellRenderer {
+  constructor(private width: number, private height: number) {
+    super();
+  }
+
+  protected render(cell: MatrixCell | PanelCell) {
+    const $g = cell.$node.select('g');
+    if($g === null) {
+      return;
+    }
+    const values = cell.data.linecell[0].values;
+    const x = d3.scale.ordinal()
+      .domain(values.map((x) => String(x)))
+      .rangePoints([0, this.width]);
+
+    const y = d3.scale.linear()
+      .rangeRound([this.height, 0])
+      .domain([0, 200]);
+
+    //todo these are magic constants: use a more sophisticated algo to solve this
+    let tickFrequency = 1;
+    if(values.length > 20) {
+      tickFrequency = 4;
+    }
+
+    const ticks = values.filter((x, i) => i % tickFrequency === 0 );
+    const xAxis = d3.svg.axis()
+      .scale(x)
+      .tickValues(ticks);
+
+    $g.append('g')
+      .attr('class', 'chart-axis-x')
+      .attr('transform', 'translate(0,' + this.height + ')')
+      .call(xAxis);
+
+    const yAxis = d3.svg.axis()
+      .scale(y)
+      .orient('left');
+
+    $g.append('g')
+      .attr('class', 'chart-axis-y')
+      .call(yAxis);
+
+    const axisDistance = 100;
+    // now add titles to the axes
+    $g.append('text')
+        .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
+        .attr('transform', 'translate('+ (-axisDistance/2) +','+(this.height/2)+')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
+        ;//.text(this.getYLabelText());
+
+    $g.append('text')
+        .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
+        .attr('transform', 'translate('+ (this.width/2) +','+(this.height-(-axisDistance))+')')  // centre below axis
+        .text(Language.EPOCH);
+
+	  $g.selectAll('.chart-axis-x text')  // select all the text elements for the xaxis
+          .attr('transform', function(d) {
+             return 'translate(' + this.getBBox().height*-2 + ',' + this.getBBox().height + ')rotate(-45)';
+         });
   }
 }
 

@@ -12,7 +12,6 @@ import {
 } from './confusion_matrix_cell/ACellRenderer';
 import {ACell, LabelCell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
 import {adaptTextColorToBgColor, zip} from './utils';
-import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal, max, IClassEvolution, Matrix} from './DataStructures';
@@ -337,11 +336,14 @@ export class ConfusionMatrix implements IAppView {
       fpfnRenderer = new MatrixLineCellRenderer();
     }
 
+    const that = this;
     $cells.enter()
       .append('div')
       .classed('cell', true)
       .each(function (datum, index) {
-        matrixRenderer.renderNext(new MatrixCell(data[index], d3.select(this)));
+        const predicted = index % that.CONF_SIZE;
+        const groundTruth = Math.floor(index / that.CONF_SIZE);
+        matrixRenderer.renderNext(new MatrixCell(data[index], d3.select(this), datasets[0].labels[predicted], datasets[0].labels[groundTruth]));
       });
 
     this.renderFPFN(data, fpfnRenderer, singleEpochIndex);

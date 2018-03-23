@@ -1,4 +1,3 @@
-import {ACellRenderer} from '../CellRenderer';
 import {Line, MatrixHeatCellContent} from './CellContent';
 import {DataStoreCellSelection2} from '../DataStore';
 
@@ -21,7 +20,7 @@ export class ACell {
 }
 
 export class MatrixCell extends ACell {
-  constructor(public data: {linecell: Line[], heatcell: MatrixHeatCellContent}, public $node: d3.Selection<any>) {
+  constructor(public data: {linecell: Line[], heatcell: MatrixHeatCellContent}, public $node: d3.Selection<any>, public predicted: string, public groundTruth: string) {
     super($node);
   }
 }
