@@ -1,5 +1,5 @@
 import {Line, MatrixHeatCellContent} from './CellContent';
-import {ACell, LabelCell} from './Cell';
+import {ACell, LabelCell, MatrixCell, PanelCell} from './Cell';
 import {adaptTextColorToBgColor} from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
@@ -27,7 +27,7 @@ export class HeatCellRenderer extends ACellRenderer {
   constructor(private showNumber: boolean) {
     super();
   }
-  protected render(cell: ACell) {
+  protected render(cell: MatrixCell | PanelCell) {
      const $subCells = cell.$node
        .selectAll('div')
        .data((x: MatrixHeatCellContent, index: number) => {
@@ -47,7 +47,7 @@ export class HeatCellRenderer extends ACellRenderer {
 }
 
 export class MatrixLineCellRenderer extends ACellRenderer {
-  protected render(cell: ACell) {
+  protected render(cell: MatrixCell | PanelCell) {
     const data: Line[] = cell.data.linecell;
     const $svg = cell.$node.append('svg').datum(data);
 
@@ -63,9 +63,19 @@ export class MatrixLineCellRenderer extends ACellRenderer {
     const y = d3.scale.linear().rangeRound([height, 0]);
     const z = d3.scale.category10();
 
-    x.domain([0, data[0].values.length - 1]);
-    y.domain([0, data[0].max]);
-    z.domain(data.map((x) => x.classLabel));
+    //todo improve data structues
+    // if it is a matrix cell and cell 0 and it is removed (matrix diagonal filtering)
+    // use cell 1 for calculation
+    if(data.length > 1 && data[0].values.length === 0) {
+      x.domain([0, data[1].values.length - 1]);
+      y.domain([0, data[1].max]);
+      z.domain(data.map((x) => x.classLabel));
+    } else {
+      x.domain([0, data[0].values.length - 1]);
+      y.domain([0, data[0].max]);
+      z.domain(data.map((x) => x.classLabel));
+    }
+
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -85,8 +95,54 @@ export class MatrixLineCellRenderer extends ACellRenderer {
   }
 }
 
+export class DetailViewRenderer extends ACellRenderer {
+  constructor(private width: number, private height: number) {
+    super();
+  }
+
+  protected render(cell: MatrixCell | PanelCell) {
+    const data: Line[] = cell.data.linecell;
+
+
+    const x = d3.scale.linear().rangeRound([0, this.width]);
+    const y = d3.scale.linear().rangeRound([this.height, 0]);
+    const z = d3.scale.category10();
+
+    //todo improve data structues
+    // if it is a matrix cell and cell 0 and it is removed (matrix diagonal filtering)
+    // use cell 1 for calculation
+    if(data.length > 1 && data[0].values.length === 0) {
+      x.domain([0, data[1].values.length - 1]);
+      y.domain([0, data[1].max]);
+      z.domain(data.map((x) => x.classLabel));
+    } else {
+      x.domain([0, data[0].values.length - 1]);
+      y.domain([0, data[0].max]);
+      z.domain(data.map((x) => x.classLabel));
+    }
+
+    const line = d3_shape.line()
+      .x((d, i) => {
+        return x(i);
+      })
+      .y((d) => {
+        return y(d);
+      });
+
+    const $epochLine = cell.$node.select('g').selectAll('path')
+      .data(data)
+      .enter().append('path')
+      .classed('detail-view-line', true)
+      .attr('d', (d) => line(d.values))
+      .attr('stroke', (d) => z(d.classLabel))
+      .append('title')
+      .text((d) => d.classLabel);
+  }
+
+}
+
 export class VerticalLineRenderer extends ACellRenderer {
-  protected render(cell: ACell) {
+  protected render(cell: MatrixCell | PanelCell) {
     const singleEpochIndex = cell.data.heatcell.indexInMultiSelection[0]; // select first single epoch index
     const $g = cell.$node.select('g');
     const width = (<any>cell.$node[0][0]).clientWidth;
@@ -103,7 +159,7 @@ export class VerticalLineRenderer extends ACellRenderer {
 }
 
 export class BarchartRenderer extends ACellRenderer {
-  protected render(cell: ACell) {
+  protected render(cell: MatrixCell | PanelCell) {
     cell.$node.text('barchart here');
   }
 }

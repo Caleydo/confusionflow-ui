@@ -45,6 +45,8 @@ export class AppConstants {
    */
   static EVENT_REDRAW = 'eventRedraw';
 
+  static EVENT_SELL_SELECTED = 'eventCellSelected';
+
   /**
    * Represent the different cell types
    * @type {string}
@@ -53,8 +55,9 @@ export class AppConstants {
   static SINGLE_LINE_PRECISION = 'singleLinePrecision';
   static COMBINED_CHART_CELL_PRECISION = 'combinedChartCellPrecision';
 
-  static BAR_CHART_CELL_FP = 'barChartCellFP';
-  static BAR_CHART_CELL_FN = 'barChartCellFN';
+  static CELL_FP = 'cellFP';
+  static CELL_FN = 'cellFN';
+  static CELL_PRECISION = 'cellPrecision';
 
   static MULTI_LINE_CHART_CELL_FP = 'multiLineChartCellFP';
   static MULTI_LINE_CHART_CELL_FN = 'multiLineChartCellFN';

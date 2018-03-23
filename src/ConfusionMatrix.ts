@@ -10,7 +10,7 @@ import {
   ACellRenderer, HeatCellRenderer, MatrixLineCellRenderer,
   VerticalLineRenderer, BarchartRenderer, LabelCellRenderer
 } from './confusion_matrix_cell/ACellRenderer';
-import {ACell, LabelCell} from './confusion_matrix_cell/Cell';
+import {ACell, LabelCell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
 import {adaptTextColorToBgColor, zip} from './utils';
 import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
 import * as confMeasures from './ConfusionMeasures';
@@ -341,7 +341,7 @@ export class ConfusionMatrix implements IAppView {
       .append('div')
       .classed('cell', true)
       .each(function (datum, index) {
-        matrixRenderer.renderNext(new ACell(data[index], d3.select(this)));
+        matrixRenderer.renderNext(new MatrixCell(data[index], d3.select(this)));
       });
 
     this.renderFPFN(data, fpfnRenderer, singleEpochIndex);
@@ -363,7 +363,7 @@ export class ConfusionMatrix implements IAppView {
       .each(function(datum, index) {
         const completeDatum = {linecell: datum.map((x) => {return {values: x, max: maxVal, classLabel: labels[index]};}),
           heatcell: {indexInMultiSelection: [singleEpochIndex], counts: null, colorValues: null, classLabels: null}};
-        renderer.renderNext(new ACell(completeDatum, d3.select(this)));
+        renderer.renderNext(new PanelCell(completeDatum, d3.select(this), AppConstants.CELL_PRECISION));
       });
   }
 
@@ -381,9 +381,9 @@ export class ConfusionMatrix implements IAppView {
         const y = fpData[index].map((x) => x);
         const z = y.map((x) => x.linecell);
         const merged = [].concat.apply([], z);
-        renderer.renderNext(new ACell({linecell: merged,
+        renderer.renderNext(new PanelCell({linecell: merged,
           heatcell: {indexInMultiSelection: [singleEpochIndex], counts: null, colorValues: null, classLabels: null}},
-          d3.select(this)));
+          d3.select(this), AppConstants.CELL_FP));
       });
 
     this.fnColumn.$node
@@ -396,9 +396,9 @@ export class ConfusionMatrix implements IAppView {
         const y = fnData[index].map((x) => x);
         const z = y.map((x) => x.linecell);
         const merged = [].concat.apply([], z);
-        renderer.renderNext(new ACell({linecell: merged,
+        renderer.renderNext(new PanelCell({linecell: merged,
           heatcell: {indexInMultiSelection: [singleEpochIndex], counts: null, colorValues: null, classLabels: null}},
-          d3.select(this)));
+          d3.select(this), AppConstants.CELL_FN));
       });
   }
 

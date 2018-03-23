@@ -1,11 +1,13 @@
 import {ADetailViewTab} from './ADetailViewTab';
-import {DataStoreCellSelection, DataStoreTimelineSelection} from '../DataStore';
+import {DataStoreCellSelection, DataStoreCellSelection2, DataStoreTimelineSelection} from '../DataStore';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 import {IClassEvolution, max} from '../DataStructures';
 import {Language} from '../language';
 import {App} from '../app';
+import {MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
+import {DetailViewRenderer, MatrixLineCellRenderer, VerticalLineRenderer} from '../confusion_matrix_cell/ACellRenderer';
 
 function addDashedLines($g: d3.Selection<any>, x: any, singleEpochIndex: number, height: number, width: number) {
   const $line = $g.append('line').attr('y1', 0).attr('y2', height);
@@ -55,7 +57,7 @@ export class DetailChartTab extends ADetailViewTab {
 
   createHeaderText() {
     let text = '';
-    if(DataStoreCellSelection.isMatrixCell()) {
+    /*if(DataStoreCellSelection.isMatrixCell()) {
       const rowLabel = DataStoreCellSelection.labels[DataStoreCellSelection.rowIndex][1];
       text = Language.CONFUSION_Y_LABEL;
       text = text + ' ' + Language.FOR_CLASS + ' ';
@@ -74,7 +76,7 @@ export class DetailChartTab extends ADetailViewTab {
       } else {
         text = Language.OVERALL_PRECISION;
       }
-    }
+    }*/
     this.$header.text(text);
   }
 
@@ -98,9 +100,18 @@ export class DetailChartTab extends ADetailViewTab {
   }
 
   render() {
-    if(DataStoreCellSelection.multiEpochData === null) {
+    if(!DataStoreCellSelection2.cell) {
       return;
     }
+    const cell = DataStoreCellSelection2.cell;
+    if(!(cell instanceof MatrixCell) && !(cell instanceof PanelCell)) {
+      return;
+    }
+    if(cell.data.linecell === null) {
+      return;
+    }
+    const multiEpochData = cell.data.linecell;
+
     this.createHeaderText();
     const margin = {top: 5, right: 10, bottom: 140, left: 65}; // set left + bottom to show axis and labels
     this.width = (<any>this.$node[0][0]).clientWidth - margin.left - margin.right;
@@ -110,19 +121,25 @@ export class DetailChartTab extends ADetailViewTab {
     }
 
     this.$g = this.$svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-    const maxVal = max(DataStoreCellSelection.multiEpochData, (d) => Math.max(...d.values));
+    this.$g.classed('linechart', true);
+    const maxVal = Math.max(...multiEpochData.map((x) => x.max));
 
     const x = d3.scale.linear()
       .rangeRound([0, this.width])
-      .domain([0, DataStoreCellSelection.multiEpochData.values[0][0].values.length - 1]);
+      .domain([0, multiEpochData.length]);
 
     const y = d3.scale.linear()
       .rangeRound([this.height, 0])
       .domain([0, maxVal]);
 
-    this.renderAxis(y);
+    const detailViewCell = new MatrixCell(cell.data, this.$svg);
+    const renderer = new DetailViewRenderer(this.width, this.height);
+    renderer
+      .setNextRenderer(new VerticalLineRenderer());
+    renderer.renderNext(detailViewCell);
+    //this.renderAxis(y);
 
-    if(DataStoreCellSelection.type === AppConstants.SINGLE_LINE_MATRIX_CELL || DataStoreCellSelection.type === AppConstants.SINGLE_LINE_PRECISION ||
+    /*if(DataStoreCellSelection.type === AppConstants.SINGLE_LINE_MATRIX_CELL || DataStoreCellSelection.type === AppConstants.SINGLE_LINE_PRECISION ||
       DataStoreCellSelection.type === AppConstants.COMBINED_MATRIX_CELL || DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_PRECISION) {
       const lineDataOneCell = DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.rowIndex][DataStoreCellSelection.colIndex];
       this.renderSingleLine(lineDataOneCell, x, y, DataStoreCellSelection.singleEpochIndex);
@@ -132,7 +149,7 @@ export class DetailChartTab extends ADetailViewTab {
     } else if(DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_FP || DataStoreCellSelection.type === AppConstants.COMBINED_CHART_CELL_FN) {
       console.assert(DataStoreCellSelection.singleEpochIndex > -1);
       this.renderMultiLine(DataStoreCellSelection.multiEpochData.values[DataStoreCellSelection.colIndex], x, y, DataStoreCellSelection.singleEpochIndex);
-    }
+    }*/
   }
 
   renderAxis(y: any) {

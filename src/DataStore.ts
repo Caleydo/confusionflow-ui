@@ -6,6 +6,7 @@ import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
 import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, min, NumberMatrix} from './DataStructures';
+import {ACell} from './confusion_matrix_cell/Cell';
 
 /**
  * Stores the selected datasets
@@ -65,6 +66,14 @@ export class DataStoreTimelineSelection {
 /**
  * Stores confusion matrix single cell selection
  */
+export class DataStoreCellSelection2 {
+  static cell: ACell;
+  static cellSelected(cell: ACell) {
+    this.cell = cell;
+    events.fire(AppConstants.EVENT_SELL_SELECTED);
+  }
+}
+
 export class DataStoreCellSelection {
   static $grid: d3.Selection<any>;
 

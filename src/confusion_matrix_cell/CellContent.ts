@@ -21,14 +21,14 @@ export class Line {
 }
 
 abstract class ACellContentCalculator {
-  abstract calculate(datasets: ILoadedMalevoDataset[]): {}[];
+  abstract calculate(datasets: ILoadedMalevoDataset[]): Line[] | MatrixHeatCellContent[];
 }
 
 export class SingleEpochCalculator extends ACellContentCalculator {
   constructor(private removeMainDiagonal = true) {
     super();
   }
-  calculate(datasets: ILoadedMalevoDataset[]): {}[] {
+  calculate(datasets: ILoadedMalevoDataset[]): MatrixHeatCellContent[] {
     const transformedData = datasets.map((x) => x.singleEpochData.confusionData.to1DArray());
     const res = zip(transformedData);
 
@@ -59,7 +59,7 @@ export class SingleEpochCalculator extends ACellContentCalculator {
         };
       } else {
         return {
-          colorValues: x.map((y) => heatmapColorScale(y)), counts: x, classLabels: x.map((y) => String(y)),
+          colorValues: x.map((y) => String(heatmapColorScale(y))), counts: x, classLabels: x.map((y) => String(y)),
           indexInMultiSelection: datasets.map((x) => x.multiEpochData.findIndex((y) => y.id === x.singleEpochData.id))
         };
       }
@@ -71,7 +71,7 @@ export class MultiEpochCalculator extends ACellContentCalculator {
   constructor(private removeMainDiagonal = true) {
     super();
   }
-  calculate(datasets: ILoadedMalevoDataset[]): {}[] {
+  calculate(datasets: ILoadedMalevoDataset[]): Line[] {
     const datasetData = [];
     datasets.forEach((ds: ILoadedMalevoDataset) => {
       const confData = ds.multiEpochData.map((x) => x.confusionData.to1DArray());
