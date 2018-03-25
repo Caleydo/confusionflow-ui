@@ -305,10 +305,10 @@ export class ConfusionMatrix implements IAppView {
       matrixRenderer = new HeatCellRenderer(false);
       matrixRenderer
         .setNextRenderer(new MatrixLineCellRenderer())
-        .setNextRenderer(new VerticalLineRenderer());
+        .setNextRenderer(new VerticalLineRenderer(-1, -1));
       fpfnRenderer = new MatrixLineCellRenderer();
       fpfnRenderer
-        .setNextRenderer(new VerticalLineRenderer());
+        .setNextRenderer(new VerticalLineRenderer(-1, -1));
     } else if(this.renderMode === RenderMode.SINGLE) {
       singleEpochContent = new SingleEpochCalculator().calculate(datasets);
       data = singleEpochContent.map((x) => {return {heatcell: x, linecell: null};});

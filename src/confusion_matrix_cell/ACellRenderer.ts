@@ -5,6 +5,7 @@ import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 import {Language} from '../language';
 import {dataStoreTimelines} from '../DataStore';
+import {time} from 'd3';
 
 /**
  * Created by Martin on 19.03.2018.
@@ -73,9 +74,8 @@ export class MatrixLineCellRenderer extends ACellRenderer {
       return;
     }
 
-    const index = getValidDataIndex(data);
-    x.domain([0, data[index].values.length - 1]);
-    y.domain([0, data[index].max]);
+    x.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).values.length - 1]);
+    y.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).max]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -113,9 +113,8 @@ export class DetailViewRenderer extends ACellRenderer {
     const y = d3.scale.linear().rangeRound([this.height, 0]);
     const z = d3.scale.category10();
 
-    const index = getValidDataIndex(data);
-    x.domain([0, data[index].values.length - 1]);
-    y.domain([0, data[index].max]);
+    x.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).values.length - 1]);
+    y.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).max]);
     //z.domain(data.map((x) => x.classLabel));
 
     const line = d3_shape.line()
@@ -140,12 +139,16 @@ export class DetailViewRenderer extends ACellRenderer {
 }
 
 export class VerticalLineRenderer extends ACellRenderer {
+  constructor(private width: number, private height: number) {
+    super();
+  }
+
   protected render(cell: MatrixCell | PanelCell) {
     if(cell.data.heatcell === null) {
       return;
     }
     const singleEpochIndex = cell.data.heatcell.indexInMultiSelection[0]; // select first single epoch index
-    if(singleEpochIndex === null) { //todo improve so that this is not necessary
+    if(!singleEpochIndex) { //todo improve so that this is not necessary
       return;
     }
     const data: Line[] = [].concat.apply([], cell.data.linecell);
@@ -154,13 +157,12 @@ export class VerticalLineRenderer extends ACellRenderer {
       return;
     }
     const $g = cell.$node.select('g');
-    const width = (<any>cell.$node[0][0]).clientWidth;
-    const height = (<any>cell.$node[0][0]).clientHeight;
+    const width = this.width > -1 ? this.width : (<any>cell.$node[0][0]).clientWidth;
+    const height = this.height > -1 ? this.height : (<any>cell.$node[0][0]).clientHeight;
     const x = d3.scale.linear().rangeRound([0, width]);
     const y = d3.scale.linear().rangeRound([height, 0]);
 
-    const index = getValidDataIndex(data);
-    x.domain([0, data[index].values.length - 1]);
+    x.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).values.length - 1]);
     if(singleEpochIndex > -1) {
       this.addDashedLines($g, x, singleEpochIndex, width, height);
     }
@@ -215,23 +217,23 @@ export class AxisRenderer extends ACellRenderer {
       return;
     }
 
-    const index = getValidDataIndex(data);
-    const selectedEpochRange = dataStoreTimelines.values().next().value.multiSelected;
-    const values = selectedEpochRange.map((x) => x.name);
 
-    console.assert(data[index].values.length === selectedEpochRange.length);
+    const timelineArray = Array.from(dataStoreTimelines.values());
+    const selectedRangesLength = timelineArray.map((x) => x.multiSelected.length);
+    const largest = selectedRangesLength.indexOf(Math.max(...selectedRangesLength));
+    const values = timelineArray[largest].multiSelected.map((x) => x.name);
+
     const x = d3.scale.ordinal()
       .domain(values)
       .rangePoints([0, this.width]);
 
-    const maxVal = data[index].max;
     const y = d3.scale.linear()
       .rangeRound([this.height, 0])
-      .domain([0, maxVal]);
+      .domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).max]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
     let tickFrequency = 1;
-    if(selectedEpochRange.length > 20) {
+    if(selectedRangesLength[largest] > 20) {
       tickFrequency = 4;
     }
 
@@ -272,13 +274,10 @@ export class AxisRenderer extends ACellRenderer {
   }
 }
 
-function getValidDataIndex(data: Line[]) {
-    let index = 0;
-    for(let i = 0; i < data.length; i++) {
-      if(data[i].values.length > 0) {
-        index = i;
-        break;
-      }
-    }
-    return index;
-  }
+function getLargest(data: Line[], func: ((x: Line, y: Line) => boolean)): Line {
+  console.assert(data.length > 0);
+  const res = data.reduce((acc, val) => {
+    return func(acc, val) ? acc : val;
+  }, data[0]);
+  return res;
+}

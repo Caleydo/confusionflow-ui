@@ -123,15 +123,14 @@ export class DetailChartTab extends ADetailViewTab {
       this.$g.remove();
     }
 
-    this.$g = this.$svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    this.$g = this.$svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
     this.$g.classed('linechart', true);
-    const maxVal = Math.max(...multiEpochData.map((x) => x.max));
 
     const detailViewCell = new MatrixCell(cell.data, this.$svg, '', '', 0, 0);
     const renderer = new DetailViewRenderer(this.width, this.height);
     renderer
       .setNextRenderer(new AxisRenderer(this.width, this.height))
-      .setNextRenderer(new VerticalLineRenderer());
+      .setNextRenderer(new VerticalLineRenderer(this.width, this.height));
     renderer.renderNext(detailViewCell);
     //this.renderAxis(y);
 
