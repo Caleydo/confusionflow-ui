@@ -4,6 +4,7 @@ import {adaptTextColorToBgColor} from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 import {Language} from '../language';
+import {dataStoreTimelines} from '../DataStore';
 
 /**
  * Created by Martin on 19.03.2018.
@@ -50,17 +51,6 @@ export class HeatCellRenderer extends ACellRenderer {
 }
 
 export class MatrixLineCellRenderer extends ACellRenderer {
-  protected getValidDataIndex(data: Line[]) {
-    let index = 0;
-    for(let i = 0; i < data.length; i++) {
-      if(data[i].values.length > 0) {
-        index = i;
-        break;
-      }
-    }
-    return index;
-  }
-
   protected render(cell: MatrixCell | PanelCell) {
     const datasetCount = cell.data.linecell.length;
     const data: Line[] = [].concat.apply([], cell.data.linecell);
@@ -83,7 +73,7 @@ export class MatrixLineCellRenderer extends ACellRenderer {
       return;
     }
 
-    const index = this.getValidDataIndex(data);
+    const index = getValidDataIndex(data);
     x.domain([0, data[index].values.length - 1]);
     y.domain([0, data[index].max]);
 
@@ -106,7 +96,7 @@ export class MatrixLineCellRenderer extends ACellRenderer {
   }
 }
 
-export class DetailViewRenderer extends MatrixLineCellRenderer {
+export class DetailViewRenderer extends ACellRenderer {
   constructor(private width: number, private height: number) {
     super();
   }
@@ -114,13 +104,16 @@ export class DetailViewRenderer extends MatrixLineCellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
     const datasetCount = cell.data.linecell.length;
     const data: Line[] = [].concat.apply([], cell.data.linecell);
-
+    // we don't want to render empty cells
+    if(data.length === 1 && data[0].values.length === 0) {
+      return;
+    }
 
     const x = d3.scale.linear().rangeRound([0, this.width]);
     const y = d3.scale.linear().rangeRound([this.height, 0]);
     const z = d3.scale.category10();
 
-    const index = this.getValidDataIndex(data);
+    const index = getValidDataIndex(data);
     x.domain([0, data[index].values.length - 1]);
     y.domain([0, data[index].max]);
     //z.domain(data.map((x) => x.classLabel));
@@ -148,11 +141,16 @@ export class DetailViewRenderer extends MatrixLineCellRenderer {
 
 export class VerticalLineRenderer extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
-    /*if(cell.data.heatcell === null) {
+    if(cell.data.heatcell === null) {
       return;
     }
     const singleEpochIndex = cell.data.heatcell.indexInMultiSelection[0]; // select first single epoch index
     if(singleEpochIndex === null) { //todo improve so that this is not necessary
+      return;
+    }
+    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    // we don't want to render empty cells
+    if(data.length === 1 && data[0].values.length === 0) {
       return;
     }
     const $g = cell.$node.select('g');
@@ -160,21 +158,29 @@ export class VerticalLineRenderer extends ACellRenderer {
     const height = (<any>cell.$node[0][0]).clientHeight;
     const x = d3.scale.linear().rangeRound([0, width]);
     const y = d3.scale.linear().rangeRound([height, 0]);
-    const data: Line[][] = cell.data.linecell;
 
-    if(data.length === 1 && data[0][0].values.length === 0) {
-      return;
+    const index = getValidDataIndex(data);
+    x.domain([0, data[index].values.length - 1]);
+    if(singleEpochIndex > -1) {
+      this.addDashedLines($g, x, singleEpochIndex, width, height);
     }
+  }
 
-    // if it is a matrix cell and cell 0 and it is removed (matrix diagonal filtering)
-    // use cell 1 for calculation
-    if(data[0].values.length === 0) {
-      x.domain([0, data[0][1].values.length - 1]);
-      y.domain([0, data[0][1].max]);
-    } else {
-      x.domain([0, data[0][0].values.length - 1]);
-      y.domain([0, data[0][0].max]);
-    }*/
+  private addDashedLines($g: d3.Selection<any>, x: any, singleEpochIndex: number, width: number, height: number) {
+    const $line = $g.append('line').attr('y1', 0).attr('y2', height);
+    $line.classed('dashed-lines', true);
+    $line.attr('x1', x(singleEpochIndex) + this.borderOffset($line, x(singleEpochIndex), width)).attr('x2', x(singleEpochIndex) + this.borderOffset($line, x(singleEpochIndex), width));
+  }
+
+  private borderOffset($line: d3.Selection<any>, posX: number, width: number) {
+    let sw = parseInt($line.style('stroke-width'), 10);
+    sw /= 2;
+    if(posX === 0) {
+      return sw;
+    } else if(posX === width) {
+      return -sw;
+    }
+    return 0;
   }
 }
 
@@ -202,20 +208,34 @@ export class AxisRenderer extends ACellRenderer {
     if($g === null) {
       return;
     }
-    const values = cell.data.linecell[0].values;
+    const data: Line[] = [].concat.apply([], cell.data.linecell);
+
+    // we don't want to render empty cells
+    if(data.length === 1 && data[0].values.length === 0) {
+      return;
+    }
+
+    const index = getValidDataIndex(data);
+    const selectedEpochRange = dataStoreTimelines.values().next().value.multiSelected;
+    const values = selectedEpochRange.map((x) => x.name);
+
+    console.assert(data[index].values.length === selectedEpochRange.length);
     const x = d3.scale.ordinal()
-      .domain(values.map((x) => String(x)))
+      .domain(values)
       .rangePoints([0, this.width]);
 
-    const maxVal = Math.max(...cell.data.linecell.map((x) => Math.max(...x.values)));
+    const maxVal = data[index].max;
     const y = d3.scale.linear()
       .rangeRound([this.height, 0])
       .domain([0, maxVal]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
-    const tickFrequency = 1;
+    let tickFrequency = 1;
+    if(selectedEpochRange.length > 20) {
+      tickFrequency = 4;
+    }
 
-    const ticks = values.filter((x, i) => i % tickFrequency === 0 );
+    const ticks = values.filter((x, i) => i % tickFrequency === 0);
     const xAxis = d3.svg.axis()
       .scale(x)
       .tickValues(ticks);
@@ -252,19 +272,13 @@ export class AxisRenderer extends ACellRenderer {
   }
 }
 
-function addDashedLines($g: d3.Selection<any>, x: any, singleEpochIndex: number, width: number, height: number) {
-  const $line = $g.append('line').attr('y1', 0).attr('y2', height);
-  $line.classed('dashed-lines', true);
-  $line.attr('x1', x(singleEpochIndex) + borderOffset($line, x(singleEpochIndex), width)).attr('x2', x(singleEpochIndex) + borderOffset($line, x(singleEpochIndex), width));
-}
-
-function borderOffset($line: d3.Selection<any>, posX: number, width: number) {
-  let sw = parseInt($line.style('stroke-width'), 10);
-  sw /= 2;
-  if(posX === 0) {
-    return sw;
-  } else if(posX === width) {
-    return -sw;
+function getValidDataIndex(data: Line[]) {
+    let index = 0;
+    for(let i = 0; i < data.length; i++) {
+      if(data[i].values.length > 0) {
+        index = i;
+        break;
+      }
+    }
+    return index;
   }
-  return 0;
-}
