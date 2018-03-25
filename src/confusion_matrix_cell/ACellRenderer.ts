@@ -9,6 +9,8 @@ import {Language} from '../language';
  * Created by Martin on 19.03.2018.
  */
 
+const linePatterns = ['1, 1', '5, 5', '10, 10', '20,10,5,5,5,10'];
+
 export abstract class ACellRenderer {
   nextRenderer: ACellRenderer = null;
   setNextRenderer(renderer: ACellRenderer): ACellRenderer {
@@ -48,8 +50,20 @@ export class HeatCellRenderer extends ACellRenderer {
 }
 
 export class MatrixLineCellRenderer extends ACellRenderer {
+  protected getValidDataIndex(data: Line[]) {
+    let index = 0;
+    for(let i = 0; i < data.length; i++) {
+      if(data[i].values.length > 0) {
+        index = i;
+        break;
+      }
+    }
+    return index;
+  }
+
   protected render(cell: MatrixCell | PanelCell) {
-    const data: Line[] = cell.data.linecell;
+    const datasetCount = cell.data.linecell.length;
+    const data: Line[] = [].concat.apply([], cell.data.linecell);
     const $svg = cell.$node.append('svg').datum(data);
 
     const width = (<any>cell.$node[0][0]).clientWidth;
@@ -64,19 +78,14 @@ export class MatrixLineCellRenderer extends ACellRenderer {
     const y = d3.scale.linear().rangeRound([height, 0]);
     const z = d3.scale.category10();
 
-    //todo improve data structues
-    // if it is a matrix cell and cell 0 and it is removed (matrix diagonal filtering)
-    // use cell 1 for calculation
-    if(data.length > 1 && data[0].values.length === 0) {
-      x.domain([0, data[1].values.length - 1]);
-      y.domain([0, data[1].max]);
-      z.domain(data.map((x) => x.classLabel));
-    } else {
-      x.domain([0, data[0].values.length - 1]);
-      y.domain([0, data[0].max]);
-      z.domain(data.map((x) => x.classLabel));
+    // we don't want to render empty cells
+    if(data.length === 1 && data[0].values.length === 0) {
+      return;
     }
 
+    const index = this.getValidDataIndex(data);
+    x.domain([0, data[index].values.length - 1]);
+    y.domain([0, data[index].max]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -91,36 +100,30 @@ export class MatrixLineCellRenderer extends ACellRenderer {
       .enter().append('path')
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d) => z(d.classLabel))
+      .attr('stroke-dasharray', (d, i) => linePatterns[Math.floor(i / (data.length / datasetCount))])
       .append('title')
       .text((d) => d.classLabel);
   }
 }
 
-export class DetailViewRenderer extends ACellRenderer {
+export class DetailViewRenderer extends MatrixLineCellRenderer {
   constructor(private width: number, private height: number) {
     super();
   }
 
   protected render(cell: MatrixCell | PanelCell) {
-    const data: Line[] = cell.data.linecell;
+    const datasetCount = cell.data.linecell.length;
+    const data: Line[] = [].concat.apply([], cell.data.linecell);
 
 
     const x = d3.scale.linear().rangeRound([0, this.width]);
     const y = d3.scale.linear().rangeRound([this.height, 0]);
     const z = d3.scale.category10();
 
-    //todo improve data structues
-    // if it is a matrix cell and cell 0 and it is removed (matrix diagonal filtering)
-    // use cell 1 for calculation
-    if(data.length > 1 && data[0].values.length === 0) {
-      x.domain([0, data[1].values.length - 1]);
-      y.domain([0, data[1].max]);
-      z.domain(data.map((x) => x.classLabel));
-    } else {
-      x.domain([0, data[0].values.length - 1]);
-      y.domain([0, data[0].max]);
-      z.domain(data.map((x) => x.classLabel));
-    }
+    const index = this.getValidDataIndex(data);
+    x.domain([0, data[index].values.length - 1]);
+    y.domain([0, data[index].max]);
+    //z.domain(data.map((x) => x.classLabel));
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -136,6 +139,7 @@ export class DetailViewRenderer extends ACellRenderer {
       .classed('detail-view-line', true)
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d) => z(d.classLabel))
+      .attr('stroke-dasharray', (d, i) => linePatterns[Math.floor(i / (data.length / datasetCount))])
       .append('title')
       .text((d) => d.classLabel);
   }
@@ -144,7 +148,7 @@ export class DetailViewRenderer extends ACellRenderer {
 
 export class VerticalLineRenderer extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
-    if(cell.data.heatcell === null) {
+    /*if(cell.data.heatcell === null) {
       return;
     }
     const singleEpochIndex = cell.data.heatcell.indexInMultiSelection[0]; // select first single epoch index
@@ -156,12 +160,21 @@ export class VerticalLineRenderer extends ACellRenderer {
     const height = (<any>cell.$node[0][0]).clientHeight;
     const x = d3.scale.linear().rangeRound([0, width]);
     const y = d3.scale.linear().rangeRound([height, 0]);
-    const data: Line[] = cell.data.linecell;
-    x.domain([0, data[0].values.length - 1]);
-    y.domain([0, data[0].max]);
-    if(singleEpochIndex > -1) {
-      addDashedLines($g, x, singleEpochIndex, width, height);
+    const data: Line[][] = cell.data.linecell;
+
+    if(data.length === 1 && data[0][0].values.length === 0) {
+      return;
     }
+
+    // if it is a matrix cell and cell 0 and it is removed (matrix diagonal filtering)
+    // use cell 1 for calculation
+    if(data[0].values.length === 0) {
+      x.domain([0, data[0][1].values.length - 1]);
+      y.domain([0, data[0][1].max]);
+    } else {
+      x.domain([0, data[0][0].values.length - 1]);
+      y.domain([0, data[0][0].max]);
+    }*/
   }
 }
 
@@ -194,15 +207,13 @@ export class AxisRenderer extends ACellRenderer {
       .domain(values.map((x) => String(x)))
       .rangePoints([0, this.width]);
 
+    const maxVal = Math.max(...cell.data.linecell.map((x) => Math.max(...x.values)));
     const y = d3.scale.linear()
       .rangeRound([this.height, 0])
-      .domain([0, 200]);
+      .domain([0, maxVal]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
-    let tickFrequency = 1;
-    if(values.length > 20) {
-      tickFrequency = 4;
-    }
+    const tickFrequency = 1;
 
     const ticks = values.filter((x, i) => i % tickFrequency === 0 );
     const xAxis = d3.svg.axis()

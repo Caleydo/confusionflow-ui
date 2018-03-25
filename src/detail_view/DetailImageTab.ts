@@ -36,13 +36,14 @@ export class DetailImageTab extends ADetailViewTab {
       <div class="images"><div class="loading">Loading images...</div></div>
     `);
     this.$node.select('.title')
-        .html(`<strong>${cell.groundTruth}</strong> ${Language.PREDICTED_AS} <strong>${cell.predicted}</strong>`);
+        .html(`<strong>${cell.groundTruthLabel}</strong> ${Language.PREDICTED_AS} <strong>${cell.predictedLabel}</strong>`);
 
     dataStoreTimelines.forEach((timeline) => {
+      this.$node.append('div').text(timeline.selectedDataset.name);
       const runId = timeline.selectedDataset.name;
       const epochId = timeline.singleSelected.id;
 
-      getAPIJSON(`/malevo/confmat/cell/imageIds?runId=${runId}&epochId=${epochId}&groundTruthId=${cell.groundTruth}&predictedId=${cell.predicted}`)
+      getAPIJSON(`/malevo/confmat/cell/imageIds?runId=${runId}&epochId=${epochId}&groundTruthId=${cell.groundTruthIndex}&predictedId=${cell.predictedIndex}`)
       .then((data: number[]) => {
         const imageIds = data.join(',');
         return getAPIData(`/malevo/images/imageSprite?imageIds=${imageIds}`, {}, 'blob');

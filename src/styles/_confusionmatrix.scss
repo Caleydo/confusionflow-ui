@@ -10,7 +10,7 @@ $num-columns-right-area: 3;
     ". axis-top axis-top ."
     "axis-left . label-top label-right"
     "axis-left label-left matrix chart-right"
-    ". label-bottom chart-bottom chart-right";
+    ". label-bottom chart-bottom .";
   grid-template-columns: 40px 50px auto minmax(100px, 200px);
   grid-template-rows: 40px 50px auto minmax(60px, 1fr);
 }
@@ -128,7 +128,7 @@ $num-columns-right-area: 3;
 }
 
 .chart-right > .chart {
-  grid-template-rows: repeat(11, 1fr);
+  grid-template-rows: repeat(10, 1fr);
 }
 
 .label-top > .labels,

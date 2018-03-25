@@ -127,15 +127,7 @@ export class DetailChartTab extends ADetailViewTab {
     this.$g.classed('linechart', true);
     const maxVal = Math.max(...multiEpochData.map((x) => x.max));
 
-    const x = d3.scale.linear()
-      .rangeRound([0, this.width])
-      .domain([0, multiEpochData.length]);
-
-    const y = d3.scale.linear()
-      .rangeRound([this.height, 0])
-      .domain([0, maxVal]);
-
-    const detailViewCell = new MatrixCell(cell.data, this.$svg);
+    const detailViewCell = new MatrixCell(cell.data, this.$svg, '', '', 0, 0);
     const renderer = new DetailViewRenderer(this.width, this.height);
     renderer
       .setNextRenderer(new AxisRenderer(this.width, this.height))

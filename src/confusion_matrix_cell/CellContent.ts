@@ -98,7 +98,7 @@ export class MultiEpochCalculator extends ACellContentCalculator {
       const label = datasets[0].labels[i % datasets[0].labels.length];
       return multiEpochData.push(x.map((y) => {
         if(this.removeMainDiagonal && i % 11 === 0) {
-          return {values: [], max: 0, classLabel: []};
+          return {values: [], max: 0, classLabel: label};
         } else {
           return {values: y, max: maxVal, classLabel: label};
         }

@@ -343,7 +343,12 @@ export class ConfusionMatrix implements IAppView {
       .each(function (datum, index) {
         const predicted = index % that.CONF_SIZE;
         const groundTruth = Math.floor(index / that.CONF_SIZE);
-        matrixRenderer.renderNext(new MatrixCell(data[index], d3.select(this), datasets[0].labels[predicted], datasets[0].labels[groundTruth]));
+        const res = {linecell: data[index].linecell.map((x) => [x]), heatcell: data[index].heatcell};
+        matrixRenderer.renderNext(new MatrixCell(res, d3.select(this),
+          datasets[0].labels[predicted],
+          datasets[0].labels[groundTruth],
+          predicted,
+          groundTruth));
       });
 
     this.renderFPFN(data, fpfnRenderer, singleEpochIndex);
@@ -351,7 +356,7 @@ export class ConfusionMatrix implements IAppView {
     this.renderPrecisionColumn(dataPrecision, fpfnRenderer, datasets[0].labels, singleEpochIndex);
   }
 
-  renderPrecisionColumn(data: Matrix<number[]>[], renderer: ACellRenderer, labels: string[], singleEpochIndex: number) {
+  renderPrecisionColumn(data: Matrix<number[]>[], renderer: ACellRenderer, labels: string[], singleEpochIndex: number[]) {
     const maxVal = Math.max(...data.map((x: Matrix<number[]>) => max(x, (d) => Math.max(...d))));
     let transformedData = data.map((x) => x.to1DArray());
     transformedData = zip(transformedData);
@@ -364,12 +369,12 @@ export class ConfusionMatrix implements IAppView {
       .classed('cell', true)
       .each(function(datum, index) {
         const completeDatum = {linecell: datum.map((x) => {return {values: x, max: maxVal, classLabel: labels[index]};}),
-          heatcell: {indexInMultiSelection: [singleEpochIndex], counts: null, colorValues: null, classLabels: null}};
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, colorValues: null, classLabels: null}};
         renderer.renderNext(new PanelCell(completeDatum, d3.select(this), AppConstants.CELL_PRECISION));
       });
   }
 
-  renderFPFN(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[], renderer: ACellRenderer, singleEpochIndex: number) {
+  renderFPFN(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[], renderer: ACellRenderer, singleEpochIndex: number[]) {
     const fpData = this.fpPanelData(data);
     const fnData = this.fnPanelData(data);
 
@@ -380,11 +385,11 @@ export class ConfusionMatrix implements IAppView {
       .append('div')
       .classed('cell', true)
       .each(function (datum, index) {
-        const y = fpData[index].map((x) => x);
-        const z = y.map((x) => x.linecell);
-        const merged = [].concat.apply([], z);
-        renderer.renderNext(new PanelCell({linecell: merged,
-          heatcell: {indexInMultiSelection: [singleEpochIndex], counts: null, colorValues: null, classLabels: null}},
+        const confusionMatrixRow = fpData[index].map((x) => x);
+        const lineCells = confusionMatrixRow.map((x) => x.linecell);
+        const res = lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i]));
+        renderer.renderNext(new PanelCell({linecell: res,
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, colorValues: null, classLabels: null}},
           d3.select(this), AppConstants.CELL_FP));
       });
 
@@ -395,11 +400,11 @@ export class ConfusionMatrix implements IAppView {
       .append('div')
       .classed('cell', true)
       .each(function (datum, index) {
-        const y = fnData[index].map((x) => x);
-        const z = y.map((x) => x.linecell);
-        const merged = [].concat.apply([], z);
-        renderer.renderNext(new PanelCell({linecell: merged,
-          heatcell: {indexInMultiSelection: [singleEpochIndex], counts: null, colorValues: null, classLabels: null}},
+        const confusionMatrixRow = fnData[index].map((x) => x);
+        const lineCells = confusionMatrixRow.map((x) => x.linecell);
+        const res = lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i]));
+        renderer.renderNext(new PanelCell({linecell: res,
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, colorValues: null, classLabels: null}},
           d3.select(this), AppConstants.CELL_FN));
       });
   }
@@ -440,27 +445,6 @@ export class ConfusionMatrix implements IAppView {
     }
     return confMeasures.calcForMultipleClasses(datasets[0].multiEpochData[0].confusionData, confMeasures.ClassSize);
   }
-
-
-  /*filterDiagonals(heatmapContent: {}[], lineContent: {}[]) {
-    heatmapContent.map((x: MatrixHeatCellContent, i: number) => {
-      if(i % 11 === 0) {
-        x.colorValues = x.colorValues.map(() => '#00000');
-        x.counts = x.counts.map(() => 0);
-        x.classLabels = x.classLabels.map(() => '');
-      }
-    });
-
-    lineContent.map((x: Line[], i: number) => {
-      if(i % 11 === 0) {
-        x.map((y) => {
-          y.classLabel = '';
-          y.max = 0;
-          y.values = [];
-        });
-      }
-    });
-  }*/
 }
 
 /**
