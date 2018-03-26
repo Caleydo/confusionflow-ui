@@ -4,8 +4,9 @@ import {adaptTextColorToBgColor} from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 import {Language} from '../language';
-import {dataStoreTimelines} from '../DataStore';
+import {DataStoreCellSelection2, dataStoreTimelines} from '../DataStore';
 import {time} from 'd3';
+import {AppConstants} from '../AppConstants';
 
 /**
  * Created by Martin on 19.03.2018.
@@ -68,11 +69,6 @@ export class MatrixLineCellRenderer extends ACellRenderer {
     const x = d3.scale.linear().rangeRound([0, width]);
     const y = d3.scale.linear().rangeRound([height, 0]);
     const z = d3.scale.category10();
-
-    // we don't want to render empty cells
-    if(data.length === 1 && data[0].values.length === 0) {
-      return;
-    }
 
     x.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).values.length - 1]);
     y.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).max]);
@@ -211,13 +207,6 @@ export class AxisRenderer extends ACellRenderer {
       return;
     }
     const data: Line[] = [].concat.apply([], cell.data.linecell);
-
-    // we don't want to render empty cells
-    if(data.length === 1 && data[0].values.length === 0) {
-      return;
-    }
-
-
     const timelineArray = Array.from(dataStoreTimelines.values());
     const selectedRangesLength = timelineArray.map((x) => x.multiSelected.length);
     const largest = selectedRangesLength.indexOf(Math.max(...selectedRangesLength));
@@ -260,7 +249,7 @@ export class AxisRenderer extends ACellRenderer {
     $g.append('text')
         .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
         .attr('transform', 'translate('+ (-axisDistance/2) +','+(this.height/2)+')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
-        ;//.text(this.getYLabelText());
+        .text(this.getYLabelText());
 
     $g.append('text')
         .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
@@ -271,6 +260,22 @@ export class AxisRenderer extends ACellRenderer {
           .attr('transform', function(d) {
              return 'translate(' + this.getBBox().height*-2 + ',' + this.getBBox().height + ')rotate(-45)';
          });
+  }
+
+  getYLabelText() {
+    let text = '';
+    if(DataStoreCellSelection2.cell instanceof MatrixCell) {
+      text = Language.CONFUSION_Y_LABEL;
+    } else if(DataStoreCellSelection2.cell instanceof PanelCell) {
+       if(DataStoreCellSelection2.cell.type ===  AppConstants.CELL_FP) {
+         text = Language.FP_RATE;
+       } else if(DataStoreCellSelection2.cell.type ===  AppConstants.CELL_FN) {
+         text = Language.FN_RATE;
+       } else if(DataStoreCellSelection2.cell.type ===  AppConstants.CELL_PRECISION) {
+         text = Language.PRECISION;
+       }
+    }
+    return text;
   }
 }
 
