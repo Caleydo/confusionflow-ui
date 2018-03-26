@@ -1,12 +1,10 @@
 import {ADetailViewTab} from './ADetailViewTab';
 import {
-  DataStoreCellSelection, DataStoreCellSelection, dataStoreTimelines,
-  DataStoreTimelineSelection
+  DataStoreCellSelection, dataStoreTimelines
 } from '../DataStore';
 import {getAPIData, getAPIJSON} from 'phovea_core/src/ajax';
 import {AppConstants} from '../AppConstants';
 import {Language} from '../language';
-import {extractEpochId} from '../utils';
 import {MatrixCell} from '../confusion_matrix_cell/Cell';
 
 export class DetailImageTab extends ADetailViewTab {
@@ -54,37 +52,6 @@ export class DetailImageTab extends ADetailViewTab {
         this.$node.select('.images').append('img').attr('src', imageUrl);
       });
     });
-
-
-
-    // currently, we just show images when clicking on a cm-matrix cell
-   /*if(!DataStoreCellSelection.isMatrixCell()) {
-      return;
-    }
-    const predicted: number = DataStoreCellSelection.colIndex;
-    const groundTruth: number = DataStoreCellSelection.rowIndex;
-    const labels = DataStoreCellSelection.labels;
-
-    this.$node.html(`
-      <p class="title"></p>
-      <div class="images"><div class="loading">Loading images...</div></div>
-    `);
-    this.$node.select('.title')
-        .html(`<strong>${labels[groundTruth][1]}</strong> ${Language.PREDICTED_AS} <strong>${labels[predicted][1]}</strong>`);
-
-    const runId = DataStoreTimelineSelection.datasetName;
-    const epochId = extractEpochId(DataStoreTimelineSelection.singleSelected);
-
-    getAPIJSON(`/malevo/confmat/cell/imageIds?runId=${runId}&epochId=${epochId}&groundTruthId=${groundTruth}&predictedId=${predicted}`)
-      .then((data: number[]) => {
-        const imageIds = data.join(',');
-        return getAPIData(`/malevo/images/imageSprite?imageIds=${imageIds}`, {}, 'blob');
-      })
-      .then((imageSprite) => {
-        this.$node.select('.images .loading').classed('hidden', true);
-        const imageUrl = window.URL.createObjectURL(imageSprite);
-        this.$node.select('.images').append('img').attr('src', imageUrl);
-      });*/
   }
 
   clear() {

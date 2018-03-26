@@ -340,7 +340,8 @@ export class ConfusionMatrix implements IAppView {
       .each(function (datum, index) {
         const predicted = index % that.CONF_SIZE;
         const groundTruth = Math.floor(index / that.CONF_SIZE);
-        const res = {linecell: data[index].linecell.map((x) => [x]), heatcell: data[index].heatcell};
+        const lineCellContent = data[index].linecell !== null ? data[index].linecell.map((x) => [x]) : null;
+        const res = {linecell: lineCellContent, heatcell: data[index].heatcell};
         matrixRenderer.renderNext(new MatrixCell(res, d3.select(this),
           datasets[0].labels[predicted],
           datasets[0].labels[groundTruth],
@@ -384,7 +385,7 @@ export class ConfusionMatrix implements IAppView {
       .each(function (datum, index) {
         const confusionMatrixRow = fpData[index].map((x) => x);
         const lineCells = confusionMatrixRow.map((x) => x.linecell);
-        const res = lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i]));
+        const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
         renderer.renderNext(new PanelCell({linecell: res,
           heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, colorValues: null, classLabels: null}},
           d3.select(this), AppConstants.CELL_FP));
@@ -399,7 +400,7 @@ export class ConfusionMatrix implements IAppView {
       .each(function (datum, index) {
         const confusionMatrixRow = fnData[index].map((x) => x);
         const lineCells = confusionMatrixRow.map((x) => x.linecell);
-        const res = lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i]));
+        const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
         renderer.renderNext(new PanelCell({linecell: res,
           heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, colorValues: null, classLabels: null}},
           d3.select(this), AppConstants.CELL_FN));
