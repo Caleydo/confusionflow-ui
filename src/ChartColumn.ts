@@ -12,5 +12,6 @@ export class ChartColumn {
   }
 
   render(lineContent: {linecell: Line[], heatcell: MatrixHeatCellContent}, renderer: ACellRenderer) {
+    const x = 0;
   }
 }

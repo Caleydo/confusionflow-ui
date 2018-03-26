@@ -1,5 +1,5 @@
 import {ADetailViewTab} from './ADetailViewTab';
-import {DataStoreCellSelection, DataStoreCellSelection, DataStoreTimelineSelection} from '../DataStore';
+import {DataStoreCellSelection, DataStoreTimelineSelection} from '../DataStore';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
