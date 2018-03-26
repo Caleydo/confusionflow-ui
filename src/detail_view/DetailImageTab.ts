@@ -1,6 +1,6 @@
 import {ADetailViewTab} from './ADetailViewTab';
 import {
-  DataStoreCellSelection, DataStoreCellSelection2, dataStoreTimelines,
+  DataStoreCellSelection, DataStoreCellSelection, dataStoreTimelines,
   DataStoreTimelineSelection
 } from '../DataStore';
 import {getAPIData, getAPIJSON} from 'phovea_core/src/ajax';
@@ -23,10 +23,10 @@ export class DetailImageTab extends ADetailViewTab {
   }
 
   render() {
-    if(!DataStoreCellSelection2.cell || !(DataStoreCellSelection2.cell instanceof MatrixCell)) {
+    if(!DataStoreCellSelection.cell || !(DataStoreCellSelection.cell instanceof MatrixCell)) {
       return;
     }
-    const cell = DataStoreCellSelection2.cell;
+    const cell = DataStoreCellSelection.cell;
     if(!cell.data.heatcell) {
       return;
     }

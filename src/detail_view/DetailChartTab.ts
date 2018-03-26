@@ -1,5 +1,5 @@
 import {ADetailViewTab} from './ADetailViewTab';
-import {DataStoreCellSelection, DataStoreCellSelection2, DataStoreTimelineSelection} from '../DataStore';
+import {DataStoreCellSelection, DataStoreCellSelection, DataStoreTimelineSelection} from '../DataStore';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
@@ -11,23 +11,6 @@ import {
   AxisRenderer, DetailViewRenderer, MatrixLineCellRenderer,
   VerticalLineRenderer
 } from '../confusion_matrix_cell/ACellRenderer';
-
-function addDashedLines($g: d3.Selection<any>, x: any, singleEpochIndex: number, height: number, width: number) {
-  const $line = $g.append('line').attr('y1', 0).attr('y2', height);
-  $line.classed('dashed-lines', true);
-  $line.attr('x1', x(singleEpochIndex) + borderOffset($line, x(singleEpochIndex), width)).attr('x2', x(singleEpochIndex) + borderOffset($line, x(singleEpochIndex), width));
-}
-
-function borderOffset($line: d3.Selection<any>, posX: number, width: number) {
-  let sw = parseInt($line.style('stroke-width'), 10);
-  sw /= 2;
-  if(posX === 0) {
-    return sw;
-  } else if(posX === width) {
-    return -sw;
-  }
-  return 0;
-}
 
 export class DetailChartTab extends ADetailViewTab {
   private width: number;
@@ -60,21 +43,21 @@ export class DetailChartTab extends ADetailViewTab {
 
   createHeaderText() {
     let text = '';
-    if(DataStoreCellSelection2.cell instanceof MatrixCell) {
+    if(DataStoreCellSelection.cell instanceof MatrixCell) {
       text = Language.CONFUSION_Y_LABEL;
       text = text + ' ' + Language.FOR_CLASS + ' ';
-      text += DataStoreCellSelection2.cell.groundTruthLabel;
+      text += DataStoreCellSelection.cell.groundTruthLabel;
       text += ' with ';
-      text += DataStoreCellSelection2.cell.predictedLabel;
-    } else if(DataStoreCellSelection2.cell instanceof PanelCell) {
-      if(DataStoreCellSelection2.cell.type ===  AppConstants.CELL_FP) {
+      text += DataStoreCellSelection.cell.predictedLabel;
+    } else if(DataStoreCellSelection.cell instanceof PanelCell) {
+      if(DataStoreCellSelection.cell.type ===  AppConstants.CELL_FP) {
         text = Language.FP_RATE;
-      } else if(DataStoreCellSelection2.cell.type ===  AppConstants.CELL_FN) {
+      } else if(DataStoreCellSelection.cell.type ===  AppConstants.CELL_FN) {
         text = Language.FN_RATE;
-      } else if(DataStoreCellSelection2.cell.type ===  AppConstants.CELL_PRECISION) {
+      } else if(DataStoreCellSelection.cell.type ===  AppConstants.CELL_PRECISION) {
         text = Language.PRECISION_Y_LABEL;
         text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += DataStoreCellSelection2.cell.data.linecell[0][0].classLabel;
+        text += DataStoreCellSelection.cell.data.linecell[0][0].classLabel;
       }
     }
     this.$header.text(text);
@@ -88,13 +71,13 @@ export class DetailChartTab extends ADetailViewTab {
   }
 
   render() {
-    if(!DataStoreCellSelection2.cell) {
+    if(!DataStoreCellSelection.cell) {
       return;
     }
-    if(!(DataStoreCellSelection2.cell instanceof MatrixCell) && !(DataStoreCellSelection2.cell instanceof PanelCell)) {
+    if(!(DataStoreCellSelection.cell instanceof MatrixCell) && !(DataStoreCellSelection.cell instanceof PanelCell)) {
       return;
     }
-    const cell = DataStoreCellSelection2.cell;
+    const cell = DataStoreCellSelection.cell;
     if(cell.data.linecell === null) {
       return;
     }

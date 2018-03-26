@@ -43,7 +43,6 @@ export class ConfusionMatrix implements IAppView {
     this.$node = d3.select(parent)
       .append('div')
       .classed('grid', true);
-    DataStoreCellSelection.$grid = this.$node;
   }
 
   /**
@@ -227,9 +226,7 @@ export class ConfusionMatrix implements IAppView {
       .classed('label-cell', true);
 
     $cells
-      .text((datum: string) => datum)
-      .style('background-color', (datum: string) => classColors(datum))
-      .style('color', (datum: string) => adaptTextColorToBgColor(classColors(datum)));
+      .text((datum: string) => datum);
 
     $cells.exit().remove();
   }

@@ -145,6 +145,7 @@ $num-columns-right-area: 3;
   &.label-cell {
     align-items: center;
     justify-content: center;
+    background-color: lightgray;
   }
 
   > svg {

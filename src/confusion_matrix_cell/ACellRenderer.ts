@@ -4,7 +4,7 @@ import {adaptTextColorToBgColor} from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 import {Language} from '../language';
-import {DataStoreCellSelection2, dataStoreTimelines} from '../DataStore';
+import {DataStoreCellSelection, dataStoreTimelines} from '../DataStore';
 import {time} from 'd3';
 import {AppConstants} from '../AppConstants';
 
@@ -85,8 +85,7 @@ export class MatrixLineCellRenderer extends ACellRenderer {
       .data(data)
       .enter().append('path')
       .attr('d', (d) => line(d.values))
-      .attr('stroke', (d) => z(d.classLabel))
-      .attr('stroke-dasharray', (d, i) => linePatterns[Math.floor(i / (data.length / datasetCount))])
+      .attr('stroke', (_, i) => z(String(Math.floor(i / (data.length / datasetCount)))))
       .append('title')
       .text((d) => d.classLabel);
   }
@@ -111,7 +110,6 @@ export class DetailViewRenderer extends ACellRenderer {
 
     x.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).values.length - 1]);
     y.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).max]);
-    //z.domain(data.map((x) => x.classLabel));
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -126,8 +124,7 @@ export class DetailViewRenderer extends ACellRenderer {
       .enter().append('path')
       .classed('detail-view-line', true)
       .attr('d', (d) => line(d.values))
-      .attr('stroke', (d) => z(d.classLabel))
-      .attr('stroke-dasharray', (d, i) => linePatterns[Math.floor(i / (data.length / datasetCount))])
+      .attr('stroke', (_, i) => z(String(Math.floor(i / (data.length / datasetCount)))))
       .append('title')
       .text((d) => d.classLabel);
   }
@@ -192,7 +189,8 @@ export class LabelCellRenderer extends ACellRenderer {
   protected render(cell: LabelCell) {
     cell.$node
       .classed('label-cell', true)
-      .text(cell.labelData.label);
+      .text(cell.labelData.label)
+      .style('background-color', 'white');
   }
 }
 
@@ -264,14 +262,14 @@ export class AxisRenderer extends ACellRenderer {
 
   getYLabelText() {
     let text = '';
-    if(DataStoreCellSelection2.cell instanceof MatrixCell) {
+    if(DataStoreCellSelection.cell instanceof MatrixCell) {
       text = Language.CONFUSION_Y_LABEL;
-    } else if(DataStoreCellSelection2.cell instanceof PanelCell) {
-       if(DataStoreCellSelection2.cell.type ===  AppConstants.CELL_FP) {
+    } else if(DataStoreCellSelection.cell instanceof PanelCell) {
+       if(DataStoreCellSelection.cell.type ===  AppConstants.CELL_FP) {
          text = Language.FP_RATE;
-       } else if(DataStoreCellSelection2.cell.type ===  AppConstants.CELL_FN) {
+       } else if(DataStoreCellSelection.cell.type ===  AppConstants.CELL_FN) {
          text = Language.FN_RATE;
-       } else if(DataStoreCellSelection2.cell.type ===  AppConstants.CELL_PRECISION) {
+       } else if(DataStoreCellSelection.cell.type ===  AppConstants.CELL_PRECISION) {
          text = Language.PRECISION;
        }
     }

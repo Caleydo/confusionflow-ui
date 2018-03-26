@@ -1,5 +1,5 @@
 import {Line, MatrixHeatCellContent} from './CellContent';
-import {DataStoreCellSelection2} from '../DataStore';
+import {DataStoreCellSelection} from '../DataStore';
 
 /**
  * Created by Martin on 19.03.2018.
@@ -14,7 +14,7 @@ export class ACell {
 
   protected attachListener($node: d3.Selection<any>) {
     $node.on('click',  () => {
-      DataStoreCellSelection2.cellSelected(this);
+      DataStoreCellSelection.cellSelected(this);
     });
   }
 }
