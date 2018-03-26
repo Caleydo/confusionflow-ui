@@ -168,8 +168,8 @@ export class ConfusionMatrix implements IAppView {
     });
     const allDatasets: ILoadedMalevoDataset[] = [];
     allPromises0.forEach((x) => {
-      const pr = Promise.all(x).then((x: [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]) => {
-        const ds = {multiEpochData: x[0], singleEpochData: x[1][0], labels: x[2]};
+      const pr = Promise.all(x).then((x: any[]) => { // [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]
+        const ds = {multiEpochData: <ILoadedMalevoEpoch[]>x[0], singleEpochData: <ILoadedMalevoEpoch>x[1][0], labels: <string[]>x[2]};
         allDatasets.push(ds);
       });
       allPromises1.push(pr);
