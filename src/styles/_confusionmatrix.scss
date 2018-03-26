@@ -145,7 +145,7 @@ $num-columns-right-area: 3;
   &.label-cell {
     align-items: center;
     justify-content: center;
-    background-color: lightgray;
+    background-color: $label-bg;
   }
 
   > svg {
@@ -166,6 +166,7 @@ $num-columns-right-area: 3;
 .chart-bottom,
 .matrix {
   .cell {
+    outline: 1px solid #ccc;
     &.selected,
     &:active,
     &:focus,

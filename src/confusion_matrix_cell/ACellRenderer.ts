@@ -84,6 +84,7 @@ export class MatrixLineCellRenderer extends ACellRenderer {
       .enter().append('path')
       .attr('d', (d) => line(d.values))
       .attr('stroke', (_, i) => z(String(Math.floor(i / (data.length / datasetCount)))))
+      .attr('stroke-opacity', '0.6')
       .append('title')
       .text((d) => d.classLabel);
   }
@@ -123,6 +124,7 @@ export class DetailViewRenderer extends ACellRenderer {
       .classed('detail-view-line', true)
       .attr('d', (d) => line(d.values))
       .attr('stroke', (_, i) => z(String(Math.floor(i / (data.length / datasetCount)))))
+      .attr('stroke-opacity', '0.6')
       .append('title')
       .text((d) => d.classLabel);
   }
