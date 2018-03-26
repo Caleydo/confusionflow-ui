@@ -12,8 +12,6 @@ import {AppConstants} from '../AppConstants';
  * Created by Martin on 19.03.2018.
  */
 
-const linePatterns = ['1, 1', '5, 5', '10, 10', '20,10,5,5,5,10'];
-
 export abstract class ACellRenderer {
   nextRenderer: ACellRenderer = null;
   setNextRenderer(renderer: ACellRenderer): ACellRenderer {
@@ -119,7 +117,7 @@ export class DetailViewRenderer extends ACellRenderer {
         return y(d);
       });
 
-    const $epochLine = cell.$node.select('g').selectAll('path')
+    cell.$node.select('g').selectAll('path')
       .data(data)
       .enter().append('path')
       .classed('detail-view-line', true)
@@ -128,7 +126,6 @@ export class DetailViewRenderer extends ACellRenderer {
       .append('title')
       .text((d) => d.classLabel);
   }
-
 }
 
 export class VerticalLineRenderer extends ACellRenderer {

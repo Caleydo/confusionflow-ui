@@ -4,13 +4,15 @@ import {OverallTimeline, Timeline, TimelineData} from './Timeline';
 import * as d3 from 'd3';
 import {DataStoreTimelineSelection, dataStoreTimelines} from '../DataStore';
 import * as events from 'phovea_core/src/event';
+import Ordinal = d3.scale.Ordinal;
 
 export class TimelineCollection {
   private timelines:Timeline[] = [];
   private otl: OverallTimeline;
+  private colorScale: Ordinal<string,string>
 
   constructor(private $node: d3.Selection<any>) {
-
+    this.colorScale = d3.scale.category10();
   }
 
   timelineCount(): number {
@@ -25,7 +27,7 @@ export class TimelineCollection {
   }
 
   createNewTimeline(ds: MalevoDataset) {
-    const timeline = new Timeline(ds.name, this.$node);
+    const timeline = new Timeline(ds.name, this.$node, this.colorScale(String(this.timelines.length)));
     this.timelines.push(timeline);
     const tmData = new TimelineData(ds.epochInfos);
     timeline.data = tmData;

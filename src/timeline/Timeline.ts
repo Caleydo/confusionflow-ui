@@ -73,7 +73,7 @@ export class Timeline {
   readonly tickmarkDistance = 5; // show ticks every 5 epoch
   readonly globalOffsetV = 15;
 
-  constructor(public datasetName: string, $parent: d3.Selection<any>) {
+  constructor(public datasetName: string, $parent: d3.Selection<any>, private labelColor: string) {
    this.build($parent);
   }
 
@@ -92,6 +92,7 @@ export class Timeline {
       .attr('transform', 'translate(0,' + this.globalOffsetV +')')
       .append('text')
       .classed('tml-label', true)
+      .style('fill', this.labelColor)
       .text(datasetName);
   }
 
