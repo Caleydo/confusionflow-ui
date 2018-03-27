@@ -178,7 +178,7 @@ export class ConfusionMatrix implements IAppView {
 
     Promise.all(allPromises1).then((x) => {
       this.chooseRenderMode(allDatasets);
-      this.renderCMCells(allDatasets);
+      this.renderCells(allDatasets);
       this.addRowAndColumnLabels(allDatasets[0].labels);
     });
   }
@@ -258,7 +258,7 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
-  renderCMCells(datasets: ILoadedMalevoDataset[]) {
+  renderCells(datasets: ILoadedMalevoDataset[]) {
     this.$confusionMatrix
       .selectAll('div')
       .remove();
