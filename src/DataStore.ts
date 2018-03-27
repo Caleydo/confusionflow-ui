@@ -38,13 +38,6 @@ export class DataStoreTimelineSelection {
   clearSingleSelection() {
     this.singleSelected = null;
   }
-
-  isFullRangeSelected() {
-    if(this.selectedDataset === null || this.multiSelected === []) {
-      return false;
-    }
-    return this.selectedDataset.epochInfos.length === this.multiSelected.length;
-  }
 }
 
 /**

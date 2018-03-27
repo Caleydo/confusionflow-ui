@@ -52,7 +52,6 @@ export class HeatCellRenderer extends ACellRenderer {
 
 export class MatrixLineCellRenderer extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
-    const datasetCount = cell.data.linecell.length;
     const data: Line[] = [].concat.apply([], cell.data.linecell);
     const $svg = cell.$node.append('svg').datum(data);
 
@@ -66,7 +65,6 @@ export class MatrixLineCellRenderer extends ACellRenderer {
 
     const x = d3.scale.linear().rangeRound([0, width]);
     const y = d3.scale.linear().rangeRound([height, 0]);
-    const z = d3.scale.category10();
 
     x.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).values.length - 1]);
     y.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).max]);
@@ -83,7 +81,7 @@ export class MatrixLineCellRenderer extends ACellRenderer {
       .data(data)
       .enter().append('path')
       .attr('d', (d) => line(d.values))
-      .attr('stroke', (_, i) => z(String(Math.floor(i / (data.length / datasetCount)))))
+      .attr('stroke', (d) => d.color)
       .attr('stroke-opacity', '0.6')
       .append('title')
       .text((d) => d.classLabel);
@@ -96,7 +94,6 @@ export class DetailViewRenderer extends ACellRenderer {
   }
 
   protected render(cell: MatrixCell | PanelCell) {
-    const datasetCount = cell.data.linecell.length;
     const data: Line[] = [].concat.apply([], cell.data.linecell);
     // we don't want to render empty cells
     if(data.length === 1 && data[0].values.length === 0) {
@@ -105,7 +102,6 @@ export class DetailViewRenderer extends ACellRenderer {
 
     const x = d3.scale.linear().rangeRound([0, this.width]);
     const y = d3.scale.linear().rangeRound([this.height, 0]);
-    const z = d3.scale.category10();
 
     x.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).values.length - 1]);
     y.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).max]);
@@ -123,7 +119,7 @@ export class DetailViewRenderer extends ACellRenderer {
       .enter().append('path')
       .classed('detail-view-line', true)
       .attr('d', (d) => line(d.values))
-      .attr('stroke', (_, i) => z(String(Math.floor(i / (data.length / datasetCount)))))
+      .attr('stroke', (d, _) => d.color)
       .attr('stroke-opacity', '0.6')
       .append('title')
       .text((d) => d.classLabel);

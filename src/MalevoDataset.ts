@@ -40,6 +40,7 @@ export interface ILoadedMalevoEpoch {
  * Represents the current status of a single timeline
  */
 export interface ILoadedMalevoDataset {
+  datasetColor: string;
   singleEpochData: ILoadedMalevoEpoch;
   multiEpochData: ILoadedMalevoEpoch[];
   labels: string[];

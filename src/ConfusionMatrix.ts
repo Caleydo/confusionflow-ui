@@ -164,12 +164,13 @@ export class ConfusionMatrix implements IAppView {
       loadDataPromises.push(this.loadEpochs(value.multiSelected, value.selectedDataset));
       loadDataPromises.push(this.loadEpochs([value.singleSelected], value.selectedDataset));
       loadDataPromises.push(this.loadLabels(value.selectedDataset.classLabels, value.selectedDataset));
+      loadDataPromises.push(Promise.resolve(value.datasetColor));
       allPromises0.push(loadDataPromises);
     });
     const allDatasets: ILoadedMalevoDataset[] = [];
     allPromises0.forEach((x) => {
       const pr = Promise.all(x).then((x: any[]) => { // [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]
-        const ds = {multiEpochData: <ILoadedMalevoEpoch[]>x[0], singleEpochData: <ILoadedMalevoEpoch>x[1][0], labels: <string[]>x[2]};
+        const ds = {multiEpochData: <ILoadedMalevoEpoch[]>x[0], singleEpochData: <ILoadedMalevoEpoch>x[1][0], labels: <string[]>x[2], datasetColor: <string>x[3]};
         allDatasets.push(ds);
       });
       allPromises1.push(pr);
@@ -351,10 +352,10 @@ export class ConfusionMatrix implements IAppView {
 
     this.renderFPFN(data, fpfnRenderer, singleEpochIndex);
     this.renderClassSize(datasets, new LabelCellRenderer());
-    this.renderPrecisionColumn(dataPrecision, fpfnRenderer, datasets[0].labels, singleEpochIndex);
+    this.renderPrecisionColumn(dataPrecision, fpfnRenderer, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
   }
 
-  renderPrecisionColumn(data: Matrix<number[]>[], renderer: ACellRenderer, labels: string[], singleEpochIndex: number[]) {
+  renderPrecisionColumn(data: Matrix<number[]>[], renderer: ACellRenderer, labels: string[], singleEpochIndex: number[], colors: string[]) {
     const maxVal = Math.max(...data.map((x: Matrix<number[]>) => max(x, (d) => Math.max(...d))));
     let transformedData = data.map((x) => x.to1DArray());
     transformedData = zip(transformedData);
@@ -366,7 +367,7 @@ export class ConfusionMatrix implements IAppView {
       .append('div')
       .classed('cell', true)
       .each(function(datum, index) {
-        const res = {linecell: datum.map((x) => [{values: x, max: maxVal, classLabel: labels[index]}]),
+        const res = {linecell: datum.map((x, i) => [{values: x, max: maxVal, classLabel: labels[index], color: colors[i]}]),
           heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, colorValues: null, classLabels: null}};
         renderer.renderNext(new PanelCell(res, d3.select(this), AppConstants.CELL_PRECISION));
       });

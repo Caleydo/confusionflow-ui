@@ -18,6 +18,7 @@ export class Line {
   values: number[];
   max: number;
   classLabel: string;
+  color: string;
 }
 
 abstract class ACellContentCalculator {
@@ -28,6 +29,7 @@ export class SingleEpochCalculator extends ACellContentCalculator {
   constructor(private removeMainDiagonal = true) {
     super();
   }
+
   calculate(datasets: ILoadedMalevoDataset[]): MatrixHeatCellContent[] {
     const transformedData = datasets.map((x) => x.singleEpochData.confusionData.to1DArray());
     const res = zip(transformedData);
@@ -96,11 +98,11 @@ export class MultiEpochCalculator extends ACellContentCalculator {
     const multiEpochData = [];
     zipped.map((x, i) => {
       const label = datasets[0].labels[i % datasets[0].labels.length];
-      return multiEpochData.push(x.map((y) => {
+      return multiEpochData.push(x.map((y, dsIndex) => {
         if(this.removeMainDiagonal && i % 11 === 0) {
-          return {values: [], max: 0, classLabel: label};
+          return {values: [], max: 0, classLabel: label, color: datasets[dsIndex].datasetColor};
         } else {
-          return {values: y, max: maxVal, classLabel: label};
+          return {values: y, max: maxVal, classLabel: label, color: datasets[dsIndex].datasetColor};
         }
       }));
     });
