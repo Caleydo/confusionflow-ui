@@ -29,23 +29,7 @@ export class DataStoreTimelineSelection {
   singleSelected: IMalevoEpochInfo = null;
   multiSelected: IMalevoEpochInfo[] = [];
   selectedDataset:MalevoDataset = null;
-
-  isJustOneEpochSelected(): boolean {
-    return this.singleSelected !== null && this.multiSelected.length === 0;
-  }
-
-  isRangeSelected(): boolean {
-    return this.singleSelected === null && this.multiSelected.length !== 0;
-  }
-
-  isSingleAndRangeSelected(): boolean {
-    return this.singleSelected !== null && this.multiSelected.length !== 0;
-  }
-
-  clearSelection() {
-    this.clearSingleSelection();
-    this.clearMultiSelection();
-  }
+  datasetColor: string;
 
   clearMultiSelection() {
     this.multiSelected = [];

@@ -73,7 +73,7 @@ export class Timeline {
   readonly tickmarkDistance = 5; // show ticks every 5 epoch
   readonly globalOffsetV = 15;
 
-  constructor(public datasetName: string, $parent: d3.Selection<any>, private color: string) {
+  constructor(public datasetName: string, $parent: d3.Selection<any>) {
    this.build($parent);
   }
 
@@ -92,7 +92,7 @@ export class Timeline {
       .attr('transform', 'translate(0,' + this.globalOffsetV +')')
       .append('text')
       .classed('tml-label', true)
-      .style('fill', this.color)
+      .style('fill', dataStoreTimelines.get(this.datasetName).datasetColor)
       .text(datasetName);
   }
 
@@ -141,7 +141,7 @@ export class Timeline {
       .call(brush);
 
     $brushg.select('.extent')
-      .style('fill', this.color);
+      .style('fill', dataStoreTimelines.get(this.datasetName).datasetColor);
 
     brush.on('brush', () => this.brushmove(x, brush))
          .on('brushend', () => that.brushAndFire(x, brush));
