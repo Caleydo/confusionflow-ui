@@ -257,14 +257,15 @@ export class AxisRenderer extends ACellRenderer {
 
   getYLabelText() {
     let text = '';
-    if(DataStoreCellSelection.cell instanceof MatrixCell) {
+    const cell = DataStoreCellSelection.getCell();
+    if(cell instanceof MatrixCell) {
       text = Language.CONFUSION_Y_LABEL;
-    } else if(DataStoreCellSelection.cell instanceof PanelCell) {
-       if(DataStoreCellSelection.cell.type ===  AppConstants.CELL_FP) {
+    } else if(cell instanceof PanelCell) {
+       if(cell.type ===  AppConstants.CELL_FP) {
          text = Language.FP_RATE;
-       } else if(DataStoreCellSelection.cell.type ===  AppConstants.CELL_FN) {
+       } else if(cell.type ===  AppConstants.CELL_FN) {
          text = Language.FN_RATE;
-       } else if(DataStoreCellSelection.cell.type ===  AppConstants.CELL_PRECISION) {
+       } else if(cell.type ===  AppConstants.CELL_PRECISION) {
          text = Language.PRECISION;
        }
     }

@@ -21,10 +21,10 @@ export class DetailImageTab extends ADetailViewTab {
   }
 
   render() {
-    if(!DataStoreCellSelection.cell || !(DataStoreCellSelection.cell instanceof MatrixCell)) {
+    const cell = DataStoreCellSelection.getCell();
+    if(!cell || !(cell instanceof MatrixCell)) {
       return;
     }
-    const cell = DataStoreCellSelection.cell;
     if(!cell.data.heatcell) {
       return;
     }

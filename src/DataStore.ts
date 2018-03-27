@@ -44,10 +44,22 @@ export class DataStoreTimelineSelection {
  * Stores confusion matrix single cell selection
  */
 export class DataStoreCellSelection {
-  static cell: ACell;
+  private static cell: ACell = null;
+
   static cellSelected(cell: ACell) {
-    this.cell = cell;
+    if(!cell) {
+      return;
+    }
+    if(DataStoreCellSelection.cell !== null) {
+      DataStoreCellSelection.cell.$node.classed('selected', false);
+    }
+    DataStoreCellSelection.cell = cell;
+    DataStoreCellSelection.cell.$node.classed('selected', true);
     events.fire(AppConstants.EVENT_SELL_SELECTED);
+  }
+
+  static getCell(): ACell {
+    return DataStoreCellSelection.cell;
   }
 }
 

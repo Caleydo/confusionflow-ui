@@ -4,13 +4,11 @@ import {DataStoreCellSelection} from '../DataStore';
 /**
  * Created by Martin on 19.03.2018.
  */
-export class ACell {
-
+export abstract class ACell {
+  //abstract clear();
   constructor(public $node: d3.Selection<any>) {
     this.attachListener($node);
   }
- // abstract renderCells(renderer: ACellRenderer);
- // abstract clearCells();
 
   protected attachListener($node: d3.Selection<any>) {
     $node.on('click',  () => {

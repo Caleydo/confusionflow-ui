@@ -43,21 +43,22 @@ export class DetailChartTab extends ADetailViewTab {
 
   createHeaderText() {
     let text = '';
-    if(DataStoreCellSelection.cell instanceof MatrixCell) {
+    const cell = DataStoreCellSelection.getCell();
+    if(cell instanceof MatrixCell) {
       text = Language.CONFUSION_Y_LABEL;
       text = text + ' ' + Language.FOR_CLASS + ' ';
-      text += DataStoreCellSelection.cell.groundTruthLabel;
+      text += cell.groundTruthLabel;
       text += ' with ';
-      text += DataStoreCellSelection.cell.predictedLabel;
-    } else if(DataStoreCellSelection.cell instanceof PanelCell) {
-      if(DataStoreCellSelection.cell.type ===  AppConstants.CELL_FP) {
+      text += cell.predictedLabel;
+    } else if(cell instanceof PanelCell) {
+      if(cell.type ===  AppConstants.CELL_FP) {
         text = Language.FP_RATE;
-      } else if(DataStoreCellSelection.cell.type ===  AppConstants.CELL_FN) {
+      } else if(cell.type ===  AppConstants.CELL_FN) {
         text = Language.FN_RATE;
-      } else if(DataStoreCellSelection.cell.type ===  AppConstants.CELL_PRECISION) {
+      } else if(cell.type ===  AppConstants.CELL_PRECISION) {
         text = Language.PRECISION_Y_LABEL;
         text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += DataStoreCellSelection.cell.data.linecell[0][0].classLabel;
+        text += cell.data.linecell[0][0].classLabel;
       }
     }
     this.$header.text(text);
@@ -71,13 +72,13 @@ export class DetailChartTab extends ADetailViewTab {
   }
 
   render() {
-    if(!DataStoreCellSelection.cell) {
+    const cell = DataStoreCellSelection.getCell();
+    if(!cell) {
       return;
     }
-    if(!(DataStoreCellSelection.cell instanceof MatrixCell) && !(DataStoreCellSelection.cell instanceof PanelCell)) {
+    if(!(cell instanceof MatrixCell) && !(cell instanceof PanelCell)) {
       return;
     }
-    const cell = DataStoreCellSelection.cell;
     if(cell.data.linecell === null) {
       return;
     }
