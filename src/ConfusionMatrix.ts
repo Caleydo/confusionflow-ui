@@ -159,7 +159,8 @@ export class ConfusionMatrix implements IAppView {
     const allPromises0 = [];
     const allPromises1 = [];
 
-    dataStoreTimelines.forEach((value: DataStoreTimelineSelection) => {
+    const dataStoreTimelineArray = Array.from(dataStoreTimelines.values()).sort((a, b) => a.indexInTimelineCollection - b.indexInTimelineCollection);
+    dataStoreTimelineArray.forEach((value: DataStoreTimelineSelection) => {
       const loadDataPromises = [];
       loadDataPromises.push(this.loadEpochs(value.multiSelected, value.selectedDataset));
       loadDataPromises.push(this.loadEpochs([value.singleSelected], value.selectedDataset));
@@ -316,7 +317,7 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.PPV));
       singleEpochIndex = data[0].heatcell.indexInMultiSelection;
 
-      matrixRenderer = new HeatCellRenderer(true);
+      matrixRenderer = new HeatmapMultiEpochRenderer();
       fpfnRenderer = new BarchartRenderer();
     } else if(this.renderMode === RenderMode.MULTI) {
       multiEpochContent = new MultiEpochCalculator().calculate(datasets);

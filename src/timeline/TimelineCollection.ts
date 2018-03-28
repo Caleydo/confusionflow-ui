@@ -40,12 +40,14 @@ export class TimelineCollection {
   }
 
   createNewTimeline(ds: MalevoDataset) {
+    const freeIndex = this.getFreeIndex();
     dataStoreTimelines.set(ds.name, new DataStoreTimelineSelection());
     dataStoreTimelines.get(ds.name).selectedDataset = ds;
     dataStoreTimelines.get(ds.name).datasetColor = this.timelineColors[this.getFreeIndex()];
+    dataStoreTimelines.get(ds.name).indexInTimelineCollection = freeIndex;
 
     const timeline = new Timeline(ds.name, this.$node);
-    this.timelines[this.getFreeIndex()] = (timeline);
+    this.timelines[freeIndex] = timeline;
     const tmData = new TimelineData(ds.epochInfos);
     timeline.data = tmData;
   }

@@ -30,6 +30,7 @@ export class DataStoreTimelineSelection {
   multiSelected: IMalevoEpochInfo[] = [];
   selectedDataset:MalevoDataset = null;
   datasetColor: string;
+  indexInTimelineCollection = -1;
 
   clearMultiSelection() {
     this.multiSelected = [];
