@@ -7,8 +7,8 @@ import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {
-  ACellRenderer, HeatCellRenderer, MatrixLineCellRenderer,
-  VerticalLineRenderer, BarchartRenderer, LabelCellRenderer
+  ACellRenderer, MatrixLineCellRenderer,
+  VerticalLineRenderer, BarchartRenderer, LabelCellRenderer, HeatmapMultiEpochRenderer
 } from './confusion_matrix_cell/ACellRenderer';
 import {ACell, LabelCell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
 import {adaptTextColorToBgColor, zip} from './utils';
@@ -300,10 +300,9 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
       singleEpochIndex = data[1].heatcell.indexInMultiSelection;
 
-      matrixRenderer = new HeatCellRenderer(false);
-      matrixRenderer
-        .setNextRenderer(new MatrixLineCellRenderer())
-        .setNextRenderer(new VerticalLineRenderer(-1, -1));
+      matrixRenderer = new HeatmapMultiEpochRenderer();
+      //matrixRenderer
+      //  .setNextRenderer(new VerticalLineRenderer(-1, -1));
       fpfnRenderer = new MatrixLineCellRenderer();
       fpfnRenderer
         .setNextRenderer(new VerticalLineRenderer(-1, -1));
@@ -368,7 +367,7 @@ export class ConfusionMatrix implements IAppView {
       .classed('cell', true)
       .each(function(datum, index) {
         const res = {linecell: datum.map((x, i) => [{values: x, max: maxVal, classLabel: labels[index], color: colors[i]}]),
-          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, colorValues: null, classLabels: null}};
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null}};
         renderer.renderNext(new PanelCell(res, d3.select(this), AppConstants.CELL_PRECISION));
       });
   }
@@ -388,7 +387,7 @@ export class ConfusionMatrix implements IAppView {
         const lineCells = confusionMatrixRow.map((x) => x.linecell);
         const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
         renderer.renderNext(new PanelCell({linecell: res,
-          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, colorValues: null, classLabels: null}},
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null}},
           d3.select(this), AppConstants.CELL_FP));
       });
 
@@ -403,7 +402,7 @@ export class ConfusionMatrix implements IAppView {
         const lineCells = confusionMatrixRow.map((x) => x.linecell);
         const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
         renderer.renderNext(new PanelCell({linecell: res,
-          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, colorValues: null, classLabels: null}},
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null}},
           d3.select(this), AppConstants.CELL_FN));
       });
   }

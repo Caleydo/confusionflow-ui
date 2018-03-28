@@ -8,7 +8,7 @@ import {zip} from '../utils';
  */
 
 export class MatrixHeatCellContent {
-  colorValues: string[];
+  maxVal: number;
   counts: number[];
   classLabels: string[];
   indexInMultiSelection: number[];
@@ -56,12 +56,12 @@ export class SingleEpochCalculator extends ACellContentCalculator {
     return res.map((x, i) => {
       if(this.removeMainDiagonal &&  i % 11 === 0) {
         return {
-          colorValues: [], counts: [], classLabels: [],
+          maxVal: 0, counts: [], classLabels: [],
           indexInMultiSelection: []
         };
       } else {
         return {
-          colorValues: x.map((y) => String(heatmapColorScale(y))), counts: x, classLabels: x.map((y) => String(y)),
+          maxVal, counts: x, classLabels: x.map((y) => String(y)),
           indexInMultiSelection: datasets.map((x) => x.multiEpochData.findIndex((y) => y.id === x.singleEpochData.id))
         };
       }

@@ -27,7 +27,7 @@ export abstract class ACellRenderer {
   protected abstract render(cell: ACell);
 }
 
-export class HeatCellRenderer extends ACellRenderer {
+/*export class HeatCellRenderer extends ACellRenderer {
   constructor(private showNumber: boolean) {
     super();
   }
@@ -49,6 +49,7 @@ export class HeatCellRenderer extends ACellRenderer {
       .text((datum: {count: number, colorValue: string}) => this.showNumber ? datum.count : '');
   }
 }
+*/
 
 export class MatrixLineCellRenderer extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
@@ -186,6 +187,28 @@ export class LabelCellRenderer extends ACellRenderer {
       .classed('label-cell', true)
       .text(cell.labelData.label)
       .style('background-color', 'white');
+  }
+}
+
+export class HeatmapMultiEpochRenderer extends ACellRenderer {
+  protected render(cell: MatrixCell | PanelCell) {
+    const data: Line[] = [].concat.apply([], cell.data.linecell);
+
+   const $subCells = cell.$node
+       .selectAll('div')
+       .data(data);
+
+    $subCells.enter().append('div').classed('heat-cell', true)
+      .style('background', (datum: Line) => {
+        const colorScale = d3.scale.linear().domain([0, datum.max]).range(<any>['white', datum.color]);
+        const widthInPercent = 100 / datum.values.length;
+        let res = datum.values.reduce((acc, val, index) => {
+          return acc + colorScale(val) + ' ' + (index) * widthInPercent + '%, ' + colorScale(val) + ' ' + (index+1) * widthInPercent + '%, ';
+        }, '');
+        res = res.substring(0, res.length - 2);
+        const res1 = `linear-gradient(to right, ${res})`;
+        return res1;
+      });
   }
 }
 
