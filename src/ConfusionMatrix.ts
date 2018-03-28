@@ -8,7 +8,7 @@ import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {
   ACellRenderer, MatrixLineCellRenderer,
-  VerticalLineRenderer, BarchartRenderer, LabelCellRenderer, HeatmapMultiEpochRenderer
+  VerticalLineRenderer, BarchartRenderer, LabelCellRenderer, HeatmapMultiEpochRenderer, HeatmapSingleEpochRenderer
 } from './confusion_matrix_cell/ACellRenderer';
 import {ACell, LabelCell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
 import {adaptTextColorToBgColor, zip} from './utils';
@@ -317,7 +317,7 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.PPV));
       singleEpochIndex = data[0].heatcell.indexInMultiSelection;
 
-      matrixRenderer = new HeatmapMultiEpochRenderer();
+      matrixRenderer = new HeatmapSingleEpochRenderer(false);
       fpfnRenderer = new BarchartRenderer();
     } else if(this.renderMode === RenderMode.MULTI) {
       multiEpochContent = new MultiEpochCalculator().calculate(datasets);
@@ -368,7 +368,7 @@ export class ConfusionMatrix implements IAppView {
       .classed('cell', true)
       .each(function(datum, index) {
         const res = {linecell: datum.map((x, i) => [{values: x, max: maxVal, classLabel: labels[index], color: colors[i]}]),
-          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null}};
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}};
         renderer.renderNext(new PanelCell(res, d3.select(this), AppConstants.CELL_PRECISION));
       });
   }
@@ -388,7 +388,7 @@ export class ConfusionMatrix implements IAppView {
         const lineCells = confusionMatrixRow.map((x) => x.linecell);
         const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
         renderer.renderNext(new PanelCell({linecell: res,
-          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null}},
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}},
           d3.select(this), AppConstants.CELL_FP));
       });
 
@@ -403,7 +403,7 @@ export class ConfusionMatrix implements IAppView {
         const lineCells = confusionMatrixRow.map((x) => x.linecell);
         const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
         renderer.renderNext(new PanelCell({linecell: res,
-          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null}},
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}},
           d3.select(this), AppConstants.CELL_FN));
       });
   }

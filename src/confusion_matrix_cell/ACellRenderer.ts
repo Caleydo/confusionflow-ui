@@ -27,30 +27,6 @@ export abstract class ACellRenderer {
   protected abstract render(cell: ACell);
 }
 
-/*export class HeatCellRenderer extends ACellRenderer {
-  constructor(private showNumber: boolean) {
-    super();
-  }
-  protected render(cell: MatrixCell | PanelCell) {
-     const $subCells = cell.$node
-       .selectAll('div')
-       .data((x: MatrixHeatCellContent, index: number) => {
-        const hc = cell.data.heatcell;
-        return hc.counts.map((x, i) => {
-          return {count: hc.counts[i], colorValue:hc.colorValues[i]};
-        });
-     });
-
-    $subCells.enter().append('div').classed('heat-cell', true)
-      .style('background-color', (datum: {count: number, colorValue: string}) => {
-        return datum.colorValue;
-      })
-      .style('color', (datum: {count: number, colorValue: string}) => adaptTextColorToBgColor(datum.colorValue))
-      .text((datum: {count: number, colorValue: string}) => this.showNumber ? datum.count : '');
-  }
-}
-*/
-
 export class MatrixLineCellRenderer extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
     const data: Line[] = [].concat.apply([], cell.data.linecell);
@@ -209,6 +185,31 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer {
         const res1 = `linear-gradient(to right, ${res})`;
         return res1;
       });
+  }
+}
+
+export class HeatmapSingleEpochRenderer extends ACellRenderer {
+  constructor(private showNumber: boolean) {
+    super();
+  }
+
+  protected render(cell: MatrixCell | PanelCell) {
+    const $subCells = cell.$node
+       .selectAll('div')
+       .data((x: MatrixHeatCellContent, index: number) => {
+        const hc = cell.data.heatcell;
+        return hc.counts.map((x, i) => {
+          const colorScale = d3.scale.linear().domain([0, hc.maxVal]).range(<any>['white', hc.colorValues[i]]);
+          return {count: hc.counts[i], colorValue: String(colorScale(hc.counts[i]))};
+        });
+     });
+
+    $subCells.enter().append('div').classed('heat-cell', true)
+      .style('background-color', (datum: {count: number, colorValue: string}) => {
+        return datum.colorValue;
+      })
+      .style('color', (datum: {count: number, colorValue: string}) => adaptTextColorToBgColor(datum.colorValue))
+      .text((datum: {count: number, colorValue: string}) => this.showNumber ? datum.count : '');
   }
 }
 

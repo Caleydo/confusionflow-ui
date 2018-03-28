@@ -12,6 +12,7 @@ export class MatrixHeatCellContent {
   counts: number[];
   classLabels: string[];
   indexInMultiSelection: number[];
+  colorValues: string[];
 }
 
 export class Line {
@@ -47,22 +48,16 @@ export class SingleEpochCalculator extends ACellContentCalculator {
       return acc > Math.max(...val) ? acc : Math.max(...val);
     }, 0);
 
-
-    const heatmapColorScale = d3.scale.linear()
-      .domain([0, maxVal])
-      .range(<any>AppConstants.BW_COLOR_SCALE)
-      .interpolate(<any>d3.interpolateHcl);
-
     return res.map((x, i) => {
       if(this.removeMainDiagonal &&  i % 11 === 0) {
         return {
           maxVal: 0, counts: [], classLabels: [],
-          indexInMultiSelection: []
+          indexInMultiSelection: [],  colorValues: []
         };
       } else {
         return {
           maxVal, counts: x, classLabels: x.map((y) => String(y)),
-          indexInMultiSelection: datasets.map((x) => x.multiEpochData.findIndex((y) => y.id === x.singleEpochData.id))
+          colorValues: x.map((_, i) => datasets[i].datasetColor), indexInMultiSelection: datasets.map((x) => x.multiEpochData.findIndex((y) => y.id === x.singleEpochData.id))
         };
       }
     });

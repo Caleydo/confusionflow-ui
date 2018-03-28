@@ -56,6 +56,9 @@ export function extractEpochId(epoch: IMalevoEpochInfo): number {
  * Zips array in form m[x:y] to form m[[x0, y0], [x1, y1], ...]
  * @param rows
  */
-export function zip (rows): any[][] {
+export function zip (rows: any[]): any[][] {
+  if(rows.length === 0) {
+    return [];
+  }
   return rows[0].map((_,c)=>rows.map((row)=>row[c]));
 }
