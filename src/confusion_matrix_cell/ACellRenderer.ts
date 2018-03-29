@@ -7,6 +7,7 @@ import {Language} from '../language';
 import {DataStoreCellSelection, dataStoreTimelines} from '../DataStore';
 import {time} from 'd3';
 import {AppConstants} from '../AppConstants';
+import {isUndefined} from 'util';
 
 /**
  * Created by Martin on 19.03.2018.
@@ -113,7 +114,7 @@ export class VerticalLineRenderer extends ACellRenderer {
       return;
     }
     const singleEpochIndex = cell.data.heatcell.indexInMultiSelection[0]; // select first single epoch index
-    if(!singleEpochIndex) { //todo improve so that this is not necessary
+    if(isUndefined(singleEpochIndex) || singleEpochIndex === null) {
       return;
     }
     const data: Line[] = [].concat.apply([], cell.data.linecell);
@@ -151,6 +152,29 @@ export class VerticalLineRenderer extends ACellRenderer {
   }
 }
 
+export class SingleEpochMarker extends ACellRenderer {
+  protected render(cell: MatrixCell | PanelCell) {
+    if(cell.data.heatcell === null) {
+      return;
+    }
+    const singleEpochIndex = cell.data.heatcell.indexInMultiSelection[0]; // select first single epoch index
+    if(isUndefined(singleEpochIndex) || singleEpochIndex === null) {
+      return;
+    }
+    const width = (<any>cell.$node[0][0]).clientWidth;
+
+    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    const largest = getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).values.length;
+    const res = width / largest;
+
+    const firstHCPart = cell.$node.select('div.heat-cell'); // select first part of heatcell
+    let bg = firstHCPart.style('background');
+    const str = `linear-gradient(to right, rgb(0, 0, 0), rgb(0, 0, 0)) ${res * singleEpochIndex}px 0px/${res}px 2px no-repeat,`;
+    bg = str + bg;
+    firstHCPart.style('background', bg);
+  }
+}
+
 export class BarchartRenderer extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
     cell.$node.text('barchart here');
@@ -182,8 +206,7 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer {
           return acc + colorScale(val) + ' ' + (index) * widthInPercent + '%, ' + colorScale(val) + ' ' + (index+1) * widthInPercent + '%, ';
         }, '');
         res = res.substring(0, res.length - 2);
-        const res1 = `linear-gradient(to right, ${res})`;
-        return res1;
+        return `linear-gradient(to right, ${res})`;
       });
   }
 }

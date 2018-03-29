@@ -8,7 +8,8 @@ import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {
   ACellRenderer, MatrixLineCellRenderer,
-  VerticalLineRenderer, BarchartRenderer, LabelCellRenderer, HeatmapMultiEpochRenderer, HeatmapSingleEpochRenderer
+  VerticalLineRenderer, BarchartRenderer, LabelCellRenderer, HeatmapMultiEpochRenderer, HeatmapSingleEpochRenderer,
+  SingleEpochMarker
 } from './confusion_matrix_cell/ACellRenderer';
 import {ACell, LabelCell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
 import {adaptTextColorToBgColor, zip} from './utils';
@@ -302,8 +303,8 @@ export class ConfusionMatrix implements IAppView {
       singleEpochIndex = data[1].heatcell.indexInMultiSelection;
 
       matrixRenderer = new HeatmapMultiEpochRenderer();
-      //matrixRenderer
-      //  .setNextRenderer(new VerticalLineRenderer(-1, -1));
+      matrixRenderer
+        .setNextRenderer(new SingleEpochMarker());
       fpfnRenderer = new MatrixLineCellRenderer();
       fpfnRenderer
         .setNextRenderer(new VerticalLineRenderer(-1, -1));
