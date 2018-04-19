@@ -29,6 +29,11 @@ enum RenderMode {
   COMBINED = 3
 }
 
+export interface ICellData {
+  linecell: Line[];
+  heatcell: MatrixHeatCellContent;
+}
+
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
@@ -274,7 +279,7 @@ export class ConfusionMatrix implements IAppView {
 
     let $cells = null;
 
-    let data: {linecell: Line[], heatcell: MatrixHeatCellContent}[] = null;
+    let data: ICellData[] = null;
     let datafpfn = null;
     let dataPrecision = null;
 
@@ -371,7 +376,7 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  renderFPFN(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[], renderer: ACellRenderer, singleEpochIndex: number[]) {
+  renderFPFN(data: ICellData[], renderer: ACellRenderer, singleEpochIndex: number[]) {
     const fpData = this.fpPanelData(data);
     const fnData = this.fnPanelData(data);
 
@@ -423,7 +428,7 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  fpPanelData(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[]) {
+  fpPanelData(data: ICellData[]) {
     data = data.slice(0);
     const arrays = [], size = this.CONF_SIZE;
     while (data.length > 0) {
@@ -432,7 +437,7 @@ export class ConfusionMatrix implements IAppView {
     return arrays;
   }
 
-  fnPanelData(data: {linecell: Line[], heatcell: MatrixHeatCellContent}[]) {
+  fnPanelData(data: ICellData[]) {
     const res = [];
     for (let i = 0; i < this.CONF_SIZE; i++) {
       res.push(data.filter((x, j) => j % 10 === i));

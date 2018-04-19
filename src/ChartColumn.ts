@@ -4,6 +4,7 @@
 import * as d3 from 'd3';
 import {ACellRenderer, MatrixLineCellRenderer} from './confusion_matrix_cell/ACellRenderer';
 import {Line, MatrixHeatCellContent} from './confusion_matrix_cell/CellContent';
+import {ICellData} from './ConfusionMatrix';
 
 export class ChartColumn {
   private curRenderer = null;
@@ -11,7 +12,7 @@ export class ChartColumn {
     $node.classed('chart', true);
   }
 
-  render(lineContent: {linecell: Line[], heatcell: MatrixHeatCellContent}, renderer: ACellRenderer) {
+  render(lineContent: ICellData, renderer: ACellRenderer) {
     const x = 0;
   }
 }
