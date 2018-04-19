@@ -21,7 +21,7 @@ export abstract class ACellRenderer {
   }
   renderNext(cell: ACell) {
     this.render(cell);
-    if(this.nextRenderer != null) {
+    if (this.nextRenderer != null) {
       this.nextRenderer.renderNext(cell);
     }
   }
@@ -44,8 +44,8 @@ export class MatrixLineCellRenderer extends ACellRenderer {
     const x = d3.scale.linear().rangeRound([0, width]);
     const y = d3.scale.linear().rangeRound([height, 0]);
 
-    x.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).values.length - 1]);
-    y.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).max]);
+    x.domain([0, getLargestLine(data).values.length - 1]);
+    y.domain([0, getLargestLine(data).max]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -74,15 +74,15 @@ export class DetailViewRenderer extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
     const data: Line[] = [].concat.apply([], cell.data.linecell);
     // we don't want to render empty cells
-    if(data.length === 1 && data[0].values.length === 0) {
+    if (data.length === 1 && data[0].values.length === 0) {
       return;
     }
 
     const x = d3.scale.linear().rangeRound([0, this.width]);
     const y = d3.scale.linear().rangeRound([this.height, 0]);
 
-    x.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).values.length - 1]);
-    y.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).max]);
+    x.domain([0, getLargestLine(data).values.length - 1]);
+    y.domain([0, getLargestLine(data).max]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -110,16 +110,16 @@ export class VerticalLineRenderer extends ACellRenderer {
   }
 
   protected render(cell: MatrixCell | PanelCell) {
-    if(cell.data.heatcell === null) {
+    if (cell.data.heatcell === null) {
       return;
     }
     const singleEpochIndex = cell.data.heatcell.indexInMultiSelection[0]; // select first single epoch index
-    if(isUndefined(singleEpochIndex) || singleEpochIndex === null) {
+    if (isUndefined(singleEpochIndex) || singleEpochIndex === null) {
       return;
     }
     const data: Line[] = [].concat.apply([], cell.data.linecell);
     // we don't want to render empty cells
-    if(data.length === 1 && data[0].values.length === 0) {
+    if (data.length === 1 && data[0].values.length === 0) {
       return;
     }
     const $g = cell.$node.select('g');
@@ -128,8 +128,8 @@ export class VerticalLineRenderer extends ACellRenderer {
     const x = d3.scale.linear().rangeRound([0, width]);
     const y = d3.scale.linear().rangeRound([height, 0]);
 
-    x.domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).values.length - 1]);
-    if(singleEpochIndex > -1) {
+    x.domain([0, getLargestLine(data).values.length - 1]);
+    if (singleEpochIndex > -1) {
       this.addDashedLines($g, x, singleEpochIndex, width, height);
     }
   }
@@ -143,9 +143,9 @@ export class VerticalLineRenderer extends ACellRenderer {
   private borderOffset($line: d3.Selection<any>, posX: number, width: number) {
     let sw = parseInt($line.style('stroke-width'), 10);
     sw /= 2;
-    if(posX === 0) {
+    if (posX === 0) {
       return sw;
-    } else if(posX === width) {
+    } else if (posX === width) {
       return -sw;
     }
     return 0;
@@ -154,17 +154,17 @@ export class VerticalLineRenderer extends ACellRenderer {
 
 export class SingleEpochMarker extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
-    if(cell.data.heatcell === null) {
+    if (cell.data.heatcell === null) {
       return;
     }
     const singleEpochIndex = cell.data.heatcell.indexInMultiSelection[0]; // select first single epoch index
-    if(isUndefined(singleEpochIndex) || singleEpochIndex === null) {
+    if (isUndefined(singleEpochIndex) || singleEpochIndex === null) {
       return;
     }
     const width = (<any>cell.$node[0][0]).clientWidth;
 
     const data: Line[] = [].concat.apply([], cell.data.linecell);
-    const largest = getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).values.length;
+    const largest = getLargestLine(data).values.length;
     const res = width / largest;
 
     const firstHCPart = cell.$node.select('div.heat-cell'); // select first part of heatcell
@@ -175,9 +175,9 @@ export class SingleEpochMarker extends ACellRenderer {
   }
 }
 
-export class BarchartRenderer extends ACellRenderer {
+export class BarChartRenderer extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
-    cell.$node.text('barchart here');
+    cell.$node.text('bar chart here');
   }
 }
 
@@ -194,16 +194,16 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
     const data: Line[] = [].concat.apply([], cell.data.linecell);
 
-   const $subCells = cell.$node
-       .selectAll('div')
-       .data(data);
+    const $subCells = cell.$node
+      .selectAll('div')
+      .data(data);
 
     $subCells.enter().append('div').classed('heat-cell', true)
       .style('background', (datum: Line) => {
         const colorScale = d3.scale.linear().domain([0, datum.max]).range(<any>['white', datum.color]);
         const widthInPercent = 100 / datum.values.length;
         let res = datum.values.reduce((acc, val, index) => {
-          return acc + colorScale(val) + ' ' + (index) * widthInPercent + '%, ' + colorScale(val) + ' ' + (index+1) * widthInPercent + '%, ';
+          return acc + colorScale(val) + ' ' + (index) * widthInPercent + '%, ' + colorScale(val) + ' ' + (index + 1) * widthInPercent + '%, ';
         }, '');
         res = res.substring(0, res.length - 2);
         return `linear-gradient(to right, ${res})`;
@@ -218,14 +218,14 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
 
   protected render(cell: MatrixCell | PanelCell) {
     const $subCells = cell.$node
-       .selectAll('div')
-       .data((x: MatrixHeatCellContent, index: number) => {
+      .selectAll('div')
+      .data((x: MatrixHeatCellContent, index: number) => {
         const hc = cell.data.heatcell;
         return hc.counts.map((x, i) => {
           const colorScale = d3.scale.linear().domain([0, hc.maxVal]).range(<any>['white', hc.colorValues[i]]);
           return {count: hc.counts[i], colorValue: String(colorScale(hc.counts[i]))};
         });
-     });
+      });
 
     $subCells.enter().append('div').classed('heat-cell', true)
       .style('background-color', (datum: {count: number, colorValue: string}) => {
@@ -243,7 +243,7 @@ export class AxisRenderer extends ACellRenderer {
 
   protected render(cell: MatrixCell | PanelCell) {
     const $g = cell.$node.select('g');
-    if($g === null) {
+    if ($g === null) {
       return;
     }
     const data: Line[] = [].concat.apply([], cell.data.linecell);
@@ -258,11 +258,11 @@ export class AxisRenderer extends ACellRenderer {
 
     const y = d3.scale.linear()
       .rangeRound([this.height, 0])
-      .domain([0, getLargest(data, ((x: Line, y: Line) => x.values.length > y.values.length)).max]);
+      .domain([0, getLargestLine(data).max]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
     let tickFrequency = 1;
-    if(selectedRangesLength[largest] > 20) {
+    if (selectedRangesLength[largest] > 20) {
       tickFrequency = 4;
     }
 
@@ -287,43 +287,43 @@ export class AxisRenderer extends ACellRenderer {
     const axisDistance = 100;
     // now add titles to the axes
     $g.append('text')
-        .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-        .attr('transform', 'translate('+ (-axisDistance/2) +','+(this.height/2)+')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
-        .text(this.getYLabelText());
+      .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
+      .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
+      .text(this.getYLabelText());
 
     $g.append('text')
-        .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-        .attr('transform', 'translate('+ (this.width/2) +','+(this.height-(-axisDistance))+')')  // centre below axis
-        .text(Language.EPOCH);
+      .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
+      .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance)) + ')')  // centre below axis
+      .text(Language.EPOCH);
 
-	  $g.selectAll('.chart-axis-x text')  // select all the text elements for the xaxis
-          .attr('transform', function(d) {
-             return 'translate(' + this.getBBox().height*-2 + ',' + this.getBBox().height + ')rotate(-45)';
-         });
+    $g.selectAll('.chart-axis-x text')  // select all the text elements for the xaxis
+      .attr('transform', function (d) {
+        return 'translate(' + this.getBBox().height * -2 + ',' + this.getBBox().height + ')rotate(-45)';
+      });
   }
 
   getYLabelText() {
     let text = '';
     const cell = DataStoreCellSelection.getCell();
-    if(cell instanceof MatrixCell) {
+    if (cell instanceof MatrixCell) {
       text = Language.CONFUSION_Y_LABEL;
-    } else if(cell instanceof PanelCell) {
-       if(cell.type ===  AppConstants.CELL_FP) {
-         text = Language.FP_RATE;
-       } else if(cell.type ===  AppConstants.CELL_FN) {
-         text = Language.FN_RATE;
-       } else if(cell.type ===  AppConstants.CELL_PRECISION) {
-         text = Language.PRECISION;
-       }
+    } else if (cell instanceof PanelCell) {
+      if (cell.type === AppConstants.CELL_FP) {
+        text = Language.FP_RATE;
+      } else if (cell.type === AppConstants.CELL_FN) {
+        text = Language.FN_RATE;
+      } else if (cell.type === AppConstants.CELL_PRECISION) {
+        text = Language.PRECISION;
+      }
     }
     return text;
   }
 }
 
-function getLargest(data: Line[], func: ((x: Line, y: Line) => boolean)): Line {
+function getLargestLine(data: Line[]): Line {
   console.assert(data.length > 0);
   const res = data.reduce((acc, val) => {
-    return func(acc, val) ? acc : val;
+    return (acc.values.length > val.values.length) ? acc : val;
   }, data[0]);
   return res;
 }

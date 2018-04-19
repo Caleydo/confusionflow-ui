@@ -35,7 +35,7 @@ export class SingleEpochCalculator extends ACellContentCalculator {
     const transformedData = datasets.map((x) => x.singleEpochData.confusionData.to1DArray());
     const res = zip(transformedData);
 
-    if(this.removeMainDiagonal) {
+    if (this.removeMainDiagonal) {
       res.forEach((x, i) => {
         if (i % 11 === 0) {
           res[i] = res[i].map((x) => 0);
@@ -45,14 +45,15 @@ export class SingleEpochCalculator extends ACellContentCalculator {
 
     // find max value over all data points
     const maxVal = res.reduce((acc, val) => {
-      return acc > Math.max(...val) ? acc : Math.max(...val);
+      const max = Math.max(...val);
+      return acc > max ? acc : max;
     }, 0);
 
     return res.map((x, i) => {
-      if(this.removeMainDiagonal &&  i % 11 === 0) {
+      if (this.removeMainDiagonal && i % 11 === 0) {
         return {
           maxVal: 0, counts: [], classLabels: [],
-          indexInMultiSelection: [],  colorValues: []
+          indexInMultiSelection: [], colorValues: []
         };
       } else {
         return {
@@ -77,7 +78,7 @@ export class MultiEpochCalculator extends ACellContentCalculator {
     });
     const zipped = zip(datasetData);
 
-    if(this.removeMainDiagonal) {
+    if (this.removeMainDiagonal) {
       zipped.forEach((x, i) => {
         if (i % 11 === 0) {
           zipped[i] = zipped[i].map((x) => x.map((y) => 0));
@@ -94,7 +95,7 @@ export class MultiEpochCalculator extends ACellContentCalculator {
     zipped.map((x, i) => {
       const label = datasets[0].labels[i % datasets[0].labels.length];
       return multiEpochData.push(x.map((y, dsIndex) => {
-        if(this.removeMainDiagonal && i % 11 === 0) {
+        if (this.removeMainDiagonal && i % 11 === 0) {
           return {values: [], max: 0, classLabel: label, color: datasets[dsIndex].datasetColor};
         } else {
           return {values: y, max: maxVal, classLabel: label, color: datasets[dsIndex].datasetColor};

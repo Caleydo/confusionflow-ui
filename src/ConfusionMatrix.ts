@@ -8,7 +8,7 @@ import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {
   ACellRenderer, MatrixLineCellRenderer,
-  VerticalLineRenderer, BarchartRenderer, LabelCellRenderer, HeatmapMultiEpochRenderer, HeatmapSingleEpochRenderer,
+  VerticalLineRenderer, BarChartRenderer, LabelCellRenderer, HeatmapMultiEpochRenderer, HeatmapSingleEpochRenderer,
   SingleEpochMarker
 } from './confusion_matrix_cell/ACellRenderer';
 import {ACell, LabelCell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
@@ -146,6 +146,7 @@ export class ConfusionMatrix implements IAppView {
     // => update render mode
     datasets.forEach((x) => {
       if (singleEpochDataExists(x)) {
+        // tslint:disable-next-line:no-bitwise
         this.renderMode |= RenderMode.SINGLE;
         return;
       }
@@ -155,6 +156,7 @@ export class ConfusionMatrix implements IAppView {
     // => update render mode
     datasets.forEach((x) => {
       if (multiEpochDataExists(x)) {
+        // tslint:disable-next-line:no-bitwise
         this.renderMode |= RenderMode.MULTI;
         return;
       }
@@ -295,9 +297,7 @@ export class ConfusionMatrix implements IAppView {
         .selectAll('div')
         .data(zippedData.map(() => 0));
 
-      data = zippedData.map((x) => {
-        return {heatcell: x[0], linecell: x[1]};
-      });
+      data = zippedData.map((x) => ({heatcell: x[0], linecell: x[1]}));
       datafpfn = multiEpochContent;
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
       singleEpochIndex = data[1].heatcell.indexInMultiSelection;
@@ -306,11 +306,11 @@ export class ConfusionMatrix implements IAppView {
       matrixRenderer
         .setNextRenderer(new SingleEpochMarker());
       fpfnRenderer = new MatrixLineCellRenderer();
-      fpfnRenderer
-        .setNextRenderer(new VerticalLineRenderer(-1, -1));
+      fpfnRenderer.setNextRenderer(new VerticalLineRenderer(-1, -1));
+
     } else if (this.renderMode === RenderMode.SINGLE) {
       singleEpochContent = new SingleEpochCalculator().calculate(datasets);
-      data = singleEpochContent.map((x) => {return {heatcell: x, linecell: null};});
+      data = singleEpochContent.map((x) => ({heatcell: x, linecell: null}));
       $cells = this.$confusionMatrix
         .selectAll('div')
         .data(singleEpochContent.map(() => 0));
@@ -319,10 +319,11 @@ export class ConfusionMatrix implements IAppView {
       singleEpochIndex = data[0].heatcell.indexInMultiSelection;
 
       matrixRenderer = new HeatmapSingleEpochRenderer(false);
-      fpfnRenderer = new BarchartRenderer();
+      fpfnRenderer = new BarChartRenderer();
+
     } else if (this.renderMode === RenderMode.MULTI) {
       multiEpochContent = new MultiEpochCalculator().calculate(datasets);
-      data = multiEpochContent.map((x) => {return {heatcell: null, linecell: x};});
+      data = multiEpochContent.map((x) => ({heatcell: null, linecell: x}));
       $cells = this.$confusionMatrix
         .selectAll('div')
         .data(multiEpochContent.map(() => 0));

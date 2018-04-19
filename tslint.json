@@ -37,7 +37,7 @@
     ],
     "new-parens": true,
     "no-arg": true,
-    "no-bitwise": false,
+    "no-bitwise": true,
     "no-console": [
       true,
       "debug",

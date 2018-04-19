@@ -7,17 +7,17 @@ import * as events from 'phovea_core/src/event';
 import Ordinal = d3.scale.Ordinal;
 
 export class TimelineCollection {
-  private timelines:Timeline[] = [];
+  private timelines: Timeline[] = [];
   private otl: OverallTimeline;
   private timelineColors: string[] = [];
 
   constructor(private $node: d3.Selection<any>) {
-   this.createColors();
+    this.createColors();
   }
 
   createColors() {
     const colorScale = d3.scale.category10();
-    for(let i = 0; i < AppConstants.MAX_DATASET_COUNT; i++) {
+    for (let i = 0; i < AppConstants.MAX_DATASET_COUNT; i++) {
       this.timelineColors.push(colorScale(String(i)));
       this.timelines.push(null);
     }
@@ -41,10 +41,11 @@ export class TimelineCollection {
 
   createNewTimeline(ds: MalevoDataset) {
     const freeIndex = this.getFreeIndex();
-    dataStoreTimelines.set(ds.name, new DataStoreTimelineSelection());
-    dataStoreTimelines.get(ds.name).selectedDataset = ds;
-    dataStoreTimelines.get(ds.name).datasetColor = this.timelineColors[this.getFreeIndex()];
-    dataStoreTimelines.get(ds.name).indexInTimelineCollection = freeIndex;
+    const timelineSelection = new DataStoreTimelineSelection();
+    dataStoreTimelines.set(ds.name, timelineSelection);
+    timelineSelection.selectedDataset = ds;
+    timelineSelection.datasetColor = this.timelineColors[this.getFreeIndex()];
+    timelineSelection.indexInTimelineCollection = freeIndex;
 
     const timeline = new Timeline(ds.name, this.$node);
     this.timelines[freeIndex] = timeline;
@@ -70,7 +71,7 @@ export class TimelineCollection {
   updateOverallTimeline() {
     this.otl = new OverallTimeline();
     const largestValue = this.getMaxEpoch();
-    for(let i = 0; i <= largestValue; i++) {
+    for (let i = 0; i <= largestValue; i++) {
       this.otl.dataPoints.push(i.toString());
     }
   }
@@ -81,7 +82,7 @@ export class TimelineCollection {
     const marginLabelTimeline = 10; // 10 pixel margin between label and timeline
     let counter = 0;
     this.timelines.forEach((x) => {
-      if(x !== null) {
+      if (x !== null) {
         x.render(this.$node, maxDSLabelWidth + marginLabelTimeline, counter * AppConstants.TML_HEIGHT, this.otl);
         counter++;
       }
@@ -89,9 +90,9 @@ export class TimelineCollection {
   }
 
   private findMaxDSLabelWidth() {
-      return this.timelines.reduce((acc, val) => {
-        return val !== null && val.getDSLabelWidth() > acc ? val.getDSLabelWidth() : acc;
-      }, 0);
+    return this.timelines.reduce((acc, val) => {
+      return val !== null && val.getDSLabelWidth() > acc ? val.getDSLabelWidth() : acc;
+    }, 0);
   }
 
   private getMaxEpoch() {
