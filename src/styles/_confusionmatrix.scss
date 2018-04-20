@@ -3,9 +3,16 @@
 $num-columns-right-area: 3;
 .grid {
     display: grid;
-    grid-template-areas: ". axis-top axis-top ." "axis-left . label-top label-right" "axis-left label-left matrix chart-right" ". label-bottom chart-bottom .";
+    grid-template-areas: "transpose-cell axis-top axis-top ." "axis-left . label-top label-right" "axis-left label-left matrix chart-right" ". label-bottom chart-bottom .";
     grid-template-columns: 40px 50px auto minmax(100px, 200px);
     grid-template-rows: 40px 50px auto minmax(60px, 1fr);
+}
+
+.cfm-transpose-cell {
+    grid-area: transpose-cell;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .cfm-axis,
@@ -153,6 +160,9 @@ $num-columns-right-area: 3;
             z-index: 1;
             margin: 1px;
         }
+    }
+    .transpose-cells .cell {
+        flex-direction: row;
     }
 }
 

@@ -33,8 +33,8 @@ export class DetailView implements IAppView {
   }
 
   private attachListeners() {
-    events.on(AppConstants.EVENT_SELL_SELECTED, () => {
-      if(this.selectedDetailView !== null) {
+    events.on(AppConstants.EVENT_CELL_SELECTED, () => {
+      if (this.selectedDetailView !== null) {
         this.selectedDetailView.render();
       }
     });
@@ -117,6 +117,6 @@ export class DetailView implements IAppView {
  * @param options
  * @returns {ConfusionMatrix}
  */
-export function create(parent:Element, options:any) {
+export function create(parent: Element, options: any) {
   return new DetailView(parent);
 }
