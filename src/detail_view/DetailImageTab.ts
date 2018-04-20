@@ -1,9 +1,11 @@
 import {ADetailViewTab} from './ADetailViewTab';
-import {DataStoreCellSelection, DataStoreEpochSelection} from '../DataStore';
+import {
+  DataStoreCellSelection, dataStoreTimelines
+} from '../DataStore';
 import {getAPIData, getAPIJSON} from 'phovea_core/src/ajax';
 import {AppConstants} from '../AppConstants';
 import {Language} from '../language';
-import {extractEpochId} from '../utils';
+import {MatrixCell} from '../confusion_matrix_cell/Cell';
 
 export class DetailImageTab extends ADetailViewTab {
   public id: string = AppConstants.IMAGE_VIEW;
@@ -19,25 +21,27 @@ export class DetailImageTab extends ADetailViewTab {
   }
 
   render() {
-    // currently, we just show images when clicking on a cm-matrix cell
-    if(!DataStoreCellSelection.isMatrixCell()) {
+    const cell = DataStoreCellSelection.getCell();
+    if(!cell || !(cell instanceof MatrixCell)) {
       return;
     }
-    const predicted: number = DataStoreCellSelection.colIndex;
-    const groundTruth: number = DataStoreCellSelection.rowIndex;
-    const labels = DataStoreCellSelection.labels;
+    if(!cell.data.heatcell) {
+      return;
+    }
 
     this.$node.html(`
       <p class="title"></p>
       <div class="images"><div class="loading">Loading images...</div></div>
     `);
     this.$node.select('.title')
-        .html(`<strong>${labels[groundTruth][1]}</strong> ${Language.PREDICTED_AS} <strong>${labels[predicted][1]}</strong>`);
+        .html(`<strong>${cell.groundTruthLabel}</strong> ${Language.PREDICTED_AS} <strong>${cell.predictedLabel}</strong>`);
 
-    const runId = DataStoreEpochSelection.datasetName;
-    const epochId = extractEpochId(DataStoreEpochSelection.singleSelected);
+    dataStoreTimelines.forEach((timeline) => {
+      this.$node.append('div').text(timeline.selectedDataset.name);
+      const runId = timeline.selectedDataset.name;
+      const epochId = timeline.singleSelected.id;
 
-    getAPIJSON(`/malevo/confmat/cell/imageIds?runId=${runId}&epochId=${epochId}&groundTruthId=${groundTruth}&predictedId=${predicted}`)
+      getAPIJSON(`/malevo/confmat/cell/imageIds?runId=${runId}&epochId=${epochId}&groundTruthId=${cell.groundTruthIndex}&predictedId=${cell.predictedIndex}`)
       .then((data: number[]) => {
         const imageIds = data.join(',');
         return getAPIData(`/malevo/images/imageSprite?imageIds=${imageIds}`, {}, 'blob');
@@ -47,6 +51,7 @@ export class DetailImageTab extends ADetailViewTab {
         const imageUrl = window.URL.createObjectURL(imageSprite);
         this.$node.select('.images').append('img').attr('src', imageUrl);
       });
+    });
   }
 
   clear() {

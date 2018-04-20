@@ -15,6 +15,7 @@ import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './Malev
 import {ITable} from 'phovea_core/src/table';
 import * as $ from 'jquery';
 import {DataStoreDatasetSelection} from './DataStore';
+import {extractEpochId} from './utils';
 
 /**
  * Shows a list of available datasets and lets the user choose one.
@@ -163,7 +164,8 @@ class DataProvider {
     const getOrCreateEpochInfo = (dataset: MalevoDataset, epochName: string) => {
       let epochInfo = dataset.epochInfos.find((x) => x.name === epochName);
       if(!epochInfo) {
-        epochInfo = {name: epochName, confusionInfo: null};
+        epochInfo = {name: epochName, confusionInfo: null, id: null};
+        epochInfo.id = extractEpochId(epochInfo);
         dataset.epochInfos.push(epochInfo);
         return epochInfo;
       }

@@ -33,23 +33,16 @@ export class DetailView implements IAppView {
   }
 
   private attachListeners() {
-    const e = AppConstants.SINGLE_LINE_PRECISION + events.EventHandler.MULTI_EVENT_SEPARATOR +
-      AppConstants.MULTI_LINE_CHART_CELL_FP + events.EventHandler.MULTI_EVENT_SEPARATOR +
-      AppConstants.MULTI_LINE_CHART_CELL_FN + events.EventHandler.MULTI_EVENT_SEPARATOR +
-      AppConstants.SINGLE_LINE_MATRIX_CELL + events.EventHandler.MULTI_EVENT_SEPARATOR +
-      AppConstants.COMBINED_MATRIX_CELL + events.EventHandler.MULTI_EVENT_SEPARATOR +
-      AppConstants.COMBINED_CHART_CELL_FP + events.EventHandler.MULTI_EVENT_SEPARATOR +
-      AppConstants.COMBINED_CHART_CELL_FN + events.EventHandler.MULTI_EVENT_SEPARATOR +
-      AppConstants.COMBINED_CHART_CELL_PRECISION;
-
-    events.on(e, () => {
+    events.on(AppConstants.EVENT_SELL_SELECTED, () => {
       if(this.selectedDetailView !== null) {
         this.selectedDetailView.render();
       }
     });
 
     events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
-      this.selectedDetailView.clear();
+      this.$selectionPanel.selectAll('a').each((x: ADetailViewTab) => {
+        x.clear();
+      });
     });
   }
 

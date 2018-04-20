@@ -2,20 +2,37 @@ import {IAppView} from './app';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
-import {MalevoDataset, IMalevoEpochInfo} from './MalevoDataset';
+import {MalevoDataset, IMalevoEpochInfo, ILoadedMalevoEpoch, ILoadedMalevoDataset} from './MalevoDataset';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import {ITable} from 'phovea_core/src/table';
 import {ChartColumn} from './ChartColumn';
 import {
-  BarChartCellRenderer, HeatCellRenderer, MultilineChartCellRenderer,
-  SingleLineChartCellRenderer, ConfusionMatrixLineChartCellRenderer, CombinedEpochCellRenderer, LabelCellRenderer
-} from './CellRenderer';
-import {adaptTextColorToBgColor} from './utils';
-import {BarChartCalculator, LineChartCalculator} from './MatrixCellCalculation';
+  ACellRenderer, MatrixLineCellRenderer,
+  VerticalLineRenderer, BarChartRenderer, LabelCellRenderer, HeatmapMultiEpochRenderer, HeatmapSingleEpochRenderer,
+  SingleEpochMarker
+} from './confusion_matrix_cell/ACellRenderer';
+import {ACell, LabelCell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
+import {adaptTextColorToBgColor, zip} from './utils';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
-import {NumberMatrix, SquareMatrix, transformSq, setDiagonal} from './DataStructures';
-import {DataStoreCellSelection, DataStoreEpochSelection} from './DataStore';
+import {NumberMatrix, SquareMatrix, transformSq, setDiagonal, max, IClassEvolution, Matrix} from './DataStructures';
+import {DataStoreCellSelection, dataStoreTimelines, DataStoreTimelineSelection} from './DataStore';
+import {
+  SingleEpochCalculator, Line, MultiEpochCalculator, MatrixHeatCellContent
+} from './confusion_matrix_cell/CellContent';
+
+
+enum RenderMode {
+  CLEAR = 0,
+  SINGLE = 1,
+  MULTI = 2,
+  COMBINED = 3
+}
+
+export interface ICellData {
+  linecell: Line[];
+  heatcell: MatrixHeatCellContent;
+}
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -26,12 +43,13 @@ export class ConfusionMatrix implements IAppView {
   private fnColumn: ChartColumn;
   private precisionColumn: ChartColumn;
   private classSizeColumn: ChartColumn;
+  private renderMode: RenderMode = RenderMode.COMBINED;
+  private readonly CONF_SIZE = 10;
 
-  constructor(parent:Element) {
+  constructor(parent: Element) {
     this.$node = d3.select(parent)
       .append('div')
       .classed('grid', true);
-    DataStoreCellSelection.$grid = this.$node;
   }
 
   /**
@@ -90,7 +108,7 @@ export class ConfusionMatrix implements IAppView {
 
     const $mwrapper = this.$node.append('div')
       .classed('matrix-wrapper', true)
-      .attr('data-aspect-ratio','one-by-one');
+      .attr('data-aspect-ratio', 'one-by-one');
 
     this.$confusionMatrix = $mwrapper.append('div').classed('matrix', true);
 
@@ -104,163 +122,104 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private attachListeners() {
-    events.on(AppConstants.EVENT_EPOCH_SELECTED, (evt) => {
-	  this.clearDetailView();
+    events.on(AppConstants.EVENT_REDRAW, (evt) => {
+      this.clearDetailView();
       this.updateViews();
     });
   }
 
   clearDetailView() {
-	  events.fire(AppConstants.CLEAR_DETAIL_VIEW);
+    events.fire(AppConstants.CLEAR_DETAIL_VIEW);
+  }
+
+  chooseRenderMode(datasets: ILoadedMalevoDataset[]) {
+    this.renderMode = RenderMode.CLEAR;
+
+    const singleEpochDataExists = function (data: ILoadedMalevoDataset) {
+      return !!data.singleEpochData;
+    };
+
+    const multiEpochDataExists = function (data: ILoadedMalevoDataset) {
+      return !!data.multiEpochData && data.multiEpochData.length > 0;
+    };
+    // if at least one single epoch selection exists
+    // => update render mode
+    datasets.forEach((x) => {
+      if (singleEpochDataExists(x)) {
+        // tslint:disable-next-line:no-bitwise
+        this.renderMode |= RenderMode.SINGLE;
+        return;
+      }
+    });
+
+    // if at least one multi epoch selection exist
+    // => update render mode
+    datasets.forEach((x) => {
+      if (multiEpochDataExists(x)) {
+        // tslint:disable-next-line:no-bitwise
+        this.renderMode |= RenderMode.MULTI;
+        return;
+      }
+    });
+
   }
 
   updateViews() {
-    if(DataStoreEpochSelection.isJustOneEpochSelected() === true) {
-      this.updateSingleEpoch();
-    } else if(DataStoreEpochSelection.isRangeSelected() === true) {
-      this.updateEpochRange();
-    } else if(DataStoreEpochSelection.isSingleAndRangeSelected() === true) {
-      this.updateSingleAndEpochRange();
-    } else {
-      this.clearViews();
+    const dataStoreTimelineArray = Array.from(dataStoreTimelines.values()).sort((a, b) => a.indexInTimelineCollection - b.indexInTimelineCollection);
+    const allPromises = dataStoreTimelineArray.map((value: DataStoreTimelineSelection) => {
+      const loadDataPromises = [];
+      loadDataPromises.push(this.loadEpochs(value.multiSelected, value.selectedDataset));
+      loadDataPromises.push(this.loadEpochs([value.singleSelected], value.selectedDataset));
+      loadDataPromises.push(this.loadLabels(value.selectedDataset.classLabels, value.selectedDataset));
+      loadDataPromises.push(Promise.resolve(value.datasetColor));
+
+      return Promise.all(loadDataPromises)
+        .then((d: any[]) => { // [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]
+          return {multiEpochData: <ILoadedMalevoEpoch[]>d[0], singleEpochData: <ILoadedMalevoEpoch>d[1][0], labels: <string[]>d[2], datasetColor: <string>d[3]};
+        });
+    });
+
+    // wait until datasets are loaded
+    Promise.all(allPromises).then((allDatasets) => {
+      this.chooseRenderMode(allDatasets);
+      this.renderCells(allDatasets);
+      this.addRowAndColumnLabels(allDatasets[0].labels);
+    });
+  }
+
+  private loadEpochs(matrix: IMalevoEpochInfo[], dataset: MalevoDataset): Promise<ILoadedMalevoEpoch[]> {
+    if (matrix === null || matrix[0] === null) { // if a single epoch or multiepoch-range was deselected
+      return Promise.resolve([]);
     }
-  }
-
-  private loadConfusionData(matrix: INumericalMatrix) : Promise<NumberMatrix> {
-    return matrix.data()
-      .then((x: number[][]) => {
-        const m = new SquareMatrix<number>(x.length);
-        m.init(x);
-        return m;
+    const res = matrix.map((x) => {
+      return x.confusionInfo.data();
+    });
+    return Promise.all(res).then((loadedEpochData: number[][][]) => {
+      console.assert(loadedEpochData.length === matrix.length);
+      if (loadedEpochData.length !== matrix.length) {
+        throw new Error('The loaded epoch data does not conform with its description');
+      }
+      return loadedEpochData.map((val: number[][], index: number) => {
+        const m = new SquareMatrix<number>(val.length);
+        m.init(val);
+        return {name: matrix[index].name, confusionData: m, id: matrix[index].id};
       });
+    });
   }
 
-  private loadLabels(table: ITable) : Promise<any> {
+  private loadLabels(table: ITable, dataset: MalevoDataset): Promise<any> {
     return table.data()
-      .then((x) => {
-        return x;
+      .then((x: [[number, string]]) => {
+        return x.map((x) => x[1]);
       });
   }
 
-  private renderPanelsRange(data: NumberMatrix[], labels: [number, string], singleEpochIndex: number) {
-    if(data.length === 0) {
-      return;
-    }
-
-    const calculator = new LineChartCalculator();
-    const fpData = calculator.calculate(data, labels);
-    const fnData = transformSq(fpData, (r, c, matrix) => {return {values: matrix.values[c][r].values, label: matrix.values[r][c].label};});
-    console.assert(fpData.order() === data[0].order());
-
-    let cellType = singleEpochIndex > -1 ? AppConstants.COMBINED_CHART_CELL_FP : AppConstants.MULTI_LINE_CHART_CELL_FP;
-    this.fpColumn.render(new MultilineChartCellRenderer(fpData, singleEpochIndex, this.fpColumn.$node, labels, cellType));
-
-    cellType = singleEpochIndex > -1 ? AppConstants.COMBINED_CHART_CELL_FN : AppConstants.MULTI_LINE_CHART_CELL_FN;
-    this.fnColumn.render(new MultilineChartCellRenderer(fnData, singleEpochIndex, this.fnColumn.$node, labels, cellType));
-
-    cellType = singleEpochIndex > -1 ? AppConstants.COMBINED_CHART_CELL_PRECISION : AppConstants.SINGLE_LINE_PRECISION;
-
-    this.precisionColumn.render(new SingleLineChartCellRenderer(confMeasures.calcEvolution(data, confMeasures.PPV), true,
-      singleEpochIndex, this.precisionColumn.$node, labels, cellType));
-
-    this.classSizeColumn.render(new LabelCellRenderer(confMeasures.calcForMultipleClasses(data[0], confMeasures.ClassSize),
-      this.classSizeColumn.$node, AppConstants.LABEL_CLASS_SIZE));
-  }
-
-  private renderPanelsSingleEpoch(data: NumberMatrix, labels: [number, string]) {
-    const bcCalculator = new BarChartCalculator();
-
-    const fpData = bcCalculator.calculate(data, labels);
-    const fnData = transformSq(fpData, (r, c, matrix) => {return {count: matrix.values[c][r].count, label: matrix.values[r][c].label};});
-
-    this.fpColumn.render(new BarChartCellRenderer(fpData, this.fpColumn.$node, AppConstants.BAR_CHART_CELL_FP));
-
-    this.precisionColumn.render(new HeatCellRenderer(confMeasures.calcForMultipleClasses(data, confMeasures.PPV), this.precisionColumn.$node, AppConstants.HEATMAP_CELL_PRECISION));
-
-    this.classSizeColumn.render(new LabelCellRenderer(confMeasures.calcForMultipleClasses(data, confMeasures.ClassSize), this.classSizeColumn.$node, AppConstants.LABEL_CLASS_SIZE));
-
-    this.fnColumn.render(new BarChartCellRenderer(fnData, this.fnColumn.$node, AppConstants.BAR_CHART_CELL_FN));
-  }
-
-  private updateEpochRange() {
-    const promMultiEpoch = [];
-    for(const item of DataStoreEpochSelection.multiSelected) {
-      if(item) {
-        promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
-      }
-    }
-    const promLabels = this.loadLabels(DataStoreEpochSelection.labels);
-    promMultiEpoch.push(promLabels);
-
-    Promise.all(promMultiEpoch).then((x: any) => {
-      const labels = x.splice(-1, 1)[0];
-      this.checkDataSanity(x, labels);
-      this.addRowAndColumnLabels(labels);
-      this.renderEpochRange(x, labels);
-      this.renderPanelsRange(x, labels, -1);
-    });
-  }
-
-  private updateSingleEpoch() {
-    const confusionData = this.loadConfusionData(DataStoreEpochSelection.singleSelected.confusionInfo);
-    const promLabels = this.loadLabels(DataStoreEpochSelection.labels);
-
-    Promise.all([confusionData, promLabels]).then((x:any) => {
-      this.checkDataSanity([x[0]], x[1]);
-      this.addRowAndColumnLabels(x[1]);
-      this.renderSingleEpoch(x[0], x[1]);
-      this.renderPanelsSingleEpoch(x[0], x[1]);
-    });
-  }
-
-  private updateSingleAndEpochRange() {
-    const promMultiEpoch = [];
-    for(const item of DataStoreEpochSelection.multiSelected) {
-      if(item) {
-        promMultiEpoch.push(this.loadConfusionData(item.confusionInfo));
-      }
-    }
-    const promSingleEpoch = this.loadConfusionData(DataStoreEpochSelection.singleSelected.confusionInfo);
-    const promLabels = this.loadLabels(DataStoreEpochSelection.labels);
-
-    promMultiEpoch.push(promSingleEpoch);
-    promMultiEpoch.push(promLabels);
-
-    const singleEpochIndex = DataStoreEpochSelection.multiSelected.findIndex((x) => x === DataStoreEpochSelection.singleSelected);
-
-    Promise.all(promMultiEpoch).then((x: any) => {
-      const labels = x.splice(-1,1)[0];
-      const single = x.splice(-1,1);
-      this.checkDataSanity(single, labels);
-      this.addRowAndColumnLabels(labels);
-      this.renderCombined(x, single[0],labels, singleEpochIndex);
-      this.renderPanelsRange(x, labels, singleEpochIndex);
-    });
-  }
-
-  private checkDataSanity(data: NumberMatrix[], labels: [number, String]) {
-    if(data.length === 0) {
-      throw new TypeError('No confusion matrix was found');
-    }
-    const order = data[0].order();
-
-    for(let i = 1; i < data.length; i++) {
-      if(order !== data[i].order()) {
-        throw new TypeError('The loaded confusion matrix is not valid');
-      }
-    }
-    if(order !== labels.length) {
-      //todo handle correctly
-      throw new TypeError('The length of the labels does not fit with the matrix length');
-    }
-  }
-
-  private addRowAndColumnLabels(labels: [number, string]) {
+  private addRowAndColumnLabels(labels: string[]) {
     this.renderLabels(this.$labelsLeft, labels);
     this.renderLabels(this.$labelsTop, labels);
   }
 
-  private renderLabels($node: d3.Selection<any>, labels: [number, string]) {
+  private renderLabels($node: d3.Selection<any>, labels: string[]) {
     const classColors = d3.scale.category10();
 
     const $cells = $node.selectAll('div')
@@ -268,59 +227,231 @@ export class ConfusionMatrix implements IAppView {
 
     $cells.enter()
       .append('div')
-      .classed('cell', true);
+      .classed('cell', true)
+      .classed('label-cell', true);
 
     $cells
-      .text((datum: any) => datum[1])
-      .style('background-color', (datum: any) => classColors(datum))
-      .style('color', (datum: any) => adaptTextColorToBgColor(classColors(datum)));
+      .text((datum: string) => datum);
 
     $cells.exit().remove();
   }
 
-  private renderEpochRange(data: NumberMatrix[], labels: [number, string]) {
-    if(!data || data.length === 0) {
+  private checkDataSanity(loadedMalevoEpochs: ILoadedMalevoEpoch[][], loadedClasslabels: string[][]) {
+
+    if (loadedClasslabels.length === 0 || loadedClasslabels[0].length === 0) {
+      throw new TypeError('No class labels were found');
+    }
+
+    loadedMalevoEpochs.forEach((v) => {
+      const data = v;
+      if (data.length === 0) {
+        throw new TypeError('No confusion matrix was found');
+      }
+
+      const order = v[0].confusionData.order();
+
+      for (let i = 1; i < data.length; i++) {
+        if (order !== data[i].confusionData.order()) {
+          throw new TypeError('The loaded confusion matrix is not valid');
+        }
+      }
+
+      if (order !== loadedClasslabels[0].length) {
+        throw new TypeError('The length of the labels does not fit with the matrix length');
+      }
+    });
+  }
+
+  renderCells(datasets: ILoadedMalevoDataset[]) {
+    this.$confusionMatrix
+      .selectAll('div')
+      .remove();
+
+    this.fpColumn.$node.selectAll('div').remove();
+    this.fnColumn.$node.selectAll('div').remove();
+    this.precisionColumn.$node.selectAll('div').remove();
+    this.classSizeColumn.$node.selectAll('div').remove();
+
+    if (this.renderMode === RenderMode.CLEAR) {
       return;
     }
 
-    const calculator = new LineChartCalculator();
-    const cellContent = calculator.calculate(data, labels);
-    console.assert(cellContent.order() === data[0].order());
+    let singleEpochContent = null;
+    let multiEpochContent = null;
 
-    new ConfusionMatrixLineChartCellRenderer(cellContent, true, -1, labels, this.$confusionMatrix, AppConstants.SINGLE_LINE_MATRIX_CELL).renderCells();
-  }
+    let $cells = null;
 
-  private renderSingleEpoch(data: NumberMatrix, labels: [number, string]) {
-    if(!data) {
-      return;
+    let data: ICellData[] = null;
+    let datafpfn = null;
+    let dataPrecision = null;
+
+    let matrixRenderer = null;
+    let fpfnRenderer = null;
+
+    let singleEpochIndex = null;
+    if (this.renderMode === RenderMode.COMBINED) {
+      singleEpochContent = new SingleEpochCalculator().calculate(datasets);
+      multiEpochContent = new MultiEpochCalculator().calculate(datasets);
+      const zippedData = zip([singleEpochContent, multiEpochContent]);
+      $cells = this.$confusionMatrix
+        .selectAll('div')
+        .data(zippedData.map(() => 0));
+
+      data = zippedData.map((x) => ({heatcell: x[0], linecell: x[1]}));
+      datafpfn = multiEpochContent;
+      dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
+      singleEpochIndex = data[1].heatcell.indexInMultiSelection;
+
+      matrixRenderer = new HeatmapMultiEpochRenderer();
+      matrixRenderer
+        .setNextRenderer(new SingleEpochMarker());
+      fpfnRenderer = new MatrixLineCellRenderer();
+      fpfnRenderer.setNextRenderer(new VerticalLineRenderer(-1, -1));
+
+    } else if (this.renderMode === RenderMode.SINGLE) {
+      singleEpochContent = new SingleEpochCalculator().calculate(datasets);
+      data = singleEpochContent.map((x) => ({heatcell: x, linecell: null}));
+      $cells = this.$confusionMatrix
+        .selectAll('div')
+        .data(singleEpochContent.map(() => 0));
+      datafpfn = singleEpochContent;
+      dataPrecision = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.PPV));
+      singleEpochIndex = data[0].heatcell.indexInMultiSelection;
+
+      matrixRenderer = new HeatmapSingleEpochRenderer(false);
+      fpfnRenderer = new BarChartRenderer();
+
+    } else if (this.renderMode === RenderMode.MULTI) {
+      multiEpochContent = new MultiEpochCalculator().calculate(datasets);
+      data = multiEpochContent.map((x) => ({heatcell: null, linecell: x}));
+      $cells = this.$confusionMatrix
+        .selectAll('div')
+        .data(multiEpochContent.map(() => 0));
+
+      datafpfn = multiEpochContent;
+      dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
+      singleEpochIndex = null;
+
+      matrixRenderer = new HeatmapMultiEpochRenderer();
+      fpfnRenderer = new MatrixLineCellRenderer();
     }
-    data = data.clone();
-    // todo this is kind of a hack to filter the main diagonal values
-    setDiagonal(data, (r) => {return -1;});
-    new HeatCellRenderer(data.to1DArray(), this.$confusionMatrix, AppConstants.SINGLE_LINE_MATRIX_CELL).renderCells();
+
+    const that = this;
+    $cells.enter()
+      .append('div')
+      .classed('cell', true)
+      .each(function (datum, index) {
+        const predicted = index % that.CONF_SIZE;
+        const groundTruth = Math.floor(index / that.CONF_SIZE);
+        const lineCellContent = data[index].linecell !== null ? data[index].linecell.map((x) => [x]) : null;
+        const res = {linecell: lineCellContent, heatcell: data[index].heatcell};
+        matrixRenderer.renderNext(new MatrixCell(res, d3.select(this),
+          datasets[0].labels[predicted],
+          datasets[0].labels[groundTruth],
+          predicted,
+          groundTruth));
+      });
+
+    this.renderFPFN(data, fpfnRenderer, singleEpochIndex);
+    this.renderClassSize(datasets, new LabelCellRenderer());
+    this.renderPrecisionColumn(dataPrecision, fpfnRenderer, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
   }
 
-  private renderCombined(multiEpochData: NumberMatrix[], singleEpochData: NumberMatrix, labels: [number, string], singleEpochIndex: number) {
-    if(!multiEpochData || multiEpochData.length === 0 || !singleEpochData) {
-      return;
+  renderPrecisionColumn(data: Matrix<number[]>[], renderer: ACellRenderer, labels: string[], singleEpochIndex: number[], colors: string[]) {
+    const maxVal = Math.max(...data.map((x: Matrix<number[]>) => max(x, (d) => Math.max(...d))));
+    let transformedData = data.map((x) => x.to1DArray());
+    transformedData = zip(transformedData);
+
+    this.precisionColumn.$node
+      .selectAll('div')
+      .data(transformedData)
+      .enter()
+      .append('div')
+      .classed('cell', true)
+      .each(function (datum, index) {
+        const res = {
+          linecell: datum.map((x, i) => [{values: x, max: maxVal, classLabel: labels[index], color: colors[i]}]),
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
+        };
+        renderer.renderNext(new PanelCell(res, d3.select(this), AppConstants.CELL_PRECISION));
+      });
+  }
+
+  renderFPFN(data: ICellData[], renderer: ACellRenderer, singleEpochIndex: number[]) {
+    const fpData = this.fpPanelData(data);
+    const fnData = this.fnPanelData(data);
+
+    this.fpColumn.$node
+      .selectAll('div')
+      .data(fpData.map(() => 0))
+      .enter()
+      .append('div')
+      .classed('cell', true)
+      .each(function (datum, index) {
+        const confusionMatrixRow = fpData[index].map((x) => x);
+        const lineCells = confusionMatrixRow.map((x) => x.linecell);
+        const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
+        renderer.renderNext(new PanelCell({
+          linecell: res,
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
+        },
+          d3.select(this), AppConstants.CELL_FP));
+      });
+
+    this.fnColumn.$node
+      .selectAll('div')
+      .data(fnData.map(() => 0))
+      .enter()
+      .append('div')
+      .classed('cell', true)
+      .each(function (datum, index) {
+        const confusionMatrixRow = fnData[index].map((x) => x);
+        const lineCells = confusionMatrixRow.map((x) => x.linecell);
+        const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
+        renderer.renderNext(new PanelCell({
+          linecell: res,
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
+        },
+          d3.select(this), AppConstants.CELL_FN));
+      });
+  }
+
+  renderClassSize(datasets: ILoadedMalevoDataset[], renderer: ACellRenderer) {
+    const classSizeData = this.classSizeData(datasets);
+    this.classSizeColumn.$node
+      .selectAll('div')
+      .data(classSizeData)
+      .enter()
+      .append('div')
+      .classed('cell', true)
+      .each(function (datum: number, index: number) {
+        renderer.renderNext(new LabelCell({label: String(datum)}, d3.select(this)));
+      });
+  }
+
+  fpPanelData(data: ICellData[]) {
+    data = data.slice(0);
+    const arrays = [], size = this.CONF_SIZE;
+    while (data.length > 0) {
+      arrays.push(data.splice(0, size));
     }
-
-    singleEpochData = singleEpochData.clone();
-    setDiagonal(singleEpochData, (r) => {return 0;});
-    const calculator = new LineChartCalculator();
-    const lineData = calculator.calculate(multiEpochData, labels);
-
-    new CombinedEpochCellRenderer(lineData, singleEpochData, true, labels, singleEpochIndex, this.$confusionMatrix, AppConstants.COMBINED_MATRIX_CELL).renderCells();
+    return arrays;
   }
 
-  private clearViews() {
-    this.$confusionMatrix.selectAll('div').remove();
-    this.fpColumn.clear();
-    this.fnColumn.clear();
-    this.precisionColumn.clear();
-    this.classSizeColumn.clear();
+  fnPanelData(data: ICellData[]) {
+    const res = [];
+    for (let i = 0; i < this.CONF_SIZE; i++) {
+      res.push(data.filter((x, j) => j % 10 === i));
+    }
+    return res;
   }
 
+  classSizeData(datasets: ILoadedMalevoDataset[]) {
+    if (datasets[0].singleEpochData) {
+      return confMeasures.calcForMultipleClasses(datasets[0].singleEpochData.confusionData, confMeasures.ClassSize);
+    }
+    return confMeasures.calcForMultipleClasses(datasets[0].multiEpochData[0].confusionData, confMeasures.ClassSize);
+  }
 }
 
 /**
@@ -329,6 +460,6 @@ export class ConfusionMatrix implements IAppView {
  * @param options
  * @returns {ConfusionMatrix}
  */
-export function create(parent:Element, options:any) {
+export function create(parent: Element, options: any) {
   return new ConfusionMatrix(parent);
 }

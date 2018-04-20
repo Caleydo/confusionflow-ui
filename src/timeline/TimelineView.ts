@@ -8,7 +8,7 @@ import {MalevoDataset} from '../MalevoDataset';
 import {IAppView} from '../app';
 import {TimelineCollection} from './TimelineCollection';
 import {Timeline} from './Timeline';
-import {DataStoreEpochSelection} from '../DataStore';
+import {dataStoreTimelines, DataStoreTimelineSelection} from '../DataStore';
 
 export default class TimelineView implements IAppView {
   private readonly $node:d3.Selection<any>;
@@ -35,14 +35,11 @@ export default class TimelineView implements IAppView {
 
   private attachListener() {
     events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds:MalevoDataset) => {
-      DataStoreEpochSelection.clearSelection();
-
       this.updateSvg(this.timelineData.timelineCount() + 1);
       this.timelineData.add(this.$node, ds);
     });
 
     events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds:MalevoDataset) => {
-      DataStoreEpochSelection.clearSelection();
       this.updateSvg(this.timelineData.timelineCount() - 1);
       this.timelineData.remove(ds);
     });

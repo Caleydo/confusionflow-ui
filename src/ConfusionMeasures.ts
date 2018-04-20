@@ -61,54 +61,29 @@ export function calcForMultipleClasses(matrix: NumberMatrix, funct: (matrix: Num
   return result;
 }
 
-export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMatrix, index: number) => number): Matrix<IClassEvolution> {
-  const order = matrices[0].order() + 1;
+export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMatrix, index: number) => number): Matrix<number[]> {
+  const order = matrices[0].order();
 
   if(matrices.length === 0) {
-    return new Matrix<IClassEvolution>(0, 0);
+    return new Matrix<number[]>(0, 0);
   }
-  const matrix = new Matrix<IClassEvolution>(order, 1);
-  const arr:IClassEvolution[][] = [];
+  const matrix = new Matrix<number[]>(order, 1);
+  const arr:number[][][] = [];
   for(let i = 0; i < order; i++) {
     arr[i] = [];
-    arr[i][0] = {values: [], label: ''};
+    arr[i][0] = [];
   }
   matrix.init(arr);
 
   for(const m of matrices) {
     const res = calcForMultipleClasses(m, funct);
-    matrix.values.map((c, i) => c[0].values.push(res[i]));
+    matrix.values.map((c, i) => c[0].push(res[i]));
   }
 
-  const summedPercent = calcSummedPercent(matrices);
-  matrix.values[order - 1][0].values = summedPercent;
+  //const summedPercent = calcSummedPercent(matrices);
+  //matrix[order - 1][0] = summedPercent;
   return matrix;
 }
 
-//todo find a better place for this code since it is not related to confusion measures
-export function calcSummedPercent(matrices: NumberMatrix[]): number[] {
-  const order = matrices[0].order();
-  const arr = [];
-  if(matrices.length === 0) {
-    return arr;
-  }
 
-  for(const m of matrices) {
-    const res = calcSums(m);
-    arr.push(res);
-  }
-  return arr;
-}
 
-export function calcSums(matrix: NumberMatrix) {
-  let tpSum = 0;
-  let classSizeSum = 0;
-  for(let i = 0; i < matrix.order(); i++) {
-    tpSum += TP(matrix, i);
-    classSizeSum += ClassSize(matrix, i);
-  }
-  if(classSizeSum === 0) {
-    return 0;
-  }
-  return tpSum / classSizeSum;
-}
