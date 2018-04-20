@@ -91,6 +91,7 @@ export class Timeline {
 
   private attachListeners() {
     events.on(AppConstants.EVENT_TIMELINE_CHANGED, (evt, src: Timeline) => {
+      // synchronizes single epoch marker
       if(this.singleEpochSelector === null || src === this) {
         return;
       }
@@ -171,6 +172,7 @@ export class Timeline {
       if(!brush.empty()) {
         //to clear the brush, call this.setBrush(brush, x, 0);
         this.setBrush(brush, x, width);
+        events.fire(AppConstants.EVENT_REDRAW);
       }
 
     });

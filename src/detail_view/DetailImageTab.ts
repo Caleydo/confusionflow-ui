@@ -22,41 +22,42 @@ export class DetailImageTab extends ADetailViewTab {
 
   render() {
     const cell = DataStoreCellSelection.getCell();
-    if(!cell || !(cell instanceof MatrixCell)) {
+    if (!cell || !(cell instanceof MatrixCell)) {
       return;
     }
-    if(!cell.data.heatcell) {
+    if (!cell.data.heatcell) {
       return;
     }
 
     this.$node.html(`
-      <p class="title"></p>
-      <div class="images"><div class="loading">Loading images...</div></div>
+      <p class="chart-name"><strong>${cell.groundTruthLabel}</strong> ${Language.PREDICTED_AS} <strong>${cell.predictedLabel}</strong></p>
+      <div class="images"></div>
     `);
-    this.$node.select('.title')
-        .html(`<strong>${cell.groundTruthLabel}</strong> ${Language.PREDICTED_AS} <strong>${cell.predictedLabel}</strong>`);
 
     dataStoreTimelines.forEach((timeline) => {
-      this.$node.append('div').text(timeline.selectedDataset.name);
+      const $section = this.$node.select('.images').append('section')
+        .html(`
+          <p><strong>${timeline.selectedDataset.name}</strong></p>
+          <div class="result"><div class="loading"><i class="fa fa-circle-o-notch fa-spin fa-fw"></i> Loading images...</div></div>
+        `);
       const runId = timeline.selectedDataset.name;
       const epochId = timeline.singleSelected.id;
 
       getAPIJSON(`/malevo/confmat/cell/imageIds?runId=${runId}&epochId=${epochId}&groundTruthId=${cell.groundTruthIndex}&predictedId=${cell.predictedIndex}`)
-      .then((data: number[]) => {
-        const imageIds = data.join(',');
-        return getAPIData(`/malevo/images/imageSprite?imageIds=${imageIds}`, {}, 'blob');
-      })
-      .then((imageSprite) => {
-        this.$node.select('.images .loading').classed('hidden', true);
-        const imageUrl = window.URL.createObjectURL(imageSprite);
-        this.$node.select('.images').append('img').attr('src', imageUrl);
-      });
+        .then((data: number[]) => {
+          const imageIds = data.join(',');
+          return getAPIData(`/malevo/images/imageSprite?imageIds=${imageIds}`, {}, 'blob');
+        })
+        .then((imageSprite) => {
+          $section.select('.result .loading').classed('hidden', true);
+          const imageUrl = window.URL.createObjectURL(imageSprite);
+          $section.select('.result').append('img').attr('src', imageUrl);
+        });
     });
   }
 
   clear() {
-    this.$node.select('.images img').remove();
-    this.$node.select('.images .loading').classed('hidden', false);
+    this.$node.html(``);
   }
 }
 
@@ -66,6 +67,6 @@ export class DetailImageTab extends ADetailViewTab {
  * @param options
  * @returns {DetailChartWindow}
  */
-export function create(parent:Element, options:any) {
+export function create(parent: Element, options: any) {
   return new DetailImageTab(parent);
 }
