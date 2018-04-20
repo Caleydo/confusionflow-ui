@@ -332,7 +332,7 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
       singleEpochIndex = null;
 
-      matrixRenderer = new MatrixLineCellRenderer();
+      matrixRenderer = new HeatmapMultiEpochRenderer();
       fpfnRenderer = new MatrixLineCellRenderer();
     }
 
