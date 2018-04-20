@@ -96,6 +96,7 @@ export class Timeline {
       }
       this.singleEpochSelector.setPosition(src.singleEpochSelector.curPos);
       this.singleEpochSelector.hideNode(src.singleEpochSelector.hidden);
+      this.updateSingleSelection();
     });
   }
 
@@ -232,7 +233,7 @@ export class Timeline {
           pos = getNearestExistPos(pos);
           tml.singleEpochSelector.setPosition(pos);
           // toggle single epoch selector
-          tml.updateSingleSelection(tml.singleEpochSelector);
+          tml.updateSingleSelection();
           events.fire(AppConstants.EVENT_TIMELINE_CHANGED, tml);
           events.fire(AppConstants.EVENT_REDRAW);
       })
@@ -304,7 +305,7 @@ export class Timeline {
       this.singleEpochSelector.setPosition(range[1]);
       this.singleEpochSelector.hideNode(false);
       events.fire(AppConstants.EVENT_TIMELINE_CHANGED, this);
-      this.updateSingleSelection(this.singleEpochSelector);
+      this.updateSingleSelection();
     } else {
       dataStoreTimelines.get(this.datasetName).clearMultiSelection();
       this.$node.select('g.brush').call(<any>brush.clear());
@@ -336,11 +337,11 @@ export class Timeline {
     return [brushStart, brushEnd];
   }
 
-  updateSingleSelection(seSelector: SingleEpochSelector) {
+  updateSingleSelection() {
     dataStoreTimelines.get(this.datasetName).clearSingleSelection();
-    if(!seSelector.hidden) {
-      console.assert(this.data.datapoints[seSelector.curPos].exists);
-      const epoch = this.data.datapoints[seSelector.curPos].epoch;
+    if(!this.singleEpochSelector.hidden) {
+      console.assert(this.data.datapoints[this.singleEpochSelector.curPos].exists);
+      const epoch = this.data.datapoints[this.singleEpochSelector.curPos].epoch;
       console.assert(!!epoch);
       dataStoreTimelines.get(this.datasetName).singleSelected = epoch;
     }
