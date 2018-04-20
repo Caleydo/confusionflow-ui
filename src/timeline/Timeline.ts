@@ -15,14 +15,16 @@ class SingleEpochSelector {
   public curPos = -1;
   readonly selectorWidth = 2;
   readonly selectorHEIGHT = 30;
-  constructor($parent: d3.Selection<any>, offsetH: number) {
+  constructor($parent: d3.Selection<any>, offsetH: number, private x: any) {
     this.$node = $parent.append('rect').classed('single-epoch-selector', true).attr('width', this.selectorWidth).attr('height', this.selectorHEIGHT)
       .attr('transform', `translate(${offsetH}, 0)`)
       .classed('hidden', this.hidden);
   }
 
   setPosition(pos: number) {
-    this.hidden = !(this.curPos !== pos || this.hidden === true);
+    const posX = this.x(String(Math.round(pos)));
+    this.$node.attr('x', posX);
+    this.hideNode(!(this.curPos !== pos || this.hidden === true));
     this.curPos = pos;
   }
 
@@ -75,6 +77,7 @@ export class Timeline {
 
   constructor(public datasetName: string, $parent: d3.Selection<any>) {
    this.build($parent);
+   this.attachListeners();
   }
 
   build($parent) {
@@ -84,6 +87,17 @@ export class Timeline {
     this.$node = $parent.append('g')
       .classed('timeline', true);
     this.createLabel(this.datasetName);
+  }
+
+  private attachListeners() {
+    events.on(AppConstants.EVENT_TIMELINE_CHANGED, (evt, src: Timeline) => {
+      if(this.singleEpochSelector === null || src === this) {
+        return;
+      }
+      this.singleEpochSelector.setPosition(src.singleEpochSelector.curPos);
+      this.singleEpochSelector.hideNode(src.singleEpochSelector.hidden);
+      this.updateSingleSelection();
+    });
   }
 
   createLabel(datasetName: string) {
@@ -118,8 +132,7 @@ export class Timeline {
     const xAxis = d3.svg.axis()
       .scale(x)
       .tickValues(x.domain().filter((d, i) => {
-        const cond = i < this.data.datapoints.length && this.data.datapoints[i].exists && i % this.tickmarkDistance === 0;
-        return cond;
+        return i < this.data.datapoints.length && this.data.datapoints[i].exists && i % this.tickmarkDistance === 0;
       }))
       .orient('bottom')
       .tickSize(-7);
@@ -203,7 +216,7 @@ export class Timeline {
       .attr('transform', `translate(${offsetH}, 0)`);
 
     const tml = this;
-    this.singleEpochSelector = new SingleEpochSelector(this.$node, offsetH);
+    this.singleEpochSelector = new SingleEpochSelector(this.$node, offsetH, x);
     const areaHeight = 15;
     this.$node.append('rect').attr('transform', `translate(${offsetH}, ${areaHeight + 1})`)
       .attr('width', width)
@@ -218,21 +231,15 @@ export class Timeline {
       .on('mouseup', function () {
           let pos = posFromCoordinates(d3.mouse(this));
           pos = getNearestExistPos(pos);
-          tml.setSingleEpochSelector(x, pos);
+          tml.singleEpochSelector.setPosition(pos);
           // toggle single epoch selector
-          tml.singleEpochSelector.hideNode(tml.singleEpochSelector.hidden);
-          tml.updateSingleSelection(tml.singleEpochSelector);
+          tml.updateSingleSelection();
+          events.fire(AppConstants.EVENT_TIMELINE_CHANGED, tml);
           events.fire(AppConstants.EVENT_REDRAW);
       })
       .on('mouseleave', function () {
         $singleSelectionMarker.classed('hidden', true);
       });
-  }
-
-  setSingleEpochSelector(x: any, pos: number) {
-    const posX = x(String(Math.round(pos)));
-    this.singleEpochSelector.$node.attr('x', posX);
-    this.singleEpochSelector.setPosition(pos);
   }
 
   ceil(val: number) {
@@ -271,8 +278,9 @@ export class Timeline {
       const range = this.getDataIndices(+y(<number>extent[0]), +y(<number>extent[1]));
       if(range[0] < range[1]) {
         this.$node.select('g.brush').call(<any>brush.extent([y.invert(range[0]), y.invert(range[1])]));
-        this.setSingleEpochSelector(x, range[1]);
+        this.singleEpochSelector.setPosition(range[1]);
         this.singleEpochSelector.hideNode(false);
+        events.fire(AppConstants.EVENT_TIMELINE_CHANGED, this);
       } else {
         this.$node.select('g.brush').call(<any>brush.clear());
       }
@@ -294,9 +302,10 @@ export class Timeline {
       dataStoreTimelines.get(this.datasetName).multiSelected = this.getSelectedEpochs(range);
 
       // set single epoch selector to the end
-      this.setSingleEpochSelector(x, range[1]);
+      this.singleEpochSelector.setPosition(range[1]);
       this.singleEpochSelector.hideNode(false);
-      this.updateSingleSelection(this.singleEpochSelector);
+      events.fire(AppConstants.EVENT_TIMELINE_CHANGED, this);
+      this.updateSingleSelection();
     } else {
       dataStoreTimelines.get(this.datasetName).clearMultiSelection();
       this.$node.select('g.brush').call(<any>brush.clear());
@@ -328,11 +337,11 @@ export class Timeline {
     return [brushStart, brushEnd];
   }
 
-  updateSingleSelection(seSelector: SingleEpochSelector) {
+  updateSingleSelection() {
     dataStoreTimelines.get(this.datasetName).clearSingleSelection();
-    if(!seSelector.hidden) {
-      console.assert(this.data.datapoints[seSelector.curPos].exists);
-      const epoch = this.data.datapoints[seSelector.curPos].epoch;
+    if(!this.singleEpochSelector.hidden) {
+      console.assert(this.data.datapoints[this.singleEpochSelector.curPos].exists);
+      const epoch = this.data.datapoints[this.singleEpochSelector.curPos].epoch;
       console.assert(!!epoch);
       dataStoreTimelines.get(this.datasetName).singleSelected = epoch;
     }

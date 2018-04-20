@@ -12,7 +12,11 @@ export class AppConstants {
 
   static EVENT_RESIZE = 'eventResize';
 
-  static BW_COLOR_SCALE = ['white', 'gray'];
+  /**
+   * Fires when the user changes one of the timeline
+   * @type {string}
+   */
+  static EVENT_TIMELINE_CHANGED = 'eventTimelineChanged';
 
   /**
    * Ids for different detail view tabs
@@ -51,24 +55,9 @@ export class AppConstants {
    * Represent the different cell types
    * @type {string}
    */
-  static HEATMAP_CELL_PRECISION = 'heatmapCellPrecision';
-  static SINGLE_LINE_PRECISION = 'singleLinePrecision';
-  static COMBINED_CHART_CELL_PRECISION = 'combinedChartCellPrecision';
-
   static CELL_FP = 'cellFP';
   static CELL_FN = 'cellFN';
   static CELL_PRECISION = 'cellPrecision';
-
-  static MULTI_LINE_CHART_CELL_FP = 'multiLineChartCellFP';
-  static MULTI_LINE_CHART_CELL_FN = 'multiLineChartCellFN';
-
-  static COMBINED_CHART_CELL_FP = 'combinedChartCellFP';
-  static COMBINED_CHART_CELL_FN = 'combinedChartCellFN';
-
-  static COMBINED_MATRIX_CELL = 'combinedMatrixCell';
-  static SINGLE_LINE_MATRIX_CELL = 'singleLineMatrixCell';
-
-  static LABEL_CLASS_SIZE = 'labelClassSize';
 
   /**
    * Initial size of a heatmap cells for the softmax stampx
