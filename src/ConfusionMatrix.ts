@@ -122,7 +122,7 @@ export class ConfusionMatrix implements IAppView {
     const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
     this.fnColumn = new ChartColumn($chartBottom.append('div'));
 
-    const $transposeCells = this.$node.append('div')
+    const $transposeCellsDiv = this.$node.append('div')
       .classed('cfm-transpose-cell', true)
       .html(`
         <input type="checkbox" class="sr-only" id="transpose-cell-renderer">
@@ -131,7 +131,7 @@ export class ConfusionMatrix implements IAppView {
         </label>
       `);
 
-    $transposeCells.select('input').on('change', () => {
+    $transposeCellsDiv.select('input').on('change', () => {
       const isTransposed = DataStoreCellSelection.toggleTransposeCellRenderer();
       $mwrapper.classed('transpose-cells', isTransposed);
 
