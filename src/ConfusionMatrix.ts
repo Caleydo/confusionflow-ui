@@ -125,8 +125,10 @@ export class ConfusionMatrix implements IAppView {
     const $transposeCells = this.$node.append('div')
       .classed('cfm-transpose-cell', true)
       .html(`
-        <input type="checkbox" name="transpose-cell-renderer" id="transpose-cell-renderer" title="Transpose heatmaps in matrix">
-        <label for="transpose-cell-renderer" class="sr-only">Transpose heatmaps in matrix</label>
+        <input type="checkbox" class="sr-only" id="transpose-cell-renderer">
+        <label for="transpose-cell-renderer" title="Transpose matrix visualization">
+          <span class="sr-only">Change direction of </span><span>epochs</span>
+        </label>
       `);
 
     $transposeCells.select('input').on('change', () => {
