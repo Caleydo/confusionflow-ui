@@ -191,9 +191,10 @@ $num-columns-right-area: 3;
             margin: 1px;
         }
     }
-    .transpose-cells .cell {
-        flex-direction: row;
-    }
+}
+
+.transpose-cells .matrix .cell {
+    flex-direction: row;
 }
 
 .dashed-lines {
