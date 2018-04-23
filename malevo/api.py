@@ -113,7 +113,7 @@ def _get_image_sprite():
     width = n_w * 32
     height = n_h * 32
 
-    master = Image.new(mode='RGB', size=(width, height), color=(0, 0, 0))  # fully transparent
+    master = Image.new(mode='RGBA', size=(width, height), color=(255, 0, 0, 0))  # fully transparent
 
     k = 0
     with env.begin() as txn:
