@@ -35,7 +35,6 @@ class SingleEpochSelector {
   }
 }
 
-
 export class OverallTimeline {
   public dataPoints:string[] = [];
 }

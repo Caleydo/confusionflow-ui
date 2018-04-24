@@ -84,7 +84,7 @@ export class ConfusionMatrix implements IAppView {
       .classed('label-right', true);
 
     $labelRight.append('div')
-      .text(Language.FP);
+      .text(Language.FN);
 
     $labelRight.append('div')
       .text(Language.PRECISION);
@@ -95,7 +95,7 @@ export class ConfusionMatrix implements IAppView {
     this.$node.append('div')
       .classed('malevo-label', true)
       .classed('label-bottom', true)
-      .text(Language.FN);
+      .text(Language.FP);
 
     this.$labelsTop = this.$node.append('div')
       .classed('malevo-label', true)
@@ -116,12 +116,12 @@ export class ConfusionMatrix implements IAppView {
     this.$confusionMatrix = $mwrapper.append('div').classed('matrix', true);
 
     const $chartRight = this.$node.append('div').classed('chart-right', true);
-    this.fpColumn = new ChartColumn($chartRight.append('div'));
+    this.fnColumn = new ChartColumn($chartRight.append('div'));
     this.precisionColumn = new ChartColumn($chartRight.append('div'));
     this.classSizeColumn = new ChartColumn($chartRight.append('div'));
 
     const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
-    this.fnColumn = new ChartColumn($chartBottom.append('div'));
+    this.fpColumn = new ChartColumn($chartBottom.append('div'));
 
     const $transposeCellsDiv = this.$node.append('div')
       .classed('cfm-transpose-cell', true)
