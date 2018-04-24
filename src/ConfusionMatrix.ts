@@ -425,7 +425,7 @@ export class ConfusionMatrix implements IAppView {
     const fpData = this.fpPanelData(data);
     const fnData = this.fnPanelData(data);
 
-    const render = (type: string, data: ICellData[], index: number, $div: d3.Selection<any>) => {
+    const render = (type: string, data: ICellData[][], index: number, $div: d3.Selection<any>) => {
       const confusionMatrixRow = data[index].map((x) => x);
       const lineCells = confusionMatrixRow.map((x) => x.linecell);
       const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
@@ -473,7 +473,7 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  fnPanelData(data: ICellData[]): ICellData[]  {
+  fnPanelData(data: ICellData[]): ICellData[][]  {
     data = data.slice(0);
     const arrays = [], size = this.CONF_SIZE;
     while (data.length > 0) {
@@ -482,7 +482,7 @@ export class ConfusionMatrix implements IAppView {
     return arrays;
   }
 
-  fpPanelData(data: ICellData[]): ICellData[] {
+  fpPanelData(data: ICellData[]): ICellData[][] {
     const res = [];
     for (let i = 0; i < this.CONF_SIZE; i++) {
       res.push(data.filter((x, j) => j % 10 === i));
