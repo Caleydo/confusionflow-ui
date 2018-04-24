@@ -81,9 +81,9 @@ class DataSetSelector implements IAppView {
   private updateSelectorColors() {
     this.$node.selectAll('li.select2-selection__choice')[0]
       .forEach((d, i) => {
-        const res = dataStoreTimelines.get(d.title);
+        const timeline = dataStoreTimelines.get(d.title);
         // set background to dataset color with opacity of 0.1
-        d3.select(d).style('background-color', res.datasetColor + '19');
+        d3.select(d).style('background-color', timeline.datasetColor + '19');
       });
   }
 

@@ -56,6 +56,8 @@ export class TimelineCollection {
   remove(ds: MalevoDataset) {
     const timelineIndex = this.timelines.findIndex((x) => x !== null && x.datasetName === ds.name);
 
+    this.timelines[timelineIndex].detachListeners();
+
     // delete from datastore
     console.assert(dataStoreTimelines.get(this.timelines[timelineIndex].datasetName) !== null);
     dataStoreTimelines.delete(this.timelines[timelineIndex].datasetName);

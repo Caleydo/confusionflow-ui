@@ -15,6 +15,7 @@ class SingleEpochSelector {
   public curPos = -1;
   readonly selectorWidth = 2;
   readonly selectorHEIGHT = 30;
+
   constructor($parent: d3.Selection<any>, offsetH: number, private x: any) {
     this.$node = $parent.append('rect').classed('single-epoch-selector', true).attr('width', this.selectorWidth).attr('height', this.selectorHEIGHT)
       .attr('transform', `translate(${offsetH}, 0)`)
@@ -74,6 +75,7 @@ export class Timeline {
   MARGIN_LEFT = 20; // 20 pixel margin from left border
   readonly tickmarkDistance = 5; // show ticks every 5 epoch
   readonly globalOffsetV = 15;
+  private eventTimelineChangedListener = (evt: any, src: Timeline) => this.eventTimelineChanged(src);
 
   constructor(public datasetName: string, $parent: d3.Selection<any>) {
    this.build($parent);
@@ -89,20 +91,25 @@ export class Timeline {
     this.createLabel(this.datasetName);
   }
 
+  private eventTimelineChanged(src: Timeline) {
+    // synchronizes single epoch marker
+    if(this.singleEpochSelector === null || src === this) {
+      return;
+    }
+    this.singleEpochSelector.setPosition(src.singleEpochSelector.curPos);
+    this.singleEpochSelector.hideNode(src.singleEpochSelector.hidden);
+    this.updateSingleSelection();
+  }
+
   private attachListeners() {
-    events.on(AppConstants.EVENT_TIMELINE_CHANGED, (evt, src: Timeline) => {
-      // synchronizes single epoch marker
-      if(this.singleEpochSelector === null || src === this) {
-        return;
-      }
-      this.singleEpochSelector.setPosition(src.singleEpochSelector.curPos);
-      this.singleEpochSelector.hideNode(src.singleEpochSelector.hidden);
-      this.updateSingleSelection();
-    });
+    events.on(AppConstants.EVENT_TIMELINE_CHANGED, this.eventTimelineChangedListener);
+  }
+
+  detachListeners() {
+    events.off(AppConstants.EVENT_TIMELINE_CHANGED, this.eventTimelineChangedListener);
   }
 
   createLabel(datasetName: string) {
-
     this.$label = this.$node.append('g')
       .attr('transform', 'translate(0,' + this.globalOffsetV +')')
       .append('text')
