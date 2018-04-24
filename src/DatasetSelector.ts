@@ -14,9 +14,8 @@ import Format = d3.time.Format;
 import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './MalevoDataset';
 import {ITable} from 'phovea_core/src/table';
 import * as $ from 'jquery';
-import {DataStoreDatasetSelection} from './DataStore';
+import {DataStoreDatasetSelection, dataStoreTimelines} from './DataStore';
 import {extractEpochId} from './utils';
-
 /**
  * Shows a list of available datasets and lets the user choose one.
  * The selection is broadcasted as event throughout the application.
@@ -62,6 +61,7 @@ class DataSetSelector implements IAppView {
 
     this.$select = this.$node.select('#dataset-selector');
 
+    const that = this;
     (<any>$(this.$select.node()))
       .select2({
         maximumSelectionLength: AppConstants.MAX_DATASET_COUNT,
@@ -70,10 +70,20 @@ class DataSetSelector implements IAppView {
       .on('select2:select', (evt) => {
         const dataset = d3.select(evt.params.data.element).data()[0];
         DataStoreDatasetSelection.datasetAdded(dataset);
+        that.updateSelectorColors();
       })
       .on('select2:unselect', (evt) => {
         const dataset = d3.select(evt.params.data.element).data()[0];
         DataStoreDatasetSelection.datasetRemoved(dataset);
+      });
+  }
+
+  private updateSelectorColors() {
+    this.$node.selectAll('li.select2-selection__choice')[0]
+      .forEach((d, i) => {
+        const res = dataStoreTimelines.get(d.title);
+        // set background to dataset color with opacity of 0.1
+        d3.select(d).style('background-color', res.datasetColor + '19');
       });
   }
 
@@ -105,6 +115,7 @@ class DataSetSelector implements IAppView {
           const x = data[Object.keys(data)[0]];
           $('#dataset-selector').select2().val(x.name).trigger('change');
           DataStoreDatasetSelection.datasetAdded(x);
+          this.updateSelectorColors();
         }
         return this;
       });
