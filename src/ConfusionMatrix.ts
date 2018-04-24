@@ -47,6 +47,7 @@ export class ConfusionMatrix implements IAppView {
   private readonly CONF_SIZE = 10;
   private $cells = null;
   private matrixRenderer: ACellRenderer = null;
+  private mainDiagonalRenderer: ACellRenderer = null;
 
   constructor(parent: Element) {
     this.$node = d3.select(parent)
@@ -388,6 +389,14 @@ export class ConfusionMatrix implements IAppView {
 
   private renderConfMatrixCells() {
     this.$cells.each((datum) => this.matrixRenderer.renderNext(datum));
+    // render main diagonal with a different renderer
+    this.mainDiagonalRenderer = new LabelCellRenderer();
+    this.$cells.filter((datum) => datum.predictedIndex === datum.groundTruthIndex)
+      .each((datum) => {
+        const cell = new LabelCell({label: datum.groundTruthLabel});
+        cell.init(datum.$node);
+        this.mainDiagonalRenderer.renderNext(cell);
+      });
   }
 
   renderPrecisionColumn(data: Matrix<number[]>[], renderer: ACellRenderer, labels: string[], singleEpochIndex: number[], colors: string[]) {
