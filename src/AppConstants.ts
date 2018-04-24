@@ -49,7 +49,7 @@ export class AppConstants {
    */
   static EVENT_REDRAW = 'eventRedraw';
 
-  static EVENT_SELL_SELECTED = 'eventCellSelected';
+  static EVENT_CELL_SELECTED = 'eventCellSelected';
 
   /**
    * Represent the different cell types

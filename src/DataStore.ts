@@ -28,7 +28,7 @@ export class DataStoreDatasetSelection {
 export class DataStoreTimelineSelection {
   singleSelected: IMalevoEpochInfo = null;
   multiSelected: IMalevoEpochInfo[] = [];
-  selectedDataset:MalevoDataset = null;
+  selectedDataset: MalevoDataset = null;
   datasetColor: string;
   indexInTimelineCollection = -1;
 
@@ -45,23 +45,30 @@ export class DataStoreTimelineSelection {
  * Stores confusion matrix single cell selection
  */
 export class DataStoreCellSelection {
+  public static transposeCellRenderer = false;
+
   private static cell: ACell = null;
 
   static cellSelected(cell: ACell) {
-    if(!cell) {
+    if (!cell) {
       return;
     }
-    if(DataStoreCellSelection.cell !== null) {
+    if (DataStoreCellSelection.cell !== null) {
       DataStoreCellSelection.cell.$node.classed('selected', false);
     }
     DataStoreCellSelection.cell = cell;
     DataStoreCellSelection.cell.$node.classed('selected', true);
-    events.fire(AppConstants.EVENT_SELL_SELECTED);
+    events.fire(AppConstants.EVENT_CELL_SELECTED);
   }
 
   static getCell(): ACell {
     return DataStoreCellSelection.cell;
   }
+
+  static toggleTransposeCellRenderer() {
+    DataStoreCellSelection.transposeCellRenderer = !DataStoreCellSelection.transposeCellRenderer;
+    return DataStoreCellSelection.transposeCellRenderer;
+  }
 }
 
-export const dataStoreTimelines:Map<String, DataStoreTimelineSelection> = new Map<String, DataStoreTimelineSelection>();
+export const dataStoreTimelines: Map<String, DataStoreTimelineSelection> = new Map<String, DataStoreTimelineSelection>();

@@ -44,18 +44,18 @@ export class DetailChartTab extends ADetailViewTab {
   createHeaderText() {
     let text = '';
     const cell = DataStoreCellSelection.getCell();
-    if(cell instanceof MatrixCell) {
+    if (cell instanceof MatrixCell) {
       text = Language.CONFUSION_Y_LABEL;
       text = text + ' ' + Language.FOR_CLASS + ' ';
       text += cell.groundTruthLabel;
       text += ' with ';
       text += cell.predictedLabel;
-    } else if(cell instanceof PanelCell) {
-      if(cell.type ===  AppConstants.CELL_FP) {
+    } else if (cell instanceof PanelCell) {
+      if (cell.type === AppConstants.CELL_FP) {
         text = Language.FP_RATE;
-      } else if(cell.type ===  AppConstants.CELL_FN) {
+      } else if (cell.type === AppConstants.CELL_FN) {
         text = Language.FN_RATE;
-      } else if(cell.type ===  AppConstants.CELL_PRECISION) {
+      } else if (cell.type === AppConstants.CELL_PRECISION) {
         text = Language.PRECISION_Y_LABEL;
         text = text + ' ' + Language.FOR_CLASS + ' ';
         text += cell.data.linecell[0][0].classLabel;
@@ -65,21 +65,21 @@ export class DetailChartTab extends ADetailViewTab {
   }
 
   clear() {
-	  if(this.$g !== null) {
-		  this.$g.remove();
-		  this.$g = null;
-	  }
+    if (this.$g !== null) {
+      this.$g.remove();
+      this.$g = null;
+    }
   }
 
   render() {
     const cell = DataStoreCellSelection.getCell();
-    if(!cell) {
+    if (!cell) {
       return;
     }
-    if(!(cell instanceof MatrixCell) && !(cell instanceof PanelCell)) {
+    if (!(cell instanceof MatrixCell) && !(cell instanceof PanelCell)) {
       return;
     }
-    if(cell.data.linecell === null) {
+    if (cell.data.linecell === null) {
       return;
     }
     const multiEpochData = cell.data.linecell;
@@ -95,7 +95,8 @@ export class DetailChartTab extends ADetailViewTab {
     this.$g = this.$svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
     this.$g.classed('linechart', true);
 
-    const detailViewCell = new MatrixCell(cell.data, this.$svg, '', '', 0, 0);
+    const detailViewCell = new MatrixCell(cell.data, '', '', 0, 0);
+    detailViewCell.init(this.$svg);
     const renderer = new DetailViewRenderer(this.width, this.height);
     renderer
       .setNextRenderer(new AxisRenderer(this.width, this.height))
@@ -110,6 +111,6 @@ export class DetailChartTab extends ADetailViewTab {
  * @param options
  * @returns {DetailChartWindow}
  */
-export function create(parent:Element, options:any) {
+export function create(parent: Element, options: any) {
   return new DetailChartTab(parent);
 }

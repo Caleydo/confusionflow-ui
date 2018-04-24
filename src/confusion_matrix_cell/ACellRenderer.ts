@@ -1,3 +1,4 @@
+import * as events from 'phovea_core/src/event';
 import {Line, MatrixHeatCellContent} from './CellContent';
 import {ACell, LabelCell, MatrixCell, PanelCell} from './Cell';
 import {adaptTextColorToBgColor} from '../utils';
@@ -12,6 +13,10 @@ import {isUndefined} from 'util';
 /**
  * Created by Martin on 19.03.2018.
  */
+
+export interface ITransposeRenderer {
+  isTransposed: boolean;
+}
 
 export abstract class ACellRenderer {
   nextRenderer: ACellRenderer = null;
@@ -152,7 +157,11 @@ export class VerticalLineRenderer extends ACellRenderer {
   }
 }
 
-export class SingleEpochMarker extends ACellRenderer {
+export class SingleEpochMarker extends ACellRenderer implements ITransposeRenderer {
+  constructor(public isTransposed = false) {
+    super();
+  }
+
   protected render(cell: MatrixCell | PanelCell) {
     if (cell.data.heatcell === null) {
       return;
@@ -169,7 +178,8 @@ export class SingleEpochMarker extends ACellRenderer {
 
     const firstHCPart = cell.$node.select('div.heat-cell'); // select first part of heatcell
     let bg = firstHCPart.style('background');
-    const str = `linear-gradient(to right, rgb(0, 0, 0), rgb(0, 0, 0)) ${res * singleEpochIndex}px 0px/${res}px 2px no-repeat,`;
+    const position = (this.isTransposed) ? `0px ${res * singleEpochIndex}px` : `${res * singleEpochIndex}px 0px`;
+    const str = `linear-gradient(to right, rgb(0, 0, 0), rgb(0, 0, 0)) ${position} / ${res}px 2px no-repeat,`;
     bg = str + bg;
     firstHCPart.style('background', bg);
   }
@@ -190,24 +200,29 @@ export class LabelCellRenderer extends ACellRenderer {
   }
 }
 
-export class HeatmapMultiEpochRenderer extends ACellRenderer {
+export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITransposeRenderer {
+  constructor(public isTransposed = false) {
+    super();
+  }
+
   protected render(cell: MatrixCell | PanelCell) {
     const data: Line[] = [].concat.apply([], cell.data.linecell);
+    const gradientDirection = (this.isTransposed) ? 'to bottom' : 'to right';
 
     const $subCells = cell.$node
       .selectAll('div')
       .data(data);
 
-    $subCells.enter().append('div').classed('heat-cell', true)
-      .style('background', (datum: Line) => {
-        const colorScale = d3.scale.linear().domain([0, datum.max]).range(<any>['white', datum.color]);
-        const widthInPercent = 100 / datum.values.length;
-        let res = datum.values.reduce((acc, val, index) => {
-          return acc + colorScale(val) + ' ' + (index) * widthInPercent + '%, ' + colorScale(val) + ' ' + (index + 1) * widthInPercent + '%, ';
-        }, '');
-        res = res.substring(0, res.length - 2);
-        return `linear-gradient(to right, ${res})`;
-      });
+    $subCells.enter().append('div').classed('heat-cell', true);
+    $subCells.style('background', (datum: Line) => {
+      const colorScale = d3.scale.linear().domain([0, datum.max]).range(<any>['white', datum.color]);
+      const widthInPercent = 100 / datum.values.length;
+      let res = datum.values.reduce((acc, val, index) => {
+        return acc + colorScale(val) + ' ' + (index) * widthInPercent + '%, ' + colorScale(val) + ' ' + (index + 1) * widthInPercent + '%, ';
+      }, '');
+      res = res.substring(0, res.length - 2);
+      return `linear-gradient(${gradientDirection}, ${res})`;
+    });
   }
 }
 

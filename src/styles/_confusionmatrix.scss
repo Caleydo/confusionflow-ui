@@ -1,11 +1,48 @@
 @import "vars";
+@import '~font-awesome/scss/variables';
+@import '~font-awesome/scss/mixins';
 // number of columns placed to the right of the confusion matrix
 $num-columns-right-area: 3;
 .grid {
     display: grid;
-    grid-template-areas: ". axis-top axis-top ." "axis-left . label-top label-right" "axis-left label-left matrix chart-right" ". label-bottom chart-bottom .";
+    grid-template-areas: ". axis-top axis-top ." "axis-left transpose-cell label-top label-right" "axis-left label-left matrix chart-right" ". label-bottom chart-bottom .";
     grid-template-columns: 40px 50px auto minmax(100px, 200px);
     grid-template-rows: 40px 50px auto minmax(60px, 1fr);
+}
+
+.cfm-transpose-cell {
+    grid-area: transpose-cell;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 70%;
+        height: 70%;
+        border: 1px solid #ccc;
+        color: #aaa;
+        cursor: pointer;
+        user-select: none;
+        &:before {
+            font-size: 20px;
+            @include fa-icon();
+            content: $fa-var-long-arrow-right;
+        }
+        span {
+            font-size: 10px;
+            font-weight: 500;
+        }
+    }
+    input[type="checkbox"]:checked+label {
+        //flex-direction: row;
+        &:before {
+            content: $fa-var-long-arrow-down;
+        }
+    }
 }
 
 .cfm-axis,
@@ -154,6 +191,10 @@ $num-columns-right-area: 3;
             margin: 1px;
         }
     }
+}
+
+.transpose-cells .matrix .cell {
+    flex-direction: row;
 }
 
 .dashed-lines {
