@@ -425,6 +425,18 @@ export class ConfusionMatrix implements IAppView {
     const fpData = this.fpPanelData(data);
     const fnData = this.fnPanelData(data);
 
+    const render = (type: string, data: ICellData[], index: number, $div: d3.Selection<any>) => {
+      const confusionMatrixRow = data[index].map((x) => x);
+      const lineCells = confusionMatrixRow.map((x) => x.linecell);
+      const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
+      const cell = new PanelCell({
+        linecell: res,
+        heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
+      }, type);
+      cell.init($div);
+      renderer.renderNext(cell);
+    };
+
     this.fpColumn.$node
       .selectAll('div')
       .data(fpData.map(() => 0))
@@ -432,15 +444,7 @@ export class ConfusionMatrix implements IAppView {
       .append('div')
       .classed('cell', true)
       .each(function (datum, index) {
-        const confusionMatrixRow = fpData[index].map((x) => x);
-        const lineCells = confusionMatrixRow.map((x) => x.linecell);
-        const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
-        const cell = new PanelCell({
-          linecell: res,
-          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
-        }, AppConstants.CELL_FP);
-        cell.init(d3.select(this));
-        renderer.renderNext(cell);
+        render(AppConstants.CELL_FP, fpData, index, d3.select(this));
       });
 
     this.fnColumn.$node
@@ -450,15 +454,7 @@ export class ConfusionMatrix implements IAppView {
       .append('div')
       .classed('cell', true)
       .each(function (datum, index) {
-        const confusionMatrixRow = fnData[index].map((x) => x);
-        const lineCells = confusionMatrixRow.map((x) => x.linecell);
-        const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
-        const cell = new PanelCell({
-          linecell: res,
-          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
-        }, AppConstants.CELL_FN);
-        cell.init(d3.select(this));
-        renderer.renderNext(cell);
+        render(AppConstants.CELL_FN, fnData, index, d3.select(this));
       });
   }
 
@@ -477,7 +473,7 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  fpPanelData(data: ICellData[]) {
+  fnPanelData(data: ICellData[]): ICellData[]  {
     data = data.slice(0);
     const arrays = [], size = this.CONF_SIZE;
     while (data.length > 0) {
@@ -486,7 +482,7 @@ export class ConfusionMatrix implements IAppView {
     return arrays;
   }
 
-  fnPanelData(data: ICellData[]) {
+  fpPanelData(data: ICellData[]): ICellData[] {
     const res = [];
     for (let i = 0; i < this.CONF_SIZE; i++) {
       res.push(data.filter((x, j) => j % 10 === i));
