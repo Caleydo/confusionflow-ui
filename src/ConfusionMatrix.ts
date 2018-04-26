@@ -141,10 +141,17 @@ export class ConfusionMatrix implements IAppView {
       while(currentMatrixRenderer !== null) {
         if (currentMatrixRenderer instanceof HeatmapMultiEpochRenderer && switched) {
           this.matrixRenderer = new MatrixLineCellRenderer();
+          if (this.renderMode === RenderMode.COMBINED) {
+            this.matrixRenderer.setNextRenderer(new HeatmapSingleEpochRenderer(false))
+              .setNextRenderer(new VerticalLineRenderer(-1, -1));
+          }
           this.$node.select('div .cfm-transpose-cell').style('display', 'none');
           break;
         } else if (currentMatrixRenderer instanceof MatrixLineCellRenderer && !switched) {
           this.matrixRenderer = new HeatmapMultiEpochRenderer(DataStoreCellSelection.transposeCellRenderer);
+          if (this.renderMode === RenderMode.COMBINED) {
+            this.matrixRenderer.setNextRenderer(new SingleEpochMarker(DataStoreCellSelection.transposeCellRenderer));
+          }
           this.$node.select('div .cfm-transpose-cell').style('display', 'initial');
           break;
         }

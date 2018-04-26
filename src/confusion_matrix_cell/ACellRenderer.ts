@@ -338,8 +338,7 @@ export class AxisRenderer extends ACellRenderer {
 
 function getLargestLine(data: Line[]): Line {
   console.assert(data.length > 0);
-  const res = data.reduce((acc, val) => {
+  return data.reduce((acc, val) => {
     return (acc.values.length > val.values.length) ? acc : val;
   }, data[0]);
-  return res;
 }
