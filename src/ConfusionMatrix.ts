@@ -123,6 +123,39 @@ export class ConfusionMatrix implements IAppView {
     const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
     this.fpColumn = new ChartColumn($chartBottom.append('div'));
 
+    this.createTransposeCellsDiv($mwrapper);
+    this.createSwitchCellsVisDiv();
+  }
+
+  private createSwitchCellsVisDiv() {
+    const $switchCellsVisDiv = this.$node.append('div')
+      .classed('cfm-switch-cell-vis', true)
+      .html(`
+        <input type="checkbox" id="switch-cell-renderer">
+      `);
+
+    $switchCellsVisDiv.select('input').on('change', () => {
+      const switched = DataStoreCellSelection.toggleSwitchCellRenderer();
+      // pass isTransposed flag to subsequent renderers in the chain
+      let currentMatrixRenderer = (<any>this.matrixRenderer);
+      while(currentMatrixRenderer !== null) {
+        if (currentMatrixRenderer instanceof HeatmapMultiEpochRenderer && switched) {
+          this.matrixRenderer = new MatrixLineCellRenderer();
+          this.$node.select('div .cfm-transpose-cell').style('display', 'none');
+          break;
+        } else if (currentMatrixRenderer instanceof MatrixLineCellRenderer && !switched) {
+          this.matrixRenderer = new HeatmapMultiEpochRenderer(DataStoreCellSelection.transposeCellRenderer);
+          this.$node.select('div .cfm-transpose-cell').style('display', 'initial');
+          break;
+        }
+        currentMatrixRenderer = currentMatrixRenderer.nextRenderer;
+      }
+      this.removeConfusionMatrixCellsContent();
+      this.renderConfMatrixCells();
+    });
+  }
+
+  private createTransposeCellsDiv($mwrapper: d3.Selection<any>) {
     const $transposeCellsDiv = this.$node.append('div')
       .classed('cfm-transpose-cell', true)
       .html(`
@@ -137,16 +170,12 @@ export class ConfusionMatrix implements IAppView {
       $mwrapper.classed('transpose-cells', isTransposed);
 
       // pass isTransposed flag to subsequent renderers in the chain
-      const anyMatrixRenderer = (<any>this.matrixRenderer);
-      if (anyMatrixRenderer.isTransposed !== undefined) {
-        anyMatrixRenderer.isTransposed = isTransposed;
-        let currentRenderer = this.matrixRenderer;
-        while (currentRenderer.nextRenderer !== null) {
-          if (anyMatrixRenderer.isTransposed !== undefined) {
-            anyMatrixRenderer.nextRenderer.isTransposed = isTransposed;
-          }
-          currentRenderer = currentRenderer.nextRenderer;
+      let currentMatrixRenderer = (<any>this.matrixRenderer);
+      while(currentMatrixRenderer !== null) {
+        if (currentMatrixRenderer.isTransposed !== undefined) {
+          currentMatrixRenderer.isTransposed = isTransposed;
         }
+        currentMatrixRenderer = currentMatrixRenderer.nextRenderer;
       }
       this.renderConfMatrixCells();
     });
@@ -293,10 +322,20 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
-  renderCells(datasets: ILoadedMalevoDataset[]) {
+  private removeConfusionMatrixCells() {
     this.$confusionMatrix
       .selectAll('div')
       .remove();
+  }
+
+  private removeConfusionMatrixCellsContent() {
+    this.$confusionMatrix
+      .selectAll('div')
+      .html('');
+  }
+
+  renderCells(datasets: ILoadedMalevoDataset[]) {
+    this.removeConfusionMatrixCells();
 
     this.fpColumn.$node.selectAll('div').remove();
     this.fnColumn.$node.selectAll('div').remove();
@@ -351,7 +390,7 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
       singleEpochIndex = null;
 
-      this.matrixRenderer = new HeatmapMultiEpochRenderer();
+      this.matrixRenderer = new HeatmapMultiEpochRenderer(DataStoreCellSelection.transposeCellRenderer);
       fpfnRenderer = new MatrixLineCellRenderer();
     }
 

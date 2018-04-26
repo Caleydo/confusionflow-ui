@@ -179,7 +179,7 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
     const firstHCPart = cell.$node.select('div.heat-cell'); // select first part of heat cell
     let bg = firstHCPart.style('background');
     const position = (this.isTransposed) ? `0px ${res * singleEpochIndex}px` : `${res * singleEpochIndex}px 0px`;
-    const size = (this.isTransposed) ? `2px ${res}px ` : `${res}px 2px`
+    const size = (this.isTransposed) ? `2px ${res}px ` : `${res}px 2px`;
     const str = `linear-gradient(to right, rgb(0, 0, 0), rgb(0, 0, 0)) ${position} / ${size} no-repeat,`;
     bg = str + bg;
     firstHCPart.style('background', bg);

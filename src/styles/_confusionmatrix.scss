@@ -5,9 +5,17 @@
 $num-columns-right-area: 3;
 .grid {
     display: grid;
-    grid-template-areas: ". axis-top axis-top ." "axis-left transpose-cell label-top label-right" "axis-left label-left matrix chart-right" ". label-bottom chart-bottom .";
+    grid-template-areas: ". axis-top axis-top ." "switch-cell-vis transpose-cell label-top label-right" "axis-left label-left matrix chart-right" ". label-bottom chart-bottom .";
     grid-template-columns: 40px 50px auto minmax(100px, 200px);
     grid-template-rows: 40px 50px auto minmax(60px, 1fr);
+}
+
+.cfm-switch-cell-vis {
+  grid-area: switch-cell-vis;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
 }
 
 .cfm-transpose-cell {

@@ -46,6 +46,7 @@ export class DataStoreTimelineSelection {
  */
 export class DataStoreCellSelection {
   public static transposeCellRenderer = false;
+  public static switchCellRenderer = false;
 
   private static cell: ACell = null;
 
@@ -68,6 +69,11 @@ export class DataStoreCellSelection {
   static toggleTransposeCellRenderer() {
     DataStoreCellSelection.transposeCellRenderer = !DataStoreCellSelection.transposeCellRenderer;
     return DataStoreCellSelection.transposeCellRenderer;
+  }
+
+  static toggleSwitchCellRenderer() {
+    DataStoreCellSelection.switchCellRenderer = !DataStoreCellSelection.switchCellRenderer;
+    return DataStoreCellSelection.switchCellRenderer;
   }
 }
 
