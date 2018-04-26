@@ -6,8 +6,8 @@ import {IMalevoEpochInfo} from './MalevoDataset';
  * @param {string} bgColor as `#ff0000`
  * @returns {string} returns `black` or `white` for best contrast
  */
-export function adaptTextColorToBgColor(bgColor: string): string {
-  return d3hsl(bgColor).l > 0.5 ? 'black' : 'white';
+export function adaptTextColorToBgColor(bgColor: string, firstColor = 'black', secondColor = 'white'): string {
+  return d3hsl(bgColor).l > 0.5 ? firstColor : secondColor;
 }
 
 export function createTooltip($parent: d3.Selection<any>, $node: d3.Selection<any>, textFunc: (d: any) => string) {

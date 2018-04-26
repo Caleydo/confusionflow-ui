@@ -12,7 +12,7 @@ import {
   SingleEpochMarker
 } from './confusion_matrix_cell/ACellRenderer';
 import {ACell, LabelCell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
-import {adaptTextColorToBgColor, zip} from './utils';
+import {zip} from './utils';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal, max, IClassEvolution, Matrix} from './DataStructures';
@@ -142,7 +142,7 @@ export class ConfusionMatrix implements IAppView {
         if (currentMatrixRenderer instanceof HeatmapMultiEpochRenderer && switched) {
           this.matrixRenderer = new MatrixLineCellRenderer();
           if (this.renderMode === RenderMode.COMBINED) {
-            this.matrixRenderer.setNextRenderer(new HeatmapSingleEpochRenderer(false))
+            this.matrixRenderer.setNextRenderer(new HeatmapSingleEpochRenderer(false, true))
               .setNextRenderer(new VerticalLineRenderer(-1, -1));
           }
           this.$node.select('div .cfm-transpose-cell').style('display', 'none');
@@ -386,7 +386,7 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.PPV));
       singleEpochIndex = data[0].heatcell.indexInMultiSelection;
 
-      this.matrixRenderer = new HeatmapSingleEpochRenderer(false);
+      this.matrixRenderer = new HeatmapSingleEpochRenderer(false, false);
       fpfnRenderer = new BarChartRenderer();
 
     } else if (this.renderMode === RenderMode.MULTI) {

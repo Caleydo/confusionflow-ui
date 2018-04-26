@@ -74,4 +74,10 @@ export class AppConstants {
    * Size of timeline components
    */
   static TML_HEIGHT = 35;
+
+  /**
+   * Color scale for heatmap cells
+   * @type {[string,string]}
+   */
+  static BG_COLOR_SCALE = ['white', 'gray'];
 }

@@ -228,7 +228,7 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
 }
 
 export class HeatmapSingleEpochRenderer extends ACellRenderer {
-  constructor(private showNumber: boolean) {
+  constructor(private showNumber: boolean, private renderGrayscale) {
     super();
   }
 
@@ -238,7 +238,9 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
       .data((x: MatrixHeatCellContent, index: number) => {
         const hc = cell.data.heatcell;
         return hc.counts.map((x, i) => {
-          const colorScale = d3.scale.linear().domain([0, hc.maxVal]).range(<any>['white', hc.colorValues[i]]);
+          const colorDomain = d3.scale.linear().domain([0, hc.maxVal]);
+          const colorScale = this.renderGrayscale ? colorDomain.range(<any>AppConstants.BG_COLOR_SCALE).interpolate(<any>d3.interpolateHcl) :
+            colorDomain.range(<any>['white', hc.colorValues[i]]);
           return {count: hc.counts[i], colorValue: String(colorScale(hc.counts[i]))};
         });
       });
