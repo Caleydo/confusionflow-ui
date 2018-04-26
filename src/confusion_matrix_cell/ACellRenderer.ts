@@ -1,7 +1,7 @@
 import * as events from 'phovea_core/src/event';
 import {Line, MatrixHeatCellContent} from './CellContent';
 import {ACell, LabelCell, MatrixCell, PanelCell} from './Cell';
-import {adaptTextColorToBgColor} from '../utils';
+import {adaptTextColorToBgColor, extractEpochId} from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 import {Language} from '../language';
@@ -268,7 +268,7 @@ export class AxisRenderer extends ACellRenderer {
     const timelineArray = Array.from(dataStoreTimelines.values());
     const selectedRangesLength = timelineArray.map((x) => x.multiSelected.length);
     const largest = selectedRangesLength.indexOf(Math.max(...selectedRangesLength));
-    const values = timelineArray[largest].multiSelected.map((x) => x.name);
+    const values = timelineArray[largest].multiSelected.map((x) => extractEpochId(x).toString());
 
     const x = d3.scale.ordinal()
       .domain(values)
@@ -313,11 +313,6 @@ export class AxisRenderer extends ACellRenderer {
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
       .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance)) + ')')  // centre below axis
       .text(Language.EPOCH);
-
-    $g.selectAll('.chart-axis-x text')  // select all the text elements for the xaxis
-      .attr('transform', function (d) {
-        return 'translate(' + this.getBBox().height * -2 + ',' + this.getBBox().height + ')rotate(-45)';
-      });
   }
 
   getYLabelText() {
