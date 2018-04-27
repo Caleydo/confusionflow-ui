@@ -71,7 +71,7 @@ export class MatrixLineCellRenderer extends ACellRenderer {
   }
 }
 
-export class DetailViewRenderer extends ACellRenderer {
+export class LinechartRenderer extends ACellRenderer {
   constructor(private width: number, private height: number) {
     super();
   }

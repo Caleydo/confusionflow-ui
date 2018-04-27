@@ -45,9 +45,6 @@ export class DataStoreTimelineSelection {
  * Stores confusion matrix single cell selection
  */
 export class DataStoreCellSelection {
-  public static transposeCellRenderer = false;
-  public static switchCellRenderer = false;
-
   private static cell: ACell = null;
 
   static cellSelected(cell: ACell) {
@@ -65,15 +62,29 @@ export class DataStoreCellSelection {
   static getCell(): ACell {
     return DataStoreCellSelection.cell;
   }
+}
+
+/**
+ * Stores every property that is modifiable by the user
+ */
+export class DataStoreApplicationProperties {
+  public static transposeCellRenderer = false;
+  public static switchCellRenderer = false;
+  public static weightfactor = 0;
 
   static toggleTransposeCellRenderer() {
-    DataStoreCellSelection.transposeCellRenderer = !DataStoreCellSelection.transposeCellRenderer;
-    return DataStoreCellSelection.transposeCellRenderer;
+    DataStoreApplicationProperties.transposeCellRenderer = !DataStoreApplicationProperties.transposeCellRenderer;
+    return DataStoreApplicationProperties.transposeCellRenderer;
   }
 
   static toggleSwitchCellRenderer() {
-    DataStoreCellSelection.switchCellRenderer = !DataStoreCellSelection.switchCellRenderer;
-    return DataStoreCellSelection.switchCellRenderer;
+    DataStoreApplicationProperties.switchCellRenderer = !DataStoreApplicationProperties.switchCellRenderer;
+    return DataStoreApplicationProperties.switchCellRenderer;
+  }
+
+  static updateWeightFactor(weightfactor: number) {
+    this.weightfactor = weightfactor;
+    events.fire(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.weightfactor);
   }
 }
 

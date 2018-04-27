@@ -49,7 +49,17 @@ export class AppConstants {
    */
   static EVENT_REDRAW = 'eventRedraw';
 
+  /**
+   * Fires when a cell in the confusion matrix was selected
+   * @type {string}
+   */
   static EVENT_CELL_SELECTED = 'eventCellSelected';
+
+  /**
+   * Fires when the slider value changes
+   * @type {string}
+   */
+  static EVENT_WEIGHTFACTOR_CHANGED = 'eventWeightfactorChanged';
 
   /**
    * Represent the different cell types

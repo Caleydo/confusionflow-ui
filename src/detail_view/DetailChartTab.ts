@@ -1,16 +1,14 @@
 import {ADetailViewTab} from './ADetailViewTab';
-import {DataStoreCellSelection, DataStoreTimelineSelection} from '../DataStore';
+import {DataStoreApplicationProperties, DataStoreCellSelection} from '../DataStore';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
-import * as d3_shape from 'd3-shape';
-import {IClassEvolution, max} from '../DataStructures';
 import {Language} from '../language';
-import {App} from '../app';
 import {MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
 import {
-  AxisRenderer, DetailViewRenderer, MatrixLineCellRenderer,
+  AxisRenderer, LinechartRenderer,
   VerticalLineRenderer
 } from '../confusion_matrix_cell/ACellRenderer';
+import * as events from 'phovea_core/src/event';
 
 export class DetailChartTab extends ADetailViewTab {
   private width: number;
@@ -18,6 +16,7 @@ export class DetailChartTab extends ADetailViewTab {
   private $g: d3.Selection<any> = null;
   private $svg: d3.Selection<any> = null;
   private $header: d3.Selection<any> = null;
+  private $slider: d3.Selection<any> = null;
   public id: string = AppConstants.CHART_VIEW;
   public name: string = Language.CHART_VIEW;
 
@@ -31,14 +30,29 @@ export class DetailChartTab extends ADetailViewTab {
       .append('div')
       .classed('chart-name', true);
 
-    this.$svg = this.$node
-      .append('svg')
-      .attr('viewBox', `0 0 ${this.width} 500`);
+    this.$slider = this.$node.html(`
+    <div class="chart-container">
+      <input type="range" min="0" max="100" value="0" class="slider" id="myRange">
+      <svg viewBox="0 0 ${this.width} 500"/>
+    </div>`);
+
+    this.$svg = this.$node.select('svg');
+    this.$slider = this.$node.select('input');
+    this.$slider.on('input', function() {
+      DataStoreApplicationProperties.updateWeightFactor(this.value);
+    });
   }
 
   init(): Promise<DetailChartTab> {
+    this.attachListeners();
     this.$node.attr('id', this.id);
     return Promise.resolve(this);
+  }
+
+  private attachListeners() {
+    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, () => {
+      console.log('set weight factor');
+    });
   }
 
   createHeaderText() {
@@ -97,7 +111,7 @@ export class DetailChartTab extends ADetailViewTab {
 
     const detailViewCell = new MatrixCell(cell.data, '', '', 0, 0);
     detailViewCell.init(this.$svg);
-    const renderer = new DetailViewRenderer(this.width, this.height);
+    const renderer = new LinechartRenderer(this.width, this.height);
     renderer
       .setNextRenderer(new AxisRenderer(this.width, this.height))
       .setNextRenderer(new VerticalLineRenderer(this.width, this.height));

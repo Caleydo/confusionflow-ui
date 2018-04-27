@@ -16,7 +16,10 @@ import {zip} from './utils';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {NumberMatrix, SquareMatrix, transformSq, setDiagonal, max, IClassEvolution, Matrix} from './DataStructures';
-import {DataStoreCellSelection, dataStoreTimelines, DataStoreTimelineSelection} from './DataStore';
+import {
+  DataStoreApplicationProperties, DataStoreCellSelection, dataStoreTimelines,
+  DataStoreTimelineSelection
+} from './DataStore';
 import {
   SingleEpochCalculator, Line, MultiEpochCalculator, MatrixHeatCellContent
 } from './confusion_matrix_cell/CellContent';
@@ -135,7 +138,7 @@ export class ConfusionMatrix implements IAppView {
       `);
 
     $switchCellsVisDiv.select('input').on('change', () => {
-      const switched = DataStoreCellSelection.toggleSwitchCellRenderer();
+      const switched = DataStoreApplicationProperties.toggleSwitchCellRenderer();
       // pass isTransposed flag to subsequent renderers in the chain
       let currentMatrixRenderer = (<any>this.matrixRenderer);
       while(currentMatrixRenderer !== null) {
@@ -148,9 +151,9 @@ export class ConfusionMatrix implements IAppView {
           this.$node.select('div .cfm-transpose-cell').style('display', 'none');
           break;
         } else if (currentMatrixRenderer instanceof MatrixLineCellRenderer && !switched) {
-          this.matrixRenderer = new HeatmapMultiEpochRenderer(DataStoreCellSelection.transposeCellRenderer);
+          this.matrixRenderer = new HeatmapMultiEpochRenderer(DataStoreApplicationProperties.transposeCellRenderer);
           if (this.renderMode === RenderMode.COMBINED) {
-            this.matrixRenderer.setNextRenderer(new SingleEpochMarker(DataStoreCellSelection.transposeCellRenderer));
+            this.matrixRenderer.setNextRenderer(new SingleEpochMarker(DataStoreApplicationProperties.transposeCellRenderer));
           }
           this.$node.select('div .cfm-transpose-cell').style('display', 'initial');
           break;
@@ -173,7 +176,7 @@ export class ConfusionMatrix implements IAppView {
       `);
 
     $transposeCellsDiv.select('input').on('change', () => {
-      const isTransposed = DataStoreCellSelection.toggleTransposeCellRenderer();
+      const isTransposed = DataStoreApplicationProperties.toggleTransposeCellRenderer();
       $mwrapper.classed('transpose-cells', isTransposed);
 
       // pass isTransposed flag to subsequent renderers in the chain
@@ -373,8 +376,8 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
       singleEpochIndex = data[1].heatcell.indexInMultiSelection;
 
-      this.matrixRenderer = new HeatmapMultiEpochRenderer(DataStoreCellSelection.transposeCellRenderer);
-      this.matrixRenderer.setNextRenderer(new SingleEpochMarker(DataStoreCellSelection.transposeCellRenderer));
+      this.matrixRenderer = new HeatmapMultiEpochRenderer(DataStoreApplicationProperties.transposeCellRenderer);
+      this.matrixRenderer.setNextRenderer(new SingleEpochMarker(DataStoreApplicationProperties.transposeCellRenderer));
       fpfnRenderer = new MatrixLineCellRenderer();
       fpfnRenderer.setNextRenderer(new VerticalLineRenderer(-1, -1));
 
@@ -397,7 +400,7 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
       singleEpochIndex = null;
 
-      this.matrixRenderer = new HeatmapMultiEpochRenderer(DataStoreCellSelection.transposeCellRenderer);
+      this.matrixRenderer = new HeatmapMultiEpochRenderer(DataStoreApplicationProperties.transposeCellRenderer);
       fpfnRenderer = new MatrixLineCellRenderer();
     }
 
