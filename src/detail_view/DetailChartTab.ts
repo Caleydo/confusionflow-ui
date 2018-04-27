@@ -32,28 +32,22 @@ export class DetailChartTab extends ADetailViewTab {
 
     this.$slider = this.$node.html(`
     <div class="chart-container">
-      <input type="range" min="0" max="100" value="0" class="slider" id="myRange">
+      <input type="range" min="1" max="10" value="1" class="slider" id="myRange">
       <svg viewBox="0 0 ${this.width} 500"/>
     </div>`);
 
     this.$svg = this.$node.select('svg');
     this.$slider = this.$node.select('input');
     this.$slider.on('input', function() {
-      DataStoreApplicationProperties.updateWeightFactor(this.value);
+      DataStoreApplicationProperties.updateWeightFactor(this.value / 10);
     });
   }
 
   init(): Promise<DetailChartTab> {
-    this.attachListeners();
     this.$node.attr('id', this.id);
     return Promise.resolve(this);
   }
 
-  private attachListeners() {
-    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, () => {
-      console.log('set weight factor');
-    });
-  }
 
   createHeaderText() {
     let text = '';

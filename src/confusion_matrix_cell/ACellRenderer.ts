@@ -255,16 +255,39 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
 }
 
 export class AxisRenderer extends ACellRenderer {
+  private data: Line[];
+  private yAxis: any;
+  private y: any;
+  private $g: d3.Selection<any> = null;
+
   constructor(private width: number, private height: number) {
     super();
+    this.yAxis = d3.svg.axis()
+      .orient('left');
+    this.y = d3.scale.pow();
+    this.attachListeners();
+  }
+
+  private attachListeners() {
+    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, (evt, val: number) => {
+      if(this.$g !== null) {
+        this.updateYAxis(val);
+      }
+    });
+  }
+
+  private updateYAxis(value: number) {
+    this.y.exponent(value).domain([1,getLargestLine(this.data).max]).range([this.height,0]);
+    this.yAxis.scale(this.y);
+    this.$g.select('.chart-axis-y').call(this.yAxis);
   }
 
   protected render(cell: MatrixCell | PanelCell) {
-    const $g = cell.$node.select('g');
-    if ($g === null) {
+    this.$g = cell.$node.select('g');
+    if (this.$g === null) {
       return;
     }
-    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    this.data = [].concat.apply([], cell.data.linecell);
     const timelineArray = Array.from(dataStoreTimelines.values());
     const selectedRangesLength = timelineArray.map((x) => x.multiSelected.length);
     const largest = selectedRangesLength.indexOf(Math.max(...selectedRangesLength));
@@ -276,7 +299,7 @@ export class AxisRenderer extends ACellRenderer {
 
     const y = d3.scale.linear()
       .rangeRound([this.height, 0])
-      .domain([0, getLargestLine(data).max]);
+      .domain([0, getLargestLine(this.data).max]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
     let tickFrequency = 1;
@@ -289,27 +312,25 @@ export class AxisRenderer extends ACellRenderer {
       .scale(x)
       .tickValues(ticks);
 
-    $g.append('g')
+    this.$g.append('g')
       .attr('class', 'chart-axis-x')
       .attr('transform', 'translate(0,' + this.height + ')')
       .call(xAxis);
 
-    const yAxis = d3.svg.axis()
-      .scale(y)
-      .orient('left');
+    this.updateYAxis(1);
 
-    $g.append('g')
+    this.$g.append('g')
       .attr('class', 'chart-axis-y')
-      .call(yAxis);
+      .call(this.yAxis);
 
     const axisDistance = 100;
     // now add titles to the axes
-    $g.append('text')
+    this.$g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
       .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
       .text(this.getYLabelText());
 
-    $g.append('text')
+    this.$g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
       .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance)) + ')')  // centre below axis
       .text(Language.EPOCH);
