@@ -72,22 +72,17 @@ export class MatrixLineCellRenderer extends ACellRenderer {
 }
 
 export class LinechartRenderer extends ACellRenderer {
-  private y: any;
-  private data: Line[] = null;
+  private cell: MatrixCell | PanelCell;
+
   constructor(private width: number, private height: number) {
     super();
-    this.y = d3.scale.pow();
     this.attachListeners();
   }
 
   private attachListeners() {
     events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, (evt, val: number) => {
-      this.updateY(val);
+      this.render(this.cell);
     });
-  }
-
-  private updateY(exponent: number) {
-    this.y.exponent(exponent).domain([0,getLargestLine(this.data).max]).range([this.height,0]);
   }
 
   protected render(cell: MatrixCell | PanelCell) {
@@ -96,17 +91,18 @@ export class LinechartRenderer extends ACellRenderer {
     if (data.length === 1 && data[0].values.length === 0) {
       return;
     }
-    this.data = data;
+
+    this.cell = cell;
 
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    this.updateY(DataStoreApplicationProperties.weightfactor);
+    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightfactor).domain([0, getLargestLine(data).max]).rangeRound([this.height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
         return x(i);
       })
       .y((d) => {
-        return this.y(d);
+        return y(d);
       });
 
     cell.$node.select('g').selectAll('path')
@@ -117,6 +113,8 @@ export class LinechartRenderer extends ACellRenderer {
       .attr('stroke-opacity', '0.6')
       .append('title')
       .text((d) => d.classLabel);
+
+    cell.$node.select('g').selectAll('.linechart > path').attr('d', (d) => line(d.values));
   }
 }
 

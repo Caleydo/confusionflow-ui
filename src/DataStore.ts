@@ -70,7 +70,7 @@ export class DataStoreCellSelection {
 export class DataStoreApplicationProperties {
   public static transposeCellRenderer = false;
   public static switchCellRenderer = false;
-  public static weightfactor = 0;
+  public static weightfactor = 1;
 
   static toggleTransposeCellRenderer() {
     DataStoreApplicationProperties.transposeCellRenderer = !DataStoreApplicationProperties.transposeCellRenderer;
