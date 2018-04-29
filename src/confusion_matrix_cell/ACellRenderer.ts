@@ -277,7 +277,7 @@ export class AxisRenderer extends ACellRenderer {
   }
 
   private updateYAxis(value: number) {
-    this.y.exponent(value).domain([1,getLargestLine(this.data).max]).range([this.height,0]);
+    this.y.exponent(value).domain([0,getLargestLine(this.data).max]).range([this.height,0]);
     this.yAxis.scale(this.y);
     this.$g.select('.chart-axis-y').call(this.yAxis);
   }

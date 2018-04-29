@@ -32,7 +32,7 @@ export class DetailChartTab extends ADetailViewTab {
 
     this.$slider = this.$node.html(`
     <div class="chart-container">
-      <input type="range" min="1" max="10" value="1" class="slider" id="myRange">
+      <input type="range" min="1" max="10" value="10" class="slider" id="myRange">
       <svg viewBox="0 0 ${this.width} 500"/>
     </div>`);
 
