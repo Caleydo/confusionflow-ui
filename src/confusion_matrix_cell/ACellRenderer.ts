@@ -33,24 +33,17 @@ export abstract class ACellRenderer {
   protected abstract render(cell: ACell);
 }
 
-export class MatrixLineCellRenderer extends ACellRenderer {
-  protected render(cell: MatrixCell | PanelCell) {
-    const data: Line[] = [].concat.apply([], cell.data.linecell);
-    const $svg = cell.$node.append('svg').datum(data);
+export class LinechartRenderer extends ACellRenderer {
+  protected cell: MatrixCell | PanelCell;
 
-    const width = (<any>cell.$node[0][0]).clientWidth;
-    const height = (<any>cell.$node[0][0]).clientHeight;
+  constructor(protected width: number, protected height: number) {
+    super();
+    this.attachListeners();
+  }
 
-    const $g = $svg
-      .attr('viewBox', `0 0 ${width} ${height}`)
-      .classed('linechart', true)
-      .append('g');
-
-    const x = d3.scale.linear().rangeRound([0, width]);
-    const y = d3.scale.linear().rangeRound([height, 0]);
-
-    x.domain([0, getLargestLine(data).values.length - 1]);
-    y.domain([0, getLargestLine(data).max]);
+  protected renderLine(data: Line[], $node: d3.Selection<any>) {
+    const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
+    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightfactor).domain([0, getLargestLine(data).max]).rangeRound([this.height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -60,23 +53,16 @@ export class MatrixLineCellRenderer extends ACellRenderer {
         return y(d);
       });
 
-    const $epochLine = $g.selectAll('path')
+    $node.select('g').selectAll('path')
       .data(data)
       .enter().append('path')
-      .attr('d', (d) => line(d.values))
-      .attr('stroke', (d) => d.color)
+      .classed('instance-line', true)
+      .attr('stroke', (d, _) => d.color)
       .attr('stroke-opacity', '0.6')
       .append('title')
       .text((d) => d.classLabel);
-  }
-}
 
-export class LinechartRenderer extends ACellRenderer {
-  private cell: MatrixCell | PanelCell;
-
-  constructor(private width: number, private height: number) {
-    super();
-    this.attachListeners();
+    $node.select('g').selectAll('.instance-line').attr('d', (d) => line(d.values));
   }
 
   private attachListeners() {
@@ -93,28 +79,29 @@ export class LinechartRenderer extends ACellRenderer {
     }
 
     this.cell = cell;
+    this.renderLine(data, this.cell.$node);
+  }
+}
 
-    const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightfactor).domain([0, getLargestLine(data).max]).rangeRound([this.height, 0]);
+export class MatrixLineCellRenderer extends LinechartRenderer {
+  constructor() {
+    super(0, 0);
+  }
 
-    const line = d3_shape.line()
-      .x((d, i) => {
-        return x(i);
-      })
-      .y((d) => {
-        return y(d);
-      });
+  protected render(cell: MatrixCell | PanelCell) {
+    this.cell = cell;
+    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    const $svg = cell.$node.append('svg').datum(data);
 
-    cell.$node.select('g').selectAll('path')
-      .data(data)
-      .enter().append('path')
-      .attr('d', (d) => line(d.values))
-      .attr('stroke', (d, _) => d.color)
-      .attr('stroke-opacity', '0.6')
-      .append('title')
-      .text((d) => d.classLabel);
+    this.width = (<any>cell.$node[0][0]).clientWidth;
+    this.height = (<any>cell.$node[0][0]).clientHeight;
 
-    cell.$node.select('g').selectAll('.linechart > path').attr('d', (d) => line(d.values));
+    $svg
+      .attr('viewBox', `0 0 ${this.width} ${this.height}`)
+      .classed('linechart', true)
+      .append('g');
+
+    this.renderLine(data, $svg);
   }
 }
 
