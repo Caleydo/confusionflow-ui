@@ -5,7 +5,7 @@ import {adaptTextColorToBgColor, extractEpochId} from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 import {Language} from '../language';
-import {DataStoreCellSelection, dataStoreTimelines} from '../DataStore';
+import {DataStoreApplicationProperties, DataStoreCellSelection, dataStoreTimelines} from '../DataStore';
 import {time} from 'd3';
 import {AppConstants} from '../AppConstants';
 import {isUndefined} from 'util';
@@ -72,8 +72,22 @@ export class MatrixLineCellRenderer extends ACellRenderer {
 }
 
 export class LinechartRenderer extends ACellRenderer {
+  private y: any;
+  private data: Line[] = null;
   constructor(private width: number, private height: number) {
     super();
+    this.y = d3.scale.pow();
+    this.attachListeners();
+  }
+
+  private attachListeners() {
+    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, (evt, val: number) => {
+      this.updateY(val);
+    });
+  }
+
+  private updateY(exponent: number) {
+    this.y.exponent(exponent).domain([0,getLargestLine(this.data).max]).range([this.height,0]);
   }
 
   protected render(cell: MatrixCell | PanelCell) {
@@ -82,25 +96,22 @@ export class LinechartRenderer extends ACellRenderer {
     if (data.length === 1 && data[0].values.length === 0) {
       return;
     }
+    this.data = data;
 
-    const x = d3.scale.linear().rangeRound([0, this.width]);
-    const y = d3.scale.linear().rangeRound([this.height, 0]);
-
-    x.domain([0, getLargestLine(data).values.length - 1]);
-    y.domain([0, getLargestLine(data).max]);
+    const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
+    this.updateY(DataStoreApplicationProperties.weightfactor);
 
     const line = d3_shape.line()
       .x((d, i) => {
         return x(i);
       })
       .y((d) => {
-        return y(d);
+        return this.y(d);
       });
 
     cell.$node.select('g').selectAll('path')
       .data(data)
       .enter().append('path')
-      .classed('detail-view-line', true)
       .attr('d', (d) => line(d.values))
       .attr('stroke', (d, _) => d.color)
       .attr('stroke-opacity', '0.6')
@@ -255,7 +266,7 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
 }
 
 export class AxisRenderer extends ACellRenderer {
-  private data: Line[];
+  private data: Line[] = null;
   private yAxis: any;
   private y: any;
   private $g: d3.Selection<any> = null;
@@ -317,7 +328,7 @@ export class AxisRenderer extends ACellRenderer {
       .attr('transform', 'translate(0,' + this.height + ')')
       .call(xAxis);
 
-    this.updateYAxis(1);
+    this.updateYAxis(DataStoreApplicationProperties.weightfactor);
 
     this.$g.append('g')
       .attr('class', 'chart-axis-y')
