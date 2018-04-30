@@ -1,11 +1,13 @@
 import {Line, MatrixHeatCellContent} from './CellContent';
 import {DataStoreCellSelection} from '../DataStore';
+import {ACellRenderer} from "./ACellRenderer";
 
 /**
  * Created by Martin on 19.03.2018.
  */
 export abstract class ACell {
   private _$node: d3.Selection<any>;
+  public renderer: ACellRenderer;
 
   //abstract clear();
   constructor() {
@@ -25,6 +27,10 @@ export abstract class ACell {
     $node.on('click', () => {
       DataStoreCellSelection.cellSelected(this);
     });
+  }
+
+  public render() {
+    this.renderer.renderNext(this);
   }
 }
 
