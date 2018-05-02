@@ -105,11 +105,15 @@ export class DetailChartTab extends ADetailViewTab {
 
     const detailViewCell = new MatrixCell(cell.data, '', '', 0, 0);
     detailViewCell.init(this.$svg);
-    const renderer = new LinechartRenderer(this.width, this.height);
-    renderer
-      .setNextRenderer(new AxisRenderer(this.width, this.height))
-      .setNextRenderer(new VerticalLineRenderer(this.width, this.height));
-    renderer.renderNext(detailViewCell);
+
+    const lineChartRenderer = new LinechartRenderer(this.width, this.height);
+    lineChartRenderer.weightFactorChanged();
+    const axisRenderer = new AxisRenderer(this.width, this.height);
+    axisRenderer.weightFactorChanged();
+    const verticalLineRenderer = new VerticalLineRenderer(this.width, this.height);
+
+    lineChartRenderer.setNextRenderer(axisRenderer).setNextRenderer(verticalLineRenderer);
+    lineChartRenderer.renderNext(detailViewCell);
   }
 }
 

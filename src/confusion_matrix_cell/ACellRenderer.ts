@@ -31,6 +31,7 @@ export abstract class ACellRenderer {
     }
   }
   protected abstract render(cell: ACell);
+  public abstract weightFactorChanged();
 }
 
 export class LinechartRenderer extends ACellRenderer {
@@ -38,7 +39,6 @@ export class LinechartRenderer extends ACellRenderer {
 
   constructor(protected width: number, protected height: number) {
     super();
-    this.attachListeners();
   }
 
   protected renderLine(data: Line[], $node: d3.Selection<any>) {
@@ -59,15 +59,16 @@ export class LinechartRenderer extends ACellRenderer {
       .classed('instance-line', true)
       .attr('stroke', (d, _) => d.color)
       .attr('stroke-opacity', '0.6')
+      .attr('d', (d) => line(d.values))
       .append('title')
       .text((d) => d.classLabel);
 
     $node.select('g').selectAll('.instance-line').attr('d', (d) => line(d.values));
   }
 
-  private attachListeners() {
-    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, (evt, val: number) => {
-      this.render(this.cell);
+  public weightFactorChanged() {
+    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, () => {
+      this.update();
     });
   }
 
@@ -81,9 +82,15 @@ export class LinechartRenderer extends ACellRenderer {
     this.cell = cell;
     this.renderLine(data, this.cell.$node);
   }
+
+  protected update() {
+    const data: Line[] = [].concat.apply([], this.cell.data.linecell);
+    this.renderLine(data, this.cell.$node);
+  }
 }
 
 export class MatrixLineCellRenderer extends LinechartRenderer {
+  private $svg: d3.Selection<any>;
   constructor() {
     super(0, 0);
   }
@@ -91,17 +98,22 @@ export class MatrixLineCellRenderer extends LinechartRenderer {
   protected render(cell: MatrixCell | PanelCell) {
     this.cell = cell;
     const data: Line[] = [].concat.apply([], cell.data.linecell);
-    const $svg = cell.$node.append('svg').datum(data);
+    this.$svg = cell.$node.append('svg').datum(data);
 
     this.width = (<any>cell.$node[0][0]).clientWidth;
     this.height = (<any>cell.$node[0][0]).clientHeight;
 
-    $svg
+    this.$svg
       .attr('viewBox', `0 0 ${this.width} ${this.height}`)
       .classed('linechart', true)
       .append('g');
 
-    this.renderLine(data, $svg);
+    this.renderLine(data, this.$svg);
+  }
+
+  protected update() {
+    const data: Line[] = [].concat.apply([], this.cell.data.linecell);
+    this.renderLine(data, this.$svg);
   }
 }
 
@@ -151,6 +163,8 @@ export class VerticalLineRenderer extends ACellRenderer {
     }
     return 0;
   }
+
+  public weightFactorChanged() {}
 }
 
 export class SingleEpochMarker extends ACellRenderer implements ITransposeRenderer {
@@ -180,12 +194,16 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
     bg = str + bg;
     firstHCPart.style('background', bg);
   }
+
+  public weightFactorChanged() {}
 }
 
 export class BarChartRenderer extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
     cell.$node.text('bar chart here');
   }
+
+  public weightFactorChanged() {}
 }
 
 export class LabelCellRenderer extends ACellRenderer {
@@ -195,6 +213,8 @@ export class LabelCellRenderer extends ACellRenderer {
       .text(cell.labelData.label)
       .style('background-color', 'white');
   }
+
+  public weightFactorChanged() {}
 }
 
 export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITransposeRenderer {
@@ -221,6 +241,8 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
       return `linear-gradient(${gradientDirection}, ${res})`;
     });
   }
+
+  public weightFactorChanged() {}
 }
 
 export class HeatmapSingleEpochRenderer extends ACellRenderer {
@@ -248,6 +270,8 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
       .style('color', (datum: {count: number, colorValue: string}) => adaptTextColorToBgColor(datum.colorValue))
       .text((datum: {count: number, colorValue: string}) => this.showNumber ? datum.count : '');
   }
+
+  public weightFactorChanged() {}
 }
 
 export class AxisRenderer extends ACellRenderer {
@@ -261,13 +285,12 @@ export class AxisRenderer extends ACellRenderer {
     this.yAxis = d3.svg.axis()
       .orient('left');
     this.y = d3.scale.pow();
-    this.attachListeners();
   }
 
-  private attachListeners() {
-    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, (evt, val: number) => {
+  public weightFactorChanged() {
+    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, () => {
       if(this.$g !== null) {
-        this.updateYAxis(val);
+        this.updateYAxis(DataStoreApplicationProperties.weightfactor);
       }
     });
   }
