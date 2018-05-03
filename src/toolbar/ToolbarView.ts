@@ -47,8 +47,14 @@ export class ToolbarView implements IAppView {
       .classed('btn-group-vertical', true)
       .attr('role', 'group')
       .html(`
-        <button class="btn btn-default line-chart" title="Switch to line chart"><i class="fa fa-line-chart"></i><span class="sr-only">&nbsp; Line Chart</span></a>
-        <button class="btn btn-default heatmap active" title="Switch to heatmap"><i class="fa fa-barcode"></i><span class="sr-only">&nbsp; Heatmap</span></a>
+        <button class="btn btn-default line-chart" title="Switch to line chart">
+          <i class="fa fa-line-chart"></i>
+          <span class="sr-only">&nbsp; Line Chart</span>
+        </button>
+        <button class="btn btn-default heatmap active" title="Switch to heatmap">
+          <i class="fa fa-barcode"></i>
+          <span class="sr-only">&nbsp; Heatmap</span>
+        </button>
       `);
 
     $div.select('button.line-chart').on('click', () => {
@@ -59,6 +65,7 @@ export class ToolbarView implements IAppView {
       DataStoreApplicationProperties.switchCellRenderer = true;
       $div.selectAll('.active').classed('active', false);
       $div.select('button.line-chart').classed('active', true);
+      this.$node.select('.toolbar-transpose-cell > button').attr('disabled', 'disabled');
     });
 
     $div.select('button.heatmap').on('click', () => {
@@ -69,21 +76,27 @@ export class ToolbarView implements IAppView {
       DataStoreApplicationProperties.switchCellRenderer = false;
       $div.selectAll('.active').classed('active', false);
       $div.select('button.heatmap').classed('active', true);
+      this.$node.select('.toolbar-transpose-cell > button').attr('disabled', null);
     });
   }
 
   private createTransposeCellsDiv() {
-    this.$node.append('div')
+    const $div = this.$node.append('div')
       .classed('toolbar-transpose-cell', true)
       .html(`
-        <input type="checkbox" class="sr-only" id="transpose-cell-renderer">
-        <label for="transpose-cell-renderer" title="Transpose matrix visualization">
-          <span class="sr-only">Change direction of </span><span>epochs</span>
-        </label>
+        <button class="btn btn-default line-chart" title="Change direction of epochs">
+          <i class="fa fa-long-arrow-right"></i>
+          <span>epochs</span>
+        </button>
       `)
-      .select('input')
-      .on('change', () => {
+      .select('button')
+      .on('click', () => {
         DataStoreApplicationProperties.toggleTransposeCellRenderer();
+        $div.select('i.fa')
+          .classed('fa-long-arrow-right', DataStoreApplicationProperties.transposeCellRenderer === false)
+          .classed('fa-long-arrow-down', DataStoreApplicationProperties.transposeCellRenderer === true);
+        this.$node.select('.toolbar-switch-cell-vis > button.heatmap i.fa')
+          .classed('fa-rotate-90', DataStoreApplicationProperties.transposeCellRenderer);
       });
   }
 
