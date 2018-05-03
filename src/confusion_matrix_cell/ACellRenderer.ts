@@ -34,7 +34,7 @@ export abstract class ACellRenderer {
   public abstract weightFactorChanged();
 }
 
-export class LinechartRenderer extends ACellRenderer {
+export class LineChartRenderer extends ACellRenderer {
   protected cell: MatrixCell | PanelCell;
 
   constructor(protected width: number, protected height: number) {
@@ -43,7 +43,7 @@ export class LinechartRenderer extends ACellRenderer {
 
   protected renderLine(data: Line[], $node: d3.Selection<any>) {
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightfactor).domain([0, getLargestLine(data).max]).rangeRound([this.height, 0]);
+    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getLargestLine(data).max]).rangeRound([this.height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -89,7 +89,7 @@ export class LinechartRenderer extends ACellRenderer {
   }
 }
 
-export class MatrixLineCellRenderer extends LinechartRenderer {
+export class MatrixLineCellRenderer extends LineChartRenderer {
   private $svg: d3.Selection<any>;
   constructor() {
     super(0, 0);
@@ -289,14 +289,15 @@ export class AxisRenderer extends ACellRenderer {
 
   public weightFactorChanged() {
     events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, () => {
-      if(this.$g !== null) {
-        this.updateYAxis(DataStoreApplicationProperties.weightfactor);
+      if (this.$g !== null) {
+        this.updateYAxis(DataStoreApplicationProperties.weightFactor);
       }
     });
   }
 
   private updateYAxis(value: number) {
-    this.y.exponent(value).domain([0,getLargestLine(this.data).max]).range([this.height,0]);
+    console.log(value);
+    this.y.exponent(value).domain([0, getLargestLine(this.data).max]).range([this.height, 0]);
     this.yAxis.scale(this.y);
     this.$g.select('.chart-axis-y').call(this.yAxis);
   }
@@ -336,7 +337,7 @@ export class AxisRenderer extends ACellRenderer {
       .attr('transform', 'translate(0,' + this.height + ')')
       .call(xAxis);
 
-    this.updateYAxis(DataStoreApplicationProperties.weightfactor);
+    this.updateYAxis(DataStoreApplicationProperties.weightFactor);
 
     this.$g.append('g')
       .attr('class', 'chart-axis-y')

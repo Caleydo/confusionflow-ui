@@ -70,7 +70,11 @@ export class DataStoreCellSelection {
 export class DataStoreApplicationProperties {
   public static transposeCellRenderer = false;
   public static switchCellRenderer = false;
-  public static weightfactor = 1;
+  private static _weightFactor = 1;
+
+  public static get weightFactor(): number {
+    return (this._weightFactor === 0) ? 0.00001 : this._weightFactor;
+  }
 
   static toggleTransposeCellRenderer() {
     DataStoreApplicationProperties.transposeCellRenderer = !DataStoreApplicationProperties.transposeCellRenderer;
@@ -82,9 +86,9 @@ export class DataStoreApplicationProperties {
     return DataStoreApplicationProperties.switchCellRenderer;
   }
 
-  static updateWeightFactor(weightfactor: number) {
-    this.weightfactor = weightfactor;
-    events.fire(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.weightfactor);
+  static updateWeightFactor(weightFactor: number) {
+    this._weightFactor = 1 - weightFactor;
+    events.fire(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.weightFactor);
   }
 }
 

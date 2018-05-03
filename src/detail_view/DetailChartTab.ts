@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 import {Language} from '../language';
 import {MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
 import {
-  AxisRenderer, LinechartRenderer,
+  AxisRenderer, LineChartRenderer,
   VerticalLineRenderer
 } from '../confusion_matrix_cell/ACellRenderer';
 import * as events from 'phovea_core/src/event';
@@ -16,7 +16,6 @@ export class DetailChartTab extends ADetailViewTab {
   private $g: d3.Selection<any> = null;
   private $svg: d3.Selection<any> = null;
   private $header: d3.Selection<any> = null;
-  private $slider: d3.Selection<any> = null;
   public id: string = AppConstants.CHART_VIEW;
   public name: string = Language.CHART_VIEW;
 
@@ -30,17 +29,13 @@ export class DetailChartTab extends ADetailViewTab {
       .append('div')
       .classed('chart-name', true);
 
-    this.$slider = this.$node.html(`
-    <div class="chart-container">
-      <input type="range" min="1" max="10" value="${DataStoreApplicationProperties.weightfactor * 10}" class="slider" id="myRange">
-      <svg viewBox="0 0 ${this.width} 500"/>
-    </div>`);
+    this.$node.html(`
+      <div class="chart-container">
+        <svg viewBox="0 0 ${this.width} 500"/>
+      </div>
+    `);
 
     this.$svg = this.$node.select('svg');
-    this.$slider = this.$node.select('input');
-    this.$slider.on('input', function() {
-      DataStoreApplicationProperties.updateWeightFactor(this.value / 10);
-    });
   }
 
   init(): Promise<DetailChartTab> {
@@ -106,7 +101,7 @@ export class DetailChartTab extends ADetailViewTab {
     const detailViewCell = new MatrixCell(cell.data, '', '', 0, 0);
     detailViewCell.init(this.$svg);
 
-    const lineChartRenderer = new LinechartRenderer(this.width, this.height);
+    const lineChartRenderer = new LineChartRenderer(this.width, this.height);
     lineChartRenderer.weightFactorChanged();
     const axisRenderer = new AxisRenderer(this.width, this.height);
     axisRenderer.weightFactorChanged();

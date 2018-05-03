@@ -4,6 +4,7 @@ import {ConfusionMatrix} from '../ConfusionMatrix';
 import {AppConstants} from '../AppConstants';
 import * as events from 'phovea_core/src/event';
 import * as plugins from 'phovea_core/src/plugin';
+import {DataStoreApplicationProperties} from '../DataStore';
 
 export class ToolbarView implements IAppView {
 
@@ -34,7 +35,17 @@ export class ToolbarView implements IAppView {
    * @returns {Promise<ToolbarView>}
    */
   private build(): Promise<ToolbarView> {
+    this.addYScaleSlider();
     return Promise.resolve(this);
+  }
+
+  private addYScaleSlider() {
+    const $div = this.$node.append('div').classed('y-scale-slider', true);
+    $div.html(`<input type="range" min="0" max="0.9" step="0.1" value="${1 - DataStoreApplicationProperties.weightFactor}" orient="vertical">`);
+    $div.select('input')
+      .on('input', function () {
+        DataStoreApplicationProperties.updateWeightFactor(this.value);
+      });
   }
 
 }
