@@ -101,7 +101,7 @@ export class ConfusionMatrix implements IAppView {
     this.$node.append('div')
       .classed('malevo-label', true)
       .classed('label-bottom', true)
-      .text(Language.FP);
+      .html(`<span>${Language.FP}</span>`);
 
     this.$labelsTop = this.$node.append('div')
       .classed('malevo-label', true)
@@ -317,7 +317,7 @@ export class ConfusionMatrix implements IAppView {
       .classed('label-cell', true);
 
     $cells
-      .text((datum: string) => datum);
+      .html((datum: string) => `<span>${datum}</span>`);
 
     $cells.exit().remove();
   }
