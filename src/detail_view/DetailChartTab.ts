@@ -1,11 +1,12 @@
 import {ADetailViewTab} from './ADetailViewTab';
-import {DataStoreApplicationProperties, DataStoreCellSelection} from '../DataStore';
+import {DataStoreApplicationProperties, DataStoreCellSelection, RenderMode} from '../DataStore';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
 import {Language} from '../language';
-import {MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
+import {ACell, MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
 import {
-  AxisRenderer, LinechartRenderer,
+  ACellRenderer, applyRendererChain,
+  AxisRenderer, IMatrixRendererChain, LinechartRenderer, removeListeners,
   VerticalLineRenderer
 } from '../confusion_matrix_cell/ACellRenderer';
 import * as events from 'phovea_core/src/event';
@@ -14,6 +15,7 @@ export class DetailChartTab extends ADetailViewTab {
   private width: number;
   private height: number;
   private $g: d3.Selection<any> = null;
+  private cell: ACell;
   private $svg: d3.Selection<any> = null;
   private $header: d3.Selection<any> = null;
   private $slider: d3.Selection<any> = null;
@@ -76,6 +78,7 @@ export class DetailChartTab extends ADetailViewTab {
     if (this.$g !== null) {
       this.$g.remove();
       this.$g = null;
+      removeListeners(this.cell.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]);
     }
   }
 
@@ -96,24 +99,20 @@ export class DetailChartTab extends ADetailViewTab {
     const margin = {top: 5, right: 10, bottom: 140, left: 65}; // set left + bottom to show axis and labels
     this.width = (<any>this.$node[0][0]).clientWidth - margin.left - margin.right;
     this.height = (<any>this.$node[0][0]).clientHeight - margin.top - margin.bottom;
-    if (this.$g !== null) {
-      this.$g.remove();
-    }
 
     this.$g = this.$svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
     this.$g.classed('linechart', true);
 
-    const detailViewCell = new MatrixCell(cell.data, '', '', 0, 0);
-    detailViewCell.init(this.$svg);
+    this.cell = new MatrixCell(cell.data, '', '', 0, 0);
+    this.cell.init(this.$svg);
 
-    const lineChartRenderer = new LinechartRenderer(this.width, this.height);
-    lineChartRenderer.weightFactorChanged();
-    const axisRenderer = new AxisRenderer(this.width, this.height);
-    axisRenderer.weightFactorChanged();
-    const verticalLineRenderer = new VerticalLineRenderer(this.width, this.height);
+    const wfc = (renderer: ACellRenderer) => renderer.addWeightFactorChangedListener();
+    const confMatrixRendererProto = {offdiagonal: null,
+      diagonal: [new LinechartRenderer(this.width, this.height), new AxisRenderer(this.width, this.height), new VerticalLineRenderer(this.width, this.height)],
+      functors: [wfc]};
 
-    lineChartRenderer.setNextRenderer(axisRenderer).setNextRenderer(verticalLineRenderer);
-    lineChartRenderer.renderNext(detailViewCell);
+    applyRendererChain(confMatrixRendererProto, this.cell, confMatrixRendererProto.diagonal);
+    this.cell.render();
   }
 }
 

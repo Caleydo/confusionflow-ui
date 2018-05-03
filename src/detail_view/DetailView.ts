@@ -35,6 +35,7 @@ export class DetailView implements IAppView {
   private attachListeners() {
     events.on(AppConstants.EVENT_CELL_SELECTED, () => {
       if (this.selectedDetailView !== null) {
+        this.selectedDetailView.clear();
         this.selectedDetailView.render();
       }
     });
