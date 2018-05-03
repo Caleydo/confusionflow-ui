@@ -67,7 +67,7 @@ export class LineChartRenderer extends ACellRenderer {
   }
 
   public weightFactorChanged() {
-    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, () => {
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, () => {
       this.update();
     });
   }
@@ -288,7 +288,7 @@ export class AxisRenderer extends ACellRenderer {
   }
 
   public weightFactorChanged() {
-    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, () => {
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, () => {
       if (this.$g !== null) {
         this.updateYAxis(DataStoreApplicationProperties.weightFactor);
       }

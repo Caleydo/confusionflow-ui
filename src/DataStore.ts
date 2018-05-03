@@ -77,18 +77,18 @@ export class DataStoreApplicationProperties {
   }
 
   static toggleTransposeCellRenderer() {
-    DataStoreApplicationProperties.transposeCellRenderer = !DataStoreApplicationProperties.transposeCellRenderer;
-    return DataStoreApplicationProperties.transposeCellRenderer;
+    this.transposeCellRenderer = !this.transposeCellRenderer;
+    events.fire(AppConstants.EVENT_CELL_RENDERER_TRANSPOSED, this.transposeCellRenderer);
   }
 
   static toggleSwitchCellRenderer() {
-    DataStoreApplicationProperties.switchCellRenderer = !DataStoreApplicationProperties.switchCellRenderer;
-    return DataStoreApplicationProperties.switchCellRenderer;
+    this.switchCellRenderer = !this.switchCellRenderer;
+    events.fire(AppConstants.EVENT_CELL_RENDERER_CHANGED, this.switchCellRenderer);
   }
 
   static updateWeightFactor(weightFactor: number) {
     this._weightFactor = 1 - weightFactor;
-    events.fire(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.weightFactor);
+    events.fire(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.weightFactor);
   }
 }
 

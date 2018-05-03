@@ -59,7 +59,19 @@ export class AppConstants {
    * Fires when the slider value changes
    * @type {string}
    */
-  static EVENT_WEIGHTFACTOR_CHANGED = 'eventWeightfactorChanged';
+  static EVENT_WEIGHT_FACTOR_CHANGED = 'eventWeightFactorChanged';
+
+  /**
+   * Fires when the matrix cell renderer should be transposed
+   * @type {string}
+   */
+  static EVENT_CELL_RENDERER_TRANSPOSED = 'eventCellRendererTransposed';
+
+  /**
+   * Fires when the matrix cell renderer changed
+   * @type {string}
+   */
+  static EVENT_CELL_RENDERER_CHANGED = 'eventCellRendererChanged';
 
   /**
    * Represent the different cell types

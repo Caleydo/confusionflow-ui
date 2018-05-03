@@ -35,8 +35,36 @@ export class ToolbarView implements IAppView {
    * @returns {Promise<ToolbarView>}
    */
   private build(): Promise<ToolbarView> {
+    this.createSwitchCellsVisDiv();
+    this.createTransposeCellsDiv();
     this.addYScaleSlider();
     return Promise.resolve(this);
+  }
+
+  private createSwitchCellsVisDiv() {
+    this.$node.append('div')
+      .classed('toolbar-switch-cell-vis', true)
+      .html(`
+        <input type="checkbox" id="switch-cell-renderer">
+      `)
+      .select('input')
+      .on('change', () => {
+        DataStoreApplicationProperties.toggleSwitchCellRenderer();
+      });
+  }
+
+  private createTransposeCellsDiv() {
+    this.$node.append('div')
+      .classed('toolbar-transpose-cell', true)
+      .html(`
+        <input type="checkbox" class="sr-only" id="transpose-cell-renderer">
+        <label for="transpose-cell-renderer" title="Transpose matrix visualization">
+          <span class="sr-only">Change direction of </span><span>epochs</span>
+        </label>
+      `).select('input')
+      .on('change', () => {
+        DataStoreApplicationProperties.toggleTransposeCellRenderer();
+      });
   }
 
   private addYScaleSlider() {
