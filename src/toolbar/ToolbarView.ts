@@ -42,15 +42,34 @@ export class ToolbarView implements IAppView {
   }
 
   private createSwitchCellsVisDiv() {
-    this.$node.append('div')
+    const $div = this.$node.append('div')
       .classed('toolbar-switch-cell-vis', true)
+      .classed('btn-group-vertical', true)
+      .attr('role', 'group')
       .html(`
-        <input type="checkbox" id="switch-cell-renderer">
-      `)
-      .select('input')
-      .on('change', () => {
-        DataStoreApplicationProperties.toggleSwitchCellRenderer();
-      });
+        <button class="btn btn-default line-chart" title="Switch to line chart"><i class="fa fa-line-chart"></i><span class="sr-only">&nbsp; Line Chart</span></a>
+        <button class="btn btn-default heatmap active" title="Switch to heatmap"><i class="fa fa-barcode"></i><span class="sr-only">&nbsp; Heatmap</span></a>
+      `);
+
+    $div.select('button.line-chart').on('click', () => {
+      if (DataStoreApplicationProperties.switchCellRenderer === true) {
+        return false;
+      }
+
+      DataStoreApplicationProperties.switchCellRenderer = true;
+      $div.selectAll('.active').classed('active', false);
+      $div.select('button.line-chart').classed('active', true);
+    });
+
+    $div.select('button.heatmap').on('click', () => {
+      if (DataStoreApplicationProperties.switchCellRenderer === false) {
+        return false;
+      }
+
+      DataStoreApplicationProperties.switchCellRenderer = false;
+      $div.selectAll('.active').classed('active', false);
+      $div.select('button.heatmap').classed('active', true);
+    });
   }
 
   private createTransposeCellsDiv() {
@@ -61,7 +80,8 @@ export class ToolbarView implements IAppView {
         <label for="transpose-cell-renderer" title="Transpose matrix visualization">
           <span class="sr-only">Change direction of </span><span>epochs</span>
         </label>
-      `).select('input')
+      `)
+      .select('input')
       .on('change', () => {
         DataStoreApplicationProperties.toggleTransposeCellRenderer();
       });
@@ -72,7 +92,7 @@ export class ToolbarView implements IAppView {
     $div.html(`<input type="range" min="0" max="0.9" step="0.1" value="${1 - DataStoreApplicationProperties.weightFactor}" orient="vertical">`);
     $div.select('input')
       .on('input', function () {
-        DataStoreApplicationProperties.updateWeightFactor(this.value);
+        DataStoreApplicationProperties.weightFactor = this.value;
       });
   }
 

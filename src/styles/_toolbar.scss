@@ -39,11 +39,8 @@ input[type=range][orient=vertical] {
   flex-direction: column;
 }
 
-.toolbar-switch-cell-vis {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
+.toolbar-switch-cell-vis .btn {
+  padding: 5px 0px;
 }
 
 .toolbar-transpose-cell {

@@ -30,7 +30,7 @@ b,
 .main-wrapper {
   display: grid;
   grid-template-areas: "toolbar matrix details";
-  grid-template-columns: 30px minmax(auto, 98vh) minmax(40%, auto);
+  grid-template-columns: 40px minmax(auto, 98vh) minmax(40%, auto);
   grid-template-rows: minmax(min-content, 85vh);
   grid-gap: 20px;
   margin: 0 10px;
@@ -56,7 +56,7 @@ b,
     line-height: 0; // needed for certain browsers
   }
   &:before,
-  >div {
+  > div {
     grid-area: 1 / 1 / 2 / 2;
   }
 }
