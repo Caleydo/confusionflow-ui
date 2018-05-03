@@ -1,13 +1,15 @@
 @import "vars";
 @import '~font-awesome/scss/variables';
 @import '~font-awesome/scss/mixins';
+
 // number of columns placed to the right of the confusion matrix
 $num-columns-right-area: 3;
+
 .grid {
-    display: grid;
-    grid-template-areas: ". axis-top axis-top ." "switch-cell-vis transpose-cell label-top label-right" "axis-left label-left matrix chart-right" ". label-bottom chart-bottom .";
-    grid-template-columns: 40px 50px auto minmax(100px, 200px);
-    grid-template-rows: 40px 50px auto minmax(60px, 1fr);
+  display: grid;
+  grid-template-areas: ". axis-top axis-top ." "switch-cell-vis transpose-cell label-top label-right" "axis-left label-left matrix chart-right" ". label-bottom chart-bottom .";
+  grid-template-columns: 40px 50px auto minmax(100px, 200px);
+  grid-template-rows: 40px 50px auto minmax(60px, 1fr);
 }
 
 .cfm-switch-cell-vis {
@@ -19,194 +21,205 @@ $num-columns-right-area: 3;
 }
 
 .cfm-transpose-cell {
-    grid-area: transpose-cell;
+  grid-area: transpose-cell;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+
+  label {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 1;
-    label {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 70%;
-        height: 70%;
-        border: 1px solid #ccc;
-        color: #aaa;
-        cursor: pointer;
-        user-select: none;
-        &:before {
-            font-size: 20px;
-            @include fa-icon();
-            content: $fa-var-long-arrow-right;
-        }
-        span {
-            font-size: 10px;
-            font-weight: 500;
-        }
+    width: 70%;
+    height: 70%;
+    border: 1px solid #ccc;
+    color: #aaa;
+    cursor: pointer;
+    user-select: none;
+
+    &:before {
+      font-size: 20px;
+      @include fa-icon();
+      content: $fa-var-long-arrow-right;
     }
-    input[type="checkbox"]:checked+label {
-        //flex-direction: row;
-        &:before {
-            content: $fa-var-long-arrow-down;
-        }
+
+    span {
+      font-size: 10px;
+      font-weight: 500;
     }
+
+  }
+
+  input[type="checkbox"]:checked + label {
+    //flex-direction: row;
+    &:before {
+      content: $fa-var-long-arrow-down;
+    }
+  }
 }
 
 .cfm-axis,
 .malevo-label {
-    font-weight: 500;
-    font-size: 16px;
+  font-weight: 500;
+  font-size: 16px;
 }
 
 .cfm-axis {
-    background: $label-bg;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    &.axis-top {
-        grid-area: axis-top;
+  background: $label-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.axis-top {
+    grid-area: axis-top;
+  }
+
+  &.axis-left {
+    grid-area: axis-left;
+
+    > span {
+      display: block;
+      transform: rotate(-180deg);
+      writing-mode: vertical-lr;
+      white-space: nowrap;
     }
-    &.axis-left {
-        grid-area: axis-left;
-        >span {
-            display: block;
-            transform: rotate(-180deg);
-            writing-mode: vertical-lr;
-            white-space: nowrap;
-        }
-    }
+  }
 }
 
 .label-right {
-    grid-area: label-right;
-    background: $label-bg;
-    grid-template-columns: repeat(auto-fill, minmax(100% / $num-columns-right-area, 1fr));
-    display: grid;
-    div {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-    }
-}
+  grid-area: label-right;
+  background: $label-bg;
+  grid-template-columns: repeat(auto-fill, minmax(100% / $num-columns-right-area, 1fr));
+  display: grid;
 
-.label-bottom {
-    grid-area: label-bottom;
-    background: $label-bg;
+  div {
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
+  }
+}
+
+.label-bottom {
+  grid-area: label-bottom;
+  background: $label-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .label-top {
-    grid-area: label-top;
-    position: relative;
-    display: grid;
-    grid-template-rows: repeat(auto-fill, minmax(100%, 1fr));
+  grid-area: label-top;
+  position: relative;
+  display: grid;
+  grid-template-rows: repeat(auto-fill, minmax(100%, 1fr));
 }
 
 .label-left {
-    grid-area: label-left;
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+  grid-area: label-left;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
 }
 
 .chart-right {
-    grid-area: chart-right;
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100% / $num-columns-right-area, 1fr)); // 100% for one column, 50% for 2 columns, 33% for 3 columns ...
+  grid-area: chart-right;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100% / $num-columns-right-area, 1fr)); // 100% for one column, 50% for 2 columns, 33% for 3 columns ...
 }
 
 .chart-bottom {
-    grid-area: chart-bottom;
-    position: relative;
-    display: grid;
-    grid-template-rows: repeat(auto-fill, minmax(100%, 1fr)); // 100% for one row, 50% for 2 rows, ...
+  grid-area: chart-bottom;
+  position: relative;
+  display: grid;
+  grid-template-rows: repeat(auto-fill, minmax(100%, 1fr)); // 100% for one row, 50% for 2 rows, ...
 }
 
 .matrix-wrapper {
-    grid-area: matrix;
+  grid-area: matrix;
 }
 
 .matrix {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    grid-template-rows: repeat(10, 1fr);
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
 }
 
 .labels,
 .chart {
-    display: grid;
-    .bar-tooltip {
-        rect {
-            opacity: 0.5;
-        }
-    }
+  display: grid;
+
+  .bar-tooltip rect {
+    opacity: 0.5;
+  }
 }
 
-.label-left>.labels {
-    grid-template-rows: repeat(10, 1fr);
+.label-left > .labels {
+  grid-template-rows: repeat(10, 1fr);
 }
 
-.chart-right>.chart {
-    grid-template-rows: repeat(10, 1fr);
+.chart-right > .chart {
+  grid-template-rows: repeat(10, 1fr);
 }
 
-.label-top>.labels,
-.chart-bottom>.chart {
-    grid-template-columns: repeat(10, 1fr);
+.label-top > .labels,
+.chart-bottom > .chart {
+  grid-template-columns: repeat(10, 1fr);
 }
 
 .cell {
-    position: relative;
-    border: 1px solid #fff;
+  position: relative;
+  border: 1px solid #fff;
+  display: flex;
+  flex-direction: column;
+
+  &.label-cell {
+    align-items: center;
+    justify-content: center;
+    background-color: $label-bg;
+  }
+
+  > svg {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+  }
+
+  > .heat-cell {
+    flex: 1;
+    align-items: center;
+    justify-content: center;
     display: flex;
-    flex-direction: column;
-    &.label-cell {
-        align-items: center;
-        justify-content: center;
-        background-color: $label-bg;
-    }
-    >svg {
-        position: absolute;
-        height: 100%;
-        width: 100%;
-    }
-    >.heat-cell {
-        flex: 1;
-        align-items: center;
-        justify-content: center;
-        display: flex;
-    }
+  }
 }
 
 .chart-right,
 .chart-bottom,
 .matrix {
-    .cell {
-        outline: 1px solid #ccc;
-        &.selected,
-        &:active,
-        &:focus,
-        &:hover {
-            cursor: pointer;
-            outline: 2px solid $select-color;
-            border: none;
-            z-index: 1;
-            margin: 1px;
-        }
+  .cell {
+    outline: 1px solid #ccc;
+    &.selected,
+    &:active,
+    &:focus,
+    &:hover {
+      cursor: pointer;
+      outline: 2px solid $select-color;
+      border: none;
+      z-index: 1;
+      margin: 1px;
     }
+  }
 }
 
 .transpose-cells .matrix .cell {
-    flex-direction: row;
+  flex-direction: row;
 }
 
 .dashed-lines {
-    stroke: $select-color;
-    stroke-width: 2;
-    stroke-dasharray: 1, 1;
+  stroke: $select-color;
+  stroke-width: 2;
+  stroke-dasharray: 1, 1;
 }

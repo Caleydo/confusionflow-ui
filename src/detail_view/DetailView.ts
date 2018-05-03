@@ -48,9 +48,9 @@ export class DetailView implements IAppView {
 
   /**
    * Load and initialize all necessary views
-   * @returns {Promise<App>}
+   * @returns {Promise<DetailView>}
    */
-  private build() {
+  private build(): Promise<DetailView> {
     // wrap view ids from package.json as plugin and load the necessary files
     const pluginPromises = plugins.list()
       .filter((d) => d.type === AppConstants.VIEW && d.isDetailWindow !== undefined)
@@ -115,7 +115,7 @@ export class DetailView implements IAppView {
  * Factory method to create a new HeatMap instance
  * @param parent
  * @param options
- * @returns {ConfusionMatrix}
+ * @returns {DetailView}
  */
 export function create(parent: Element, options: any) {
   return new DetailView(parent);
