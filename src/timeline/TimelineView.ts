@@ -11,7 +11,7 @@ import {Timeline} from './Timeline';
 import {dataStoreTimelines, DataStoreTimelineSelection} from '../DataStore';
 
 export default class TimelineView implements IAppView {
-  private readonly $node:d3.Selection<any>;
+  private readonly $node: d3.Selection<any>;
   private timelineData: TimelineCollection;
   private width: number;
 
@@ -28,18 +28,18 @@ export default class TimelineView implements IAppView {
   }
 
   updateSvg(timeLineCount: number) {
-      this.$node.attr('viewBox', `0 0 ${this.width} ${(timeLineCount) * AppConstants.TML_HEIGHT}`);
-      this.$node.attr('height', '100%');
-      this.$node.classed('hidden', timeLineCount === 0);
+    this.$node.attr('viewBox', `0 0 ${this.width} ${(timeLineCount) * AppConstants.TML_HEIGHT}`);
+    this.$node.attr('height', '100%');
+    this.$node.classed('hidden', timeLineCount === 0);
   }
 
   private attachListener() {
-    events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds:MalevoDataset) => {
+    events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds: MalevoDataset) => {
       this.updateSvg(this.timelineData.timelineCount() + 1);
       this.timelineData.add(this.$node, ds);
     });
 
-    events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds:MalevoDataset) => {
+    events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds: MalevoDataset) => {
       this.updateSvg(this.timelineData.timelineCount() - 1);
       this.timelineData.remove(ds);
     });
@@ -63,6 +63,6 @@ export default class TimelineView implements IAppView {
  * @param options
  * @returns {HeatMap}
  */
-export function create(parent:Element, options:any) {
+export function create(parent: Element, options: any) {
   return new TimelineView(parent);
 }
