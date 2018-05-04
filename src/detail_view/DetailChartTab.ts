@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 import {Language} from '../language';
 import {ACell, MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
 import {
-  ACellRenderer, applyRendererChain,
+  ACellRenderer, applyRendererChain, applyRendererChain2,
   AxisRenderer, IMatrixRendererChain, LinechartRenderer, removeListeners,
   VerticalLineRenderer
 } from '../confusion_matrix_cell/ACellRenderer';
@@ -111,7 +111,8 @@ export class DetailChartTab extends ADetailViewTab {
       diagonal: [new LinechartRenderer(this.width, this.height), new AxisRenderer(this.width, this.height), new VerticalLineRenderer(this.width, this.height)],
       functors: [wfc]};
 
-    applyRendererChain(confMatrixRendererProto, this.cell, confMatrixRendererProto.diagonal);
+    applyRendererChain2([{a: 'LinechartRenderer', b:[this.width, this.height]}, {a: 'AxisRenderer', b:[this.width, this.height]}, {a: 'VerticalLineRenderer',
+      b:[this.width, this.height]}] , this.cell);
     this.cell.render();
   }
 }
