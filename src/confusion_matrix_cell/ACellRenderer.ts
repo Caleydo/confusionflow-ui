@@ -18,9 +18,14 @@ export interface ITransposeRenderer {
   isTransposed: boolean;
 }
 
+export interface IRendererConfig {
+  renderer: string;
+  params: any[];
+}
+
 export interface IMatrixRendererChain {
-  offdiagonal: ACellRenderer[];
-  diagonal: ACellRenderer[];
+  offdiagonal: IRendererConfig[];
+  diagonal: IRendererConfig[];
   functors: { (renderer: ACellRenderer): void; } [];
 }
 
@@ -254,7 +259,7 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
     });
   }
 
-  private update() {
+  private update = () => {
     const gradientDirection = (this.isTransposed) ? 'to bottom' : 'to right';
     const data: Line[] = [].concat.apply([], this.cell.data.linecell);
     const $subCells = this.cell.$node.selectAll('.heat-cell');
@@ -269,13 +274,13 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
     });
   }
 
-
   public addWeightFactorChangedListener() {
-   /* events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, () => {
-      this.update();
-    });*/
+    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
   }
-  public removeWeightFactorChangedListener() {}
+
+  public removeWeightFactorChangedListener() {
+    events.off(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+  }
 }
 
 export class HeatmapSingleEpochRenderer extends ACellRenderer {
@@ -420,32 +425,11 @@ function getLargestLine(data: Line[]): Line {
   }, data[0]);
 }
 
-export function applyRendererChain(rendererProto: IMatrixRendererChain, cell: ACell, target: ACellRenderer[]) {
+export function applyRendererChain2(rendererProto: IMatrixRendererChain, cell: ACell, target: IRendererConfig[]) {
     let firstRenderer = null;
-    target.reduce((acc, val) => {
-    const copy = Object.create(val);
-   // rendererProto.functors.forEach((f) => f(copy));
-    if(acc === null) {
-      firstRenderer = copy;
-      return copy;
-    }
-    acc.setNextRenderer(copy);
-    return copy;
-    }, null);
-    cell.renderer = firstRenderer;
-
-    let r = cell.renderer;
-    while(r !== null) {
-     // r.addWeightFactorChangedListener();
-      r = r.nextRenderer;
-    }
-}
-
-export function applyRendererChain2(rendererProto: any, cell: ACell) {
-    let firstRenderer = null;
-    rendererProto.reduce((acc, val) => {
+    target.reduce((acc: ACellRenderer, val: IRendererConfig) => {
     const copy = rendererFactory(val);
-   // rendererProto.functors.forEach((f) => f(copy));
+    rendererProto.functors.forEach((f) => f(copy));
     if(acc === null) {
       firstRenderer = copy;
       return copy;
@@ -454,22 +438,24 @@ export function applyRendererChain2(rendererProto: any, cell: ACell) {
     return copy;
     }, null);
     cell.renderer = firstRenderer;
-
-    let r = cell.renderer;
-    while(r !== null) {
-      r.addWeightFactorChangedListener();
-      r = r.nextRenderer;
-    }
 }
 
-function rendererFactory(proto: any) {
-  switch(proto.a) {
+function rendererFactory(proto: IRendererConfig) {
+  switch(proto.renderer) {
+    case 'HeatmapMultiEpochRenderer':
+      return new HeatmapMultiEpochRenderer(proto.params[0]);
+    case 'SingleEpochMarker':
+      return new SingleEpochMarker(proto.params[0]);
     case 'LinechartRenderer':
-      return new LinechartRenderer(proto.b[0], proto.b[1]);
+      return new LinechartRenderer(proto.params[0], proto.params[1]);
     case 'AxisRenderer':
-      return new AxisRenderer(proto.b[0], proto.b[1]);
+      return new AxisRenderer(proto.params[0], proto.params[1]);
     case 'VerticalLineRenderer':
-      return new VerticalLineRenderer(proto.b[0], proto.b[1]);
+      return new VerticalLineRenderer(proto.params[0], proto.params[1]);
+    case 'LabelCellRenderer':
+      return new LabelCellRenderer();
+    case 'MatrixLineCellRenderer':
+      return new MatrixLineCellRenderer();
     default:
       return null;
   }
@@ -478,7 +464,7 @@ function rendererFactory(proto: any) {
 export function createCellRenderers($cells: d3.Selection<any>, renderProto: IMatrixRendererChain) {
   $cells.each((datum, index) => {
     const target = index % 11 !== 0 ? renderProto.offdiagonal : renderProto.diagonal;
-    applyRendererChain(renderProto, datum, target);
+    applyRendererChain2(renderProto, datum, target);
   });
 }
 

@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 import {Language} from '../language';
 import {ACell, MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
 import {
-  ACellRenderer, applyRendererChain, applyRendererChain2,
+  ACellRenderer, applyRendererChain2,
   AxisRenderer, IMatrixRendererChain, LinechartRenderer, removeListeners,
   VerticalLineRenderer
 } from '../confusion_matrix_cell/ACellRenderer';
@@ -107,12 +107,10 @@ export class DetailChartTab extends ADetailViewTab {
     this.cell.init(this.$svg);
 
     const wfc = (renderer: ACellRenderer) => renderer.addWeightFactorChangedListener();
-    const confMatrixRendererProto = {offdiagonal: null,
-      diagonal: [new LinechartRenderer(this.width, this.height), new AxisRenderer(this.width, this.height), new VerticalLineRenderer(this.width, this.height)],
-      functors: [wfc]};
+    const confMatrixRendererProto: IMatrixRendererChain = {diagonal: [{renderer: 'LinechartRenderer', params:[this.width, this.height]}, {renderer: 'AxisRenderer', params:[this.width, this.height]}, {renderer: 'VerticalLineRenderer',
+      params:[this.width, this.height]}], offdiagonal: null, functors: [wfc]};
 
-    applyRendererChain2([{a: 'LinechartRenderer', b:[this.width, this.height]}, {a: 'AxisRenderer', b:[this.width, this.height]}, {a: 'VerticalLineRenderer',
-      b:[this.width, this.height]}] , this.cell);
+    applyRendererChain2(confMatrixRendererProto , this.cell, confMatrixRendererProto.diagonal);
     this.cell.render();
   }
 }
