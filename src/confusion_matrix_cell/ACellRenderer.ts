@@ -25,8 +25,8 @@ export interface IRendererConfig {
 
 export interface IMatrixRendererChain {
   offdiagonal: IRendererConfig[];
-  diagonal: IRendererConfig[];
-  functors: { (renderer: ACellRenderer): void; } [];
+  diagonal: IRendererConfig[]; // also used for 1 dimensional vectors, aka. columns and rows
+  functors: {(renderer: ACellRenderer): void;}[];
 }
 
 export abstract class ACellRenderer {
@@ -50,8 +50,8 @@ export class LineChartRenderer extends ACellRenderer {
   protected cell: MatrixCell | PanelCell;
 
   private update = () => {
-      const data: Line[] = [].concat.apply([], this.cell.data.linecell);
-      this.renderLine(data, this.cell.$node);
+    const data: Line[] = [].concat.apply([], this.cell.data.linecell);
+    this.renderLine(data, this.cell.$node);
   }
 
   constructor(protected width: number, protected height: number) {
@@ -74,7 +74,7 @@ export class LineChartRenderer extends ACellRenderer {
       .data(data)
       .enter().append('path')
       .classed('instance-line', true)
-      .attr('stroke', (d, _) => d.color)
+      .attr('stroke', (d) => d.color)
       .attr('stroke-opacity', '0.6')
       .append('title')
       .text((d) => d.classLabel);
@@ -320,8 +320,8 @@ export class AxisRenderer extends ACellRenderer {
   private $g: d3.Selection<any> = null;
 
   private update = () => {
-    if(this.$g !== null) {
-        this.updateYAxis(DataStoreApplicationProperties.weightFactor);
+    if (this.$g !== null) {
+      this.updateYAxis(DataStoreApplicationProperties.weightFactor);
     }
   }
 
@@ -341,7 +341,7 @@ export class AxisRenderer extends ACellRenderer {
   }
 
   private updateYAxis(value: number) {
-    this.y.exponent(value).domain([0,getLargestLine(this.data).max]).range([this.height,0]);
+    this.y.exponent(value).domain([0, getLargestLine(this.data).max]).range([this.height, 0]);
     this.yAxis.scale(this.y);
     this.$g.select('.chart-axis-y').call(this.yAxis);
   }
@@ -426,23 +426,23 @@ function getLargestLine(data: Line[]): Line {
 }
 
 export function applyRendererChain(rendererProto: IMatrixRendererChain, cell: ACell, target: IRendererConfig[]) {
-    let firstRenderer = null;
-    target.reduce((acc: ACellRenderer, val: IRendererConfig) => {
+  let firstRenderer = null;
+  target.reduce((acc: ACellRenderer, val: IRendererConfig) => {
     const copy = rendererFactory(val);
     rendererProto.functors.forEach((f) => f(copy));
-    if(acc === null) {
+    if (acc === null) {
       firstRenderer = copy;
       return copy;
     }
     acc.setNextRenderer(copy);
     return copy;
-    }, null);
-    cell.renderer = firstRenderer;
+  }, null);
+  cell.renderer = firstRenderer;
 }
 
 function rendererFactory(proto: IRendererConfig) {
-  switch(proto.renderer) {
-    case 'HeatmapMultiEpochRenderer':
+  switch (proto.renderer) {
+    case 'HeatmapMultiEpochRenderer': // TODO Use constants
       return new HeatmapMultiEpochRenderer(proto.params[0]);
     case 'HeatmapSingleEpochRenderer':
       return new HeatmapSingleEpochRenderer(proto.params[0], proto.params[1]);
@@ -467,14 +467,14 @@ function rendererFactory(proto: IRendererConfig) {
 
 export function createCellRenderers($cells: d3.Selection<any>, renderProto: IMatrixRendererChain) {
   $cells.each((datum, index) => {
-    const target = index % 11 !== 0 ? renderProto.offdiagonal : renderProto.diagonal;
+    const target = index % (AppConstants.CONF_MATRIX_SIZE + 1) !== 0 ? renderProto.offdiagonal : renderProto.diagonal;
     applyRendererChain(renderProto, datum, target);
   });
 }
 
 export function removeListeners(renderChain: ACellRenderer, funct: ((r: ACellRenderer) => any)[]) {
   let curRenderer = renderChain;
-  while(curRenderer !== null) {
+  while (curRenderer !== null) {
     funct.forEach((f) => f(curRenderer));
     curRenderer = curRenderer.nextRenderer;
   }

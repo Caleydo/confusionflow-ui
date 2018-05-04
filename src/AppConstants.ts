@@ -93,6 +93,11 @@ export class AppConstants {
   static MAX_DATASET_COUNT = 4;
 
   /**
+   * Number of rows and columns of the confusion matrix
+   */
+  static readonly CONF_MATRIX_SIZE = 10;
+
+  /**
    * Size of timeline components
    */
   static TML_HEIGHT = 35;
