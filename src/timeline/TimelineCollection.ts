@@ -91,6 +91,10 @@ export class TimelineCollection {
     });
   }
 
+  getMaxDSWidth(): number {
+    return Math.max(...this.timelines.filter((d) => d !== null).map((d) => d.getWidth()));
+  }
+
   private findMaxDSLabelWidth() {
     return this.timelines.reduce((acc, val) => {
       return val !== null && val.getDSLabelWidth() > acc ? val.getDSLabelWidth() : acc;

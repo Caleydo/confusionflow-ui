@@ -71,7 +71,8 @@ export class Timeline {
   private $label: d3.Selection<any> = null;
   data: TimelineData = null;
   singleEpochSelector = null;
-  MARGIN_LEFT = 0; // 20 pixel margin from left border
+  readonly MARGIN_LEFT = 0; // 20 pixel margin from left border
+  readonly SHOW_LABEL = false;
   readonly tickmarkDistance = 5; // show ticks every 5 epoch
   readonly globalOffsetV = 15;
   private eventTimelineChangedListener = (evt: any, src: Timeline) => this.eventTimelineChanged(src);
@@ -109,6 +110,10 @@ export class Timeline {
   }
 
   createLabel(datasetName: string) {
+    if (!this.SHOW_LABEL) {
+      return;
+    }
+
     this.$label = this.$node.append('g')
       .attr('transform', 'translate(0,' + this.globalOffsetV + ')')
       .append('text')
@@ -118,7 +123,11 @@ export class Timeline {
   }
 
   getDSLabelWidth(): number {
-    return (<any>this.$label[0][0]).getBBox().width;
+    return (this.$label) ? (<any>this.$label[0][0]).getBBox().width : 0;
+  }
+
+  getWidth(): number {
+    return (<any>this.$node[0][0]).getBBox().width;
   }
 
   node(): d3.Selection<any> {
@@ -173,15 +182,18 @@ export class Timeline {
     this.createSingleSelector(width, offsetH, x);
     this.setBrush(brush, x, width);
 
-    this.$label.on('dblclick', () => {
-      // if at least 1 epoch was selected
-      if (!brush.empty()) {
-        //to clear the brush, call this.setBrush(brush, x, 0);
-        this.setBrush(brush, x, width);
-        events.fire(AppConstants.EVENT_REDRAW);
-      }
+    if (this.$label) {
+      this.$label.on('dblclick', () => {
+        // if at least 1 epoch was selected
+        if (!brush.empty()) {
+          //to clear the brush, call this.setBrush(brush, x, 0);
+          this.setBrush(brush, x, width);
+          events.fire(AppConstants.EVENT_REDRAW);
+        }
 
-    });
+      });
+
+    }
   }
 
   setBrush(brush: any, x: any, width: number) {

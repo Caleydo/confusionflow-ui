@@ -27,21 +27,21 @@ export default class TimelineView implements IAppView {
     this.timelineData = new TimelineCollection(this.$node);
   }
 
-  updateSvg(timeLineCount: number) {
-    this.$node.attr('viewBox', `0 0 ${this.width} ${(timeLineCount) * AppConstants.TML_HEIGHT}`);
+  updateSvg(timeLineCount: number, maxWidth: number) {
+    this.$node.attr('viewBox', `0 0 ${Math.max(this.width, maxWidth)} ${(timeLineCount) * AppConstants.TML_HEIGHT}`);
     this.$node.attr('height', '100%');
     this.$node.classed('hidden', timeLineCount === 0);
   }
 
   private attachListener() {
     events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds: MalevoDataset) => {
-      this.updateSvg(this.timelineData.timelineCount() + 1);
       this.timelineData.add(this.$node, ds);
+      this.updateSvg(this.timelineData.timelineCount(), this.timelineData.getMaxDSWidth());
     });
 
     events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds: MalevoDataset) => {
-      this.updateSvg(this.timelineData.timelineCount() - 1);
       this.timelineData.remove(ds);
+      this.updateSvg(this.timelineData.timelineCount(), this.timelineData.getMaxDSWidth());
     });
   }
 
