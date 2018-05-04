@@ -31,13 +31,11 @@ export class DetailChartTab extends ADetailViewTab {
       .append('div')
       .classed('chart-name', true);
 
-    this.$node.html(`
-      <div class="chart-container">
-        <svg viewBox="0 0 ${this.width} 500"/>
-      </div>
-    `);
-
-    this.$svg = this.$node.select('svg');
+    this.$svg = this.$node
+      .append('svg')
+      .style('width', '100%')
+      .style('height', '500px')
+      .attr('viewbox', `0 0 ${this.width} 500`);
   }
 
   init(): Promise<DetailChartTab> {
@@ -71,6 +69,7 @@ export class DetailChartTab extends ADetailViewTab {
 
   clear() {
     if (this.$g !== null) {
+      this.$header.html('');
       this.$g.remove();
       this.$g = null;
       removeListeners(this.cell.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]);

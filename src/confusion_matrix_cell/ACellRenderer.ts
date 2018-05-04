@@ -444,6 +444,8 @@ function rendererFactory(proto: IRendererConfig) {
   switch(proto.renderer) {
     case 'HeatmapMultiEpochRenderer':
       return new HeatmapMultiEpochRenderer(proto.params[0]);
+    case 'HeatmapSingleEpochRenderer':
+      return new HeatmapSingleEpochRenderer(proto.params[0], proto.params[1]);
     case 'SingleEpochMarker':
       return new SingleEpochMarker(proto.params[0]);
     case 'LineChartRenderer':
@@ -456,6 +458,8 @@ function rendererFactory(proto: IRendererConfig) {
       return new LabelCellRenderer();
     case 'MatrixLineCellRenderer':
       return new MatrixLineCellRenderer();
+    case 'BarChartRenderer':
+      return new BarChartRenderer();
     default:
       return null;
   }

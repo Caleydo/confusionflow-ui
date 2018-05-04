@@ -75,6 +75,7 @@ class DataSetSelector implements IAppView {
       .on('select2:unselect', (evt) => {
         const dataset = d3.select(evt.params.data.element).data()[0];
         DataStoreDatasetSelection.datasetRemoved(dataset);
+        that.updateSelectorColors();
       });
   }
 
