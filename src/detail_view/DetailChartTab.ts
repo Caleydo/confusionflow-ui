@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 import {Language} from '../language';
 import {ACell, MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
 import {
-  ACellRenderer, applyRendererChain2,
+  ACellRenderer, applyRendererChain,
   AxisRenderer, IMatrixRendererChain, LineChartRenderer, removeListeners,
   VerticalLineRenderer
 } from '../confusion_matrix_cell/ACellRenderer';
@@ -31,13 +31,11 @@ export class DetailChartTab extends ADetailViewTab {
       .append('div')
       .classed('chart-name', true);
 
-    this.$node.html(`
-      <div class="chart-container">
-        <svg viewBox="0 0 ${this.width} 500"/>
-      </div>
-    `);
-
-    this.$svg = this.$node.select('svg');
+    this.$svg = this.$node
+      .append('svg')
+      .style('width', '100%')
+      .style('height', '500px')
+      .attr('viewbox', `0 0 ${this.width} 500`);
   }
 
   init(): Promise<DetailChartTab> {
@@ -71,6 +69,7 @@ export class DetailChartTab extends ADetailViewTab {
 
   clear() {
     if (this.$g !== null) {
+      this.$header.html('');
       this.$g.remove();
       this.$g = null;
       removeListeners(this.cell.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]);
@@ -101,11 +100,15 @@ export class DetailChartTab extends ADetailViewTab {
     this.cell = new MatrixCell(cell.data, '', '', 0, 0);
     this.cell.init(this.$svg);
 
-    const wfc = (renderer: ACellRenderer) => renderer.addWeightFactorChangedListener();
-    const confMatrixRendererProto: IMatrixRendererChain = {diagonal: [{renderer: 'LinechartRenderer', params:[this.width, this.height]}, {renderer: 'AxisRenderer', params:[this.width, this.height]}, {renderer: 'VerticalLineRenderer',
-      params:[this.width, this.height]}], offdiagonal: null, functors: [wfc]};
+    let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener()];
+    if (cell instanceof PanelCell && cell.type === AppConstants.CELL_PRECISION) {
+      wfc = [];
+    }
 
-    applyRendererChain2(confMatrixRendererProto , this.cell, confMatrixRendererProto.diagonal);
+    const confMatrixRendererProto: IMatrixRendererChain = {diagonal: [{renderer: 'LineChartRenderer', params:[this.width, this.height]}, {renderer: 'AxisRenderer', params:[this.width, this.height]}, {renderer: 'VerticalLineRenderer',
+      params:[this.width, this.height]}], offdiagonal: null, functors: wfc};
+
+    applyRendererChain(confMatrixRendererProto , this.cell, confMatrixRendererProto.diagonal);
     this.cell.render();
   }
 }

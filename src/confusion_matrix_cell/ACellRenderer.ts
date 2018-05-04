@@ -321,7 +321,7 @@ export class AxisRenderer extends ACellRenderer {
 
   private update = () => {
     if (this.$g !== null) {
-      this.updateYAxis(DataStoreApplicationProperties.weightFactor);
+        this.updateYAxis(DataStoreApplicationProperties.weightFactor);
     }
   }
 
@@ -425,7 +425,7 @@ function getLargestLine(data: Line[]): Line {
   }, data[0]);
 }
 
-export function applyRendererChain2(rendererProto: IMatrixRendererChain, cell: ACell, target: IRendererConfig[]) {
+export function applyRendererChain(rendererProto: IMatrixRendererChain, cell: ACell, target: IRendererConfig[]) {
   let firstRenderer = null;
   target.reduce((acc: ACellRenderer, val: IRendererConfig) => {
     const copy = rendererFactory(val);
@@ -444,9 +444,11 @@ function rendererFactory(proto: IRendererConfig) {
   switch (proto.renderer) {
     case 'HeatmapMultiEpochRenderer':
       return new HeatmapMultiEpochRenderer(proto.params[0]);
+    case 'HeatmapSingleEpochRenderer':
+      return new HeatmapSingleEpochRenderer(proto.params[0], proto.params[1]);
     case 'SingleEpochMarker':
       return new SingleEpochMarker(proto.params[0]);
-    case 'LinechartRenderer':
+    case 'LineChartRenderer':
       return new LineChartRenderer(proto.params[0], proto.params[1]);
     case 'AxisRenderer':
       return new AxisRenderer(proto.params[0], proto.params[1]);
@@ -456,6 +458,8 @@ function rendererFactory(proto: IRendererConfig) {
       return new LabelCellRenderer();
     case 'MatrixLineCellRenderer':
       return new MatrixLineCellRenderer();
+    case 'BarChartRenderer':
+      return new BarChartRenderer();
     default:
       return null;
   }
@@ -464,7 +468,7 @@ function rendererFactory(proto: IRendererConfig) {
 export function createCellRenderers($cells: d3.Selection<any>, renderProto: IMatrixRendererChain) {
   $cells.each((datum, index) => {
     const target = index % 11 !== 0 ? renderProto.offdiagonal : renderProto.diagonal;
-    applyRendererChain2(renderProto, datum, target);
+    applyRendererChain(renderProto, datum, target);
   });
 }
 

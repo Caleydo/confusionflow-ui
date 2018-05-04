@@ -27,7 +27,9 @@ export class ToolbarView implements IAppView {
   }
 
   private attachListeners() {
-    //
+    events.on(AppConstants.EVENT_REDRAW, () => {
+      this.setStateToHeatmap();
+    });
   }
 
   /**
@@ -73,11 +75,15 @@ export class ToolbarView implements IAppView {
         return false;
       }
 
-      DataStoreApplicationProperties.switchCellRenderer = false;
-      $div.selectAll('.active').classed('active', false);
-      $div.select('button.heatmap').classed('active', true);
-      this.$node.select('.toolbar-transpose-cell > button').attr('disabled', null);
+      this.setStateToHeatmap();
     });
+  }
+
+  private setStateToHeatmap() {
+    DataStoreApplicationProperties.switchCellRenderer = false;
+    this.$node.select('div').selectAll('.active').classed('active', false);
+    this.$node.select('div').select('button.heatmap').classed('active', true);
+    this.$node.select('.toolbar-transpose-cell > button').attr('disabled', null);
   }
 
   private createTransposeCellsDiv() {
