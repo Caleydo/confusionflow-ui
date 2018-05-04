@@ -8,7 +8,7 @@ import {ChartColumn} from './ChartColumn';
 import {
   ACellRenderer, MatrixLineCellRenderer,
   VerticalLineRenderer, BarChartRenderer, LabelCellRenderer, HeatmapMultiEpochRenderer, HeatmapSingleEpochRenderer,
-  SingleEpochMarker, IMatrixRendererChain, createCellRenderers, applyRendererChain2, removeListeners
+  SingleEpochMarker, IMatrixRendererChain, createCellRenderers, applyRendererChain, removeListeners
 } from './confusion_matrix_cell/ACellRenderer';
 import {ACell, LabelCell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
 import {zip} from './utils';
@@ -421,7 +421,7 @@ export class ConfusionMatrix implements IAppView {
         };
         const cell = new PanelCell(res, AppConstants.CELL_PRECISION);
         cell.init(d3.select(this));
-        applyRendererChain2(renderer, cell, renderer.diagonal);
+        applyRendererChain(renderer, cell, renderer.diagonal);
         cell.render();
       });
   }
@@ -450,7 +450,7 @@ export class ConfusionMatrix implements IAppView {
       .classed('cell', true)
       .each(function (cell: ACell) {
         cell.init(d3.select(this));
-        applyRendererChain2(renderer, cell, renderer.diagonal);
+        applyRendererChain(renderer, cell, renderer.diagonal);
         cell.render();
       });
 
@@ -464,7 +464,7 @@ export class ConfusionMatrix implements IAppView {
       .classed('cell', true)
       .each(function (cell: ACell) {
         cell.init(d3.select(this));
-        applyRendererChain2(renderer, cell, renderer.diagonal);
+        applyRendererChain(renderer, cell, renderer.diagonal);
         cell.render();
       });
   }

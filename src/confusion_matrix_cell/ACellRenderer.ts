@@ -425,7 +425,7 @@ function getLargestLine(data: Line[]): Line {
   }, data[0]);
 }
 
-export function applyRendererChain2(rendererProto: IMatrixRendererChain, cell: ACell, target: IRendererConfig[]) {
+export function applyRendererChain(rendererProto: IMatrixRendererChain, cell: ACell, target: IRendererConfig[]) {
     let firstRenderer = null;
     target.reduce((acc: ACellRenderer, val: IRendererConfig) => {
     const copy = rendererFactory(val);
@@ -464,7 +464,7 @@ function rendererFactory(proto: IRendererConfig) {
 export function createCellRenderers($cells: d3.Selection<any>, renderProto: IMatrixRendererChain) {
   $cells.each((datum, index) => {
     const target = index % 11 !== 0 ? renderProto.offdiagonal : renderProto.diagonal;
-    applyRendererChain2(renderProto, datum, target);
+    applyRendererChain(renderProto, datum, target);
   });
 }
 
