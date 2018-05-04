@@ -39,7 +39,6 @@ export class ConfusionMatrix implements IAppView {
   private fnColumn: ChartColumn;
   private precisionColumn: ChartColumn;
   private classSizeColumn: ChartColumn;
-  private readonly CONF_SIZE = 10;
   private $cells = null;
 
   constructor(parent: Element) {
@@ -307,7 +306,7 @@ export class ConfusionMatrix implements IAppView {
   }
 
   renderCells(datasets: ILoadedMalevoDataset[]) {
-    this.removeConfusionMatrixCells();
+    this.removeConfusionMatrixCells(); // TODO Try to avoid removing all cells and use D3 enter-update instead
 
     this.fpColumn.$node.selectAll('div').remove();
     this.fnColumn.$node.selectAll('div').remove();
@@ -389,13 +388,13 @@ export class ConfusionMatrix implements IAppView {
     const that = this;
 
     const cellData = data.map((d, index) => {
-      const groundTruth = Math.floor(index / that.CONF_SIZE);
-      if (index % 11 === 0) {
+      const groundTruth = Math.floor(index / AppConstants.CONF_MATRIX_SIZE);
+      if (index % (AppConstants.CONF_MATRIX_SIZE + 1) === 0) {
         return new LabelCell({label: datasets[0].labels[groundTruth]});
       }
       const lineCellContent = data[index].linecell !== null ? data[index].linecell.map((x) => [x]) : null;
       const res = {linecell: lineCellContent, heatcell: data[index].heatcell};
-      const predicted = index % that.CONF_SIZE;
+      const predicted = index % AppConstants.CONF_MATRIX_SIZE;
       return new MatrixCell(res,
         datasets[0].labels[predicted],
         datasets[0].labels[groundTruth],
@@ -509,7 +508,7 @@ export class ConfusionMatrix implements IAppView {
 
   fnPanelData(data: ICellData[]): ICellData[][] {
     data = data.slice(0);
-    const arrays = [], size = this.CONF_SIZE;
+    const arrays = [], size = AppConstants.CONF_MATRIX_SIZE;
     while (data.length > 0) {
       arrays.push(data.splice(0, size));
     }
@@ -518,8 +517,8 @@ export class ConfusionMatrix implements IAppView {
 
   fpPanelData(data: ICellData[]): ICellData[][] {
     const res = [];
-    for (let i = 0; i < this.CONF_SIZE; i++) {
-      res.push(data.filter((x, j) => j % this.CONF_SIZE === i));
+    for (let i = 0; i < AppConstants.CONF_MATRIX_SIZE; i++) {
+      res.push(data.filter((x, j) => j % AppConstants.CONF_MATRIX_SIZE === i));
     }
     return res;
   }

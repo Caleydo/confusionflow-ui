@@ -78,8 +78,15 @@ export class DataStoreApplicationProperties {
   private static _transposeCellRenderer = false;
   private static _switchCellRenderer = false;
   private static _weightFactor = 1;
-  public static renderMode: RenderMode = RenderMode.COMBINED;
+  private static _renderMode: RenderMode = RenderMode.COMBINED;
 
+  static get renderMode(): RenderMode {
+    return this._renderMode;
+  }
+
+  static set renderMode(value: RenderMode) {
+    this._renderMode = value;
+  }
 
   static get transposeCellRenderer(): boolean {
     return this._transposeCellRenderer;

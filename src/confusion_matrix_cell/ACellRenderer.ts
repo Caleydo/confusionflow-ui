@@ -25,7 +25,7 @@ export interface IRendererConfig {
 
 export interface IMatrixRendererChain {
   offdiagonal: IRendererConfig[];
-  diagonal: IRendererConfig[];
+  diagonal: IRendererConfig[]; // also used for 1 dimensional vectors, aka. columns and rows
   functors: {(renderer: ACellRenderer): void;}[];
 }
 
@@ -74,7 +74,7 @@ export class LineChartRenderer extends ACellRenderer {
       .data(data)
       .enter().append('path')
       .classed('instance-line', true)
-      .attr('stroke', (d, _) => d.color)
+      .attr('stroke', (d) => d.color)
       .attr('stroke-opacity', '0.6')
       .append('title')
       .text((d) => d.classLabel);
@@ -321,7 +321,7 @@ export class AxisRenderer extends ACellRenderer {
 
   private update = () => {
     if (this.$g !== null) {
-        this.updateYAxis(DataStoreApplicationProperties.weightFactor);
+      this.updateYAxis(DataStoreApplicationProperties.weightFactor);
     }
   }
 
@@ -442,7 +442,7 @@ export function applyRendererChain(rendererProto: IMatrixRendererChain, cell: AC
 
 function rendererFactory(proto: IRendererConfig) {
   switch (proto.renderer) {
-    case 'HeatmapMultiEpochRenderer':
+    case 'HeatmapMultiEpochRenderer': // TODO Use constants
       return new HeatmapMultiEpochRenderer(proto.params[0]);
     case 'HeatmapSingleEpochRenderer':
       return new HeatmapSingleEpochRenderer(proto.params[0], proto.params[1]);
@@ -467,7 +467,7 @@ function rendererFactory(proto: IRendererConfig) {
 
 export function createCellRenderers($cells: d3.Selection<any>, renderProto: IMatrixRendererChain) {
   $cells.each((datum, index) => {
-    const target = index % 11 !== 0 ? renderProto.offdiagonal : renderProto.diagonal;
+    const target = index % (AppConstants.CONF_MATRIX_SIZE + 1) !== 0 ? renderProto.offdiagonal : renderProto.diagonal;
     applyRendererChain(renderProto, datum, target);
   });
 }
