@@ -75,24 +75,47 @@ export enum RenderMode {
  * Stores every property that is modifiable by the user
  */
 export class DataStoreApplicationProperties {
-  public static transposeCellRenderer = false;
-  public static switchCellRenderer = false;
-  public static weightfactor = 1;
+  private static _transposeCellRenderer = false;
+  private static _switchCellRenderer = false;
+  private static _weightFactor = 1;
   public static renderMode: RenderMode = RenderMode.COMBINED;
 
+
+  static get transposeCellRenderer(): boolean {
+    return this._transposeCellRenderer;
+  }
+
+  static set transposeCellRenderer(value: boolean) {
+    this._transposeCellRenderer = value;
+    events.fire(AppConstants.EVENT_CELL_RENDERER_TRANSPOSED, this.transposeCellRenderer);
+  }
+
   static toggleTransposeCellRenderer() {
-    DataStoreApplicationProperties.transposeCellRenderer = !DataStoreApplicationProperties.transposeCellRenderer;
-    return DataStoreApplicationProperties.transposeCellRenderer;
+    this._transposeCellRenderer = !this._transposeCellRenderer;
+    events.fire(AppConstants.EVENT_CELL_RENDERER_TRANSPOSED, this.transposeCellRenderer);
+  }
+
+  static get switchCellRenderer(): boolean {
+    return this._switchCellRenderer;
+  }
+
+  static set switchCellRenderer(value: boolean) {
+    this._switchCellRenderer = value;
+    events.fire(AppConstants.EVENT_CELL_RENDERER_CHANGED, this.switchCellRenderer);
   }
 
   static toggleSwitchCellRenderer() {
-    DataStoreApplicationProperties.switchCellRenderer = !DataStoreApplicationProperties.switchCellRenderer;
-    return DataStoreApplicationProperties.switchCellRenderer;
+    this._switchCellRenderer = !this._switchCellRenderer;
+    events.fire(AppConstants.EVENT_CELL_RENDERER_CHANGED, this.switchCellRenderer);
   }
 
-  static updateWeightFactor(weightfactor: number) {
-    this.weightfactor = weightfactor;
-    events.fire(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.weightfactor);
+  static get weightFactor(): number {
+    return (this._weightFactor === 0) ? 0.00001 : this._weightFactor;
+  }
+
+  static set weightFactor(value: number) {
+    this._weightFactor = 1 - value;
+    events.fire(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.weightFactor);
   }
 }
 

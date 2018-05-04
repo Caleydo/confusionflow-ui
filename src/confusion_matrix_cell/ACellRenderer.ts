@@ -46,7 +46,7 @@ export abstract class ACellRenderer {
   public abstract removeWeightFactorChangedListener();
 }
 
-export class LinechartRenderer extends ACellRenderer {
+export class LineChartRenderer extends ACellRenderer {
   protected cell: MatrixCell | PanelCell;
 
   private update = () => {
@@ -60,7 +60,7 @@ export class LinechartRenderer extends ACellRenderer {
 
   protected renderLine(data: Line[], $node: d3.Selection<any>) {
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightfactor).domain([0, getLargestLine(data).max]).rangeRound([this.height, 0]);
+    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getLargestLine(data).max]).rangeRound([this.height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -102,7 +102,7 @@ export class LinechartRenderer extends ACellRenderer {
   }
 }
 
-export class MatrixLineCellRenderer extends LinechartRenderer {
+export class MatrixLineCellRenderer extends LineChartRenderer {
   private $svg: d3.Selection<any>;
   constructor() {
     super(0, 0);
@@ -381,7 +381,7 @@ export class AxisRenderer extends ACellRenderer {
       .attr('transform', 'translate(0,' + this.height + ')')
       .call(xAxis);
 
-    this.updateYAxis(DataStoreApplicationProperties.weightfactor);
+    this.updateYAxis(DataStoreApplicationProperties.weightFactor);
 
     this.$g.append('g')
       .attr('class', 'chart-axis-y')

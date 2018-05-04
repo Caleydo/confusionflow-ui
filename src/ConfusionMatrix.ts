@@ -31,6 +31,7 @@ export interface ICellData {
 
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
+  private $matrixWrapper: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
   private $labelsTop: d3.Selection<any>;
   private $labelsLeft: d3.Selection<any>;
@@ -101,11 +102,11 @@ export class ConfusionMatrix implements IAppView {
       .append('div')
       .classed('labels', true);
 
-    const $mwrapper = this.$node.append('div')
+    this.$matrixWrapper = this.$node.append('div')
       .classed('matrix-wrapper', true)
       .attr('data-aspect-ratio', 'one-by-one');
 
-    this.$confusionMatrix = $mwrapper.append('div').classed('matrix', true);
+    this.$confusionMatrix = this.$matrixWrapper.append('div').classed('matrix', true);
 
     const $chartRight = this.$node.append('div').classed('chart-right', true);
     this.fnColumn = new ChartColumn($chartRight.append('div'));
@@ -114,21 +115,31 @@ export class ConfusionMatrix implements IAppView {
 
     const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
     this.fpColumn = new ChartColumn($chartBottom.append('div'));
-
-    this.createTransposeCellsDiv($mwrapper);
-    this.createSwitchCellsVisDiv();
   }
 
-  private createSwitchCellsVisDiv() {
-    const $switchCellsVisDiv = this.$node.append('div')
-      .classed('cfm-switch-cell-vis', true)
-      .html(`
-        <input type="checkbox" id="switch-cell-renderer">
-      `);
+  private attachListeners() {
+    events.on(AppConstants.EVENT_REDRAW, (evt) => {
+      this.clearDetailView();
+      this.updateViews();
+    });
 
-    $switchCellsVisDiv.select('input').on('change', () => {
-      const switched = DataStoreApplicationProperties.toggleSwitchCellRenderer();
+    events.on(AppConstants.EVENT_CELL_RENDERER_TRANSPOSED, (evt, isTransposed) => {
+      this.$matrixWrapper.classed('transpose-cells', isTransposed);
 
+      this.$cells.each((c) => {
+        // pass isTransposed flag to subsequent renderers in the chain
+        let currentMatrixRenderer = (<any>c.renderer);
+        while (currentMatrixRenderer !== null) {
+          if (currentMatrixRenderer.isTransposed !== undefined) {
+            currentMatrixRenderer.isTransposed = isTransposed;
+          }
+          currentMatrixRenderer = currentMatrixRenderer.nextRenderer;
+        }
+      });
+      this.renderConfMatrixCells();
+    });
+
+    events.on(AppConstants.EVENT_CELL_RENDERER_CHANGED, (evt, switched) => {
       this.$cells.each((c) => {
         let currentMatrixRenderer = (<any>c.renderer);
         while (currentMatrixRenderer !== null) {
@@ -157,41 +168,6 @@ export class ConfusionMatrix implements IAppView {
       });
       this.removeConfusionMatrixCellsContent();
       this.renderConfMatrixCells();
-    });
-  }
-
-  private createTransposeCellsDiv($mwrapper: d3.Selection<any>) {
-    const $transposeCellsDiv = this.$node.append('div')
-      .classed('cfm-transpose-cell', true)
-      .html(`
-        <input type="checkbox" class="sr-only" id="transpose-cell-renderer">
-        <label for="transpose-cell-renderer" title="Transpose matrix visualization">
-          <span class="sr-only">Change direction of </span><span>epochs</span>
-        </label>
-      `);
-
-    $transposeCellsDiv.select('input').on('change', () => {
-      const isTransposed = DataStoreApplicationProperties.toggleTransposeCellRenderer();
-      $mwrapper.classed('transpose-cells', isTransposed);
-
-      this.$cells.each((c) => {
-        // pass isTransposed flag to subsequent renderers in the chain
-        let currentMatrixRenderer = (<any>c.renderer);
-        while (currentMatrixRenderer !== null) {
-          if (currentMatrixRenderer.isTransposed !== undefined) {
-            currentMatrixRenderer.isTransposed = isTransposed;
-          }
-          currentMatrixRenderer = currentMatrixRenderer.nextRenderer;
-        }
-      });
-      this.renderConfMatrixCells();
-    });
-  }
-
-  private attachListeners() {
-    events.on(AppConstants.EVENT_REDRAW, (evt) => {
-      this.clearDetailView();
-      this.updateViews();
     });
   }
 
@@ -393,7 +369,7 @@ export class ConfusionMatrix implements IAppView {
 
     const cellData = data.map((d, index) => {
       const groundTruth = Math.floor(index / that.CONF_SIZE);
-      if(index % 11 === 0) {
+      if (index % 11 === 0) {
         return new LabelCell({label: datasets[0].labels[groundTruth]});
       }
       const lineCellContent = data[index].linecell !== null ? data[index].linecell.map((x) => [x]) : null;
@@ -529,7 +505,7 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  fnPanelData(data: ICellData[]): ICellData[][]  {
+  fnPanelData(data: ICellData[]): ICellData[][] {
     data = data.slice(0);
     const arrays = [], size = this.CONF_SIZE;
     while (data.length > 0) {

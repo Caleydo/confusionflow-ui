@@ -1,6 +1,6 @@
 import {Line, MatrixHeatCellContent} from './CellContent';
 import {DataStoreCellSelection} from '../DataStore';
-import {ACellRenderer} from "./ACellRenderer";
+import {ACellRenderer} from './ACellRenderer';
 
 /**
  * Created by Martin on 19.03.2018.
