@@ -17,7 +17,7 @@ export interface IAppView {
    * that is resolved as soon the view is completely initialized.
    * @returns {Promise<IAppView>}
    */
-  init():Promise<IAppView>;
+  init(): Promise<IAppView>;
 
 }
 
@@ -49,8 +49,8 @@ export class App implements IAppView {
 
   private $node;
 
-  private views:IAppViewDesc[] = [
-     {
+  private views: IAppViewDesc[] = [
+    {
       view: 'DataSetSelector',
       parent: 'selector',
       options: {}
@@ -75,14 +75,22 @@ export class App implements IAppView {
       options: {
         eventName: ''
       }
+    },
+    {
+      view: 'ToolbarView',
+      parent: 'toolbar-wrapper',
+      options: {
+        eventName: ''
+      }
     }
   ];
 
-  constructor(parent:Element) {
+  constructor(parent: Element) {
     this.$node = d3.select(parent);
 
     this.$node.append('div').classed('timeline-wrapper', true);
     const $main = this.$node.append('main').classed('main-wrapper', true);
+    $main.append('div').classed('toolbar-wrapper', true);
     $main.append('div').classed('conf-matrix-wrapper', true);
     $main.append('div').classed('details-wrapper', true);
   }
@@ -145,6 +153,6 @@ export class App implements IAppView {
  * @param parent
  * @returns {App}
  */
-export function create(parent:Element) {
+export function create(parent: Element) {
   return new App(parent);
 }

@@ -1,21 +1,21 @@
 import {ADetailViewTab} from './ADetailViewTab';
-import {DataStoreCellSelection, DataStoreTimelineSelection} from '../DataStore';
+import {DataStoreApplicationProperties, DataStoreCellSelection, RenderMode} from '../DataStore';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
-import * as d3_shape from 'd3-shape';
-import {IClassEvolution, max} from '../DataStructures';
 import {Language} from '../language';
-import {App} from '../app';
-import {MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
+import {ACell, MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
 import {
-  AxisRenderer, DetailViewRenderer, MatrixLineCellRenderer,
+  ACellRenderer, applyRendererChain,
+  AxisRenderer, IMatrixRendererChain, LineChartRenderer, removeListeners,
   VerticalLineRenderer
 } from '../confusion_matrix_cell/ACellRenderer';
+import * as events from 'phovea_core/src/event';
 
 export class DetailChartTab extends ADetailViewTab {
   private width: number;
   private height: number;
   private $g: d3.Selection<any> = null;
+  private cell: ACell;
   private $svg: d3.Selection<any> = null;
   private $header: d3.Selection<any> = null;
   public id: string = AppConstants.CHART_VIEW;
@@ -33,13 +33,16 @@ export class DetailChartTab extends ADetailViewTab {
 
     this.$svg = this.$node
       .append('svg')
-      .attr('viewBox', `0 0 ${this.width} 500`);
+      .style('width', '100%')
+      .style('height', '500px')
+      .attr('viewbox', `0 0 ${this.width} 500`);
   }
 
   init(): Promise<DetailChartTab> {
     this.$node.attr('id', this.id);
     return Promise.resolve(this);
   }
+
 
   createHeaderText() {
     let text = '';
@@ -66,8 +69,10 @@ export class DetailChartTab extends ADetailViewTab {
 
   clear() {
     if (this.$g !== null) {
+      this.$header.html('');
       this.$g.remove();
       this.$g = null;
+      removeListeners(this.cell.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]);
     }
   }
 
@@ -88,20 +93,23 @@ export class DetailChartTab extends ADetailViewTab {
     const margin = {top: 5, right: 10, bottom: 140, left: 65}; // set left + bottom to show axis and labels
     this.width = (<any>this.$node[0][0]).clientWidth - margin.left - margin.right;
     this.height = (<any>this.$node[0][0]).clientHeight - margin.top - margin.bottom;
-    if (this.$g !== null) {
-      this.$g.remove();
-    }
 
     this.$g = this.$svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
     this.$g.classed('linechart', true);
 
-    const detailViewCell = new MatrixCell(cell.data, '', '', 0, 0);
-    detailViewCell.init(this.$svg);
-    const renderer = new DetailViewRenderer(this.width, this.height);
-    renderer
-      .setNextRenderer(new AxisRenderer(this.width, this.height))
-      .setNextRenderer(new VerticalLineRenderer(this.width, this.height));
-    renderer.renderNext(detailViewCell);
+    this.cell = new MatrixCell(cell.data, '', '', 0, 0);
+    this.cell.init(this.$svg);
+
+    let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener()];
+    if (cell instanceof PanelCell && cell.type === AppConstants.CELL_PRECISION) {
+      wfc = [];
+    }
+
+    const confMatrixRendererProto: IMatrixRendererChain = {diagonal: [{renderer: 'LineChartRenderer', params:[this.width, this.height]}, {renderer: 'AxisRenderer', params:[this.width, this.height]}, {renderer: 'VerticalLineRenderer',
+      params:[this.width, this.height]}], offdiagonal: null, functors: wfc};
+
+    applyRendererChain(confMatrixRendererProto , this.cell, confMatrixRendererProto.diagonal);
+    this.cell.render();
   }
 }
 

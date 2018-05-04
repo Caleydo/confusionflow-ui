@@ -45,8 +45,6 @@ export class DataStoreTimelineSelection {
  * Stores confusion matrix single cell selection
  */
 export class DataStoreCellSelection {
-  public static transposeCellRenderer = false;
-
   private static cell: ACell = null;
 
   static cellSelected(cell: ACell) {
@@ -64,10 +62,67 @@ export class DataStoreCellSelection {
   static getCell(): ACell {
     return DataStoreCellSelection.cell;
   }
+}
+
+export enum RenderMode {
+  CLEAR = 0,
+  SINGLE = 1,
+  MULTI = 2,
+  COMBINED = 3
+}
+
+/**
+ * Stores every property that is modifiable by the user
+ */
+export class DataStoreApplicationProperties {
+  private static _transposeCellRenderer = false;
+  private static _switchCellRenderer = false;
+  private static _weightFactor = 1;
+  private static _renderMode: RenderMode = RenderMode.COMBINED;
+
+  static get renderMode(): RenderMode {
+    return this._renderMode;
+  }
+
+  static set renderMode(value: RenderMode) {
+    this._renderMode = value;
+  }
+
+  static get transposeCellRenderer(): boolean {
+    return this._transposeCellRenderer;
+  }
+
+  static set transposeCellRenderer(value: boolean) {
+    this._transposeCellRenderer = value;
+    events.fire(AppConstants.EVENT_CELL_RENDERER_TRANSPOSED, this.transposeCellRenderer);
+  }
 
   static toggleTransposeCellRenderer() {
-    DataStoreCellSelection.transposeCellRenderer = !DataStoreCellSelection.transposeCellRenderer;
-    return DataStoreCellSelection.transposeCellRenderer;
+    this._transposeCellRenderer = !this._transposeCellRenderer;
+    events.fire(AppConstants.EVENT_CELL_RENDERER_TRANSPOSED, this.transposeCellRenderer);
+  }
+
+  static get switchCellRenderer(): boolean {
+    return this._switchCellRenderer;
+  }
+
+  static set switchCellRenderer(value: boolean) {
+    this._switchCellRenderer = value;
+    events.fire(AppConstants.EVENT_CELL_RENDERER_CHANGED, this.switchCellRenderer);
+  }
+
+  static toggleSwitchCellRenderer() {
+    this._switchCellRenderer = !this._switchCellRenderer;
+    events.fire(AppConstants.EVENT_CELL_RENDERER_CHANGED, this.switchCellRenderer);
+  }
+
+  static get weightFactor(): number {
+    return (this._weightFactor === 0) ? 0.00001 : this._weightFactor;
+  }
+
+  static set weightFactor(value: number) {
+    this._weightFactor = 1 - value;
+    events.fire(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.weightFactor);
   }
 }
 

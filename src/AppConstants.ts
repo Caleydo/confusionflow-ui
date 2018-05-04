@@ -49,7 +49,29 @@ export class AppConstants {
    */
   static EVENT_REDRAW = 'eventRedraw';
 
+  /**
+   * Fires when a cell in the confusion matrix was selected
+   * @type {string}
+   */
   static EVENT_CELL_SELECTED = 'eventCellSelected';
+
+  /**
+   * Fires when the slider value changes
+   * @type {string}
+   */
+  static EVENT_WEIGHT_FACTOR_CHANGED = 'eventWeightFactorChanged';
+
+  /**
+   * Fires when the matrix cell renderer should be transposed
+   * @type {string}
+   */
+  static EVENT_CELL_RENDERER_TRANSPOSED = 'eventCellRendererTransposed';
+
+  /**
+   * Fires when the matrix cell renderer changed
+   * @type {string}
+   */
+  static EVENT_CELL_RENDERER_CHANGED = 'eventCellRendererChanged';
 
   /**
    * Represent the different cell types
@@ -71,7 +93,18 @@ export class AppConstants {
   static MAX_DATASET_COUNT = 4;
 
   /**
+   * Number of rows and columns of the confusion matrix
+   */
+  static readonly CONF_MATRIX_SIZE = 10;
+
+  /**
    * Size of timeline components
    */
   static TML_HEIGHT = 35;
+
+  /**
+   * Color scale for heatmap cells
+   * @type {[string,string]}
+   */
+  static BG_COLOR_SCALE = ['white', 'gray'];
 }
