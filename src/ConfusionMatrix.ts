@@ -376,7 +376,7 @@ export class ConfusionMatrix implements IAppView {
 
       confMatrixRendererProto = {offdiagonal: [{renderer: 'HeatmapMultiEpochRenderer', params: [DataStoreApplicationProperties.transposeCellRenderer]}], diagonal: [{renderer: 'LabelCellRenderer', params: null}], functors: [this.setWeightUpdateListener]};
       fpfnRendererProto = {
-        diagonal: [{renderer: 'BarChartRenderer', params: null}], offdiagonal: null,
+        diagonal: [{renderer: 'MatrixLineCellRenderer', params: null}], offdiagonal: null,
         functors: [this.setWeightUpdateListener]
       };
       precRendererProto = {

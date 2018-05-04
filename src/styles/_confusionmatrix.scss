@@ -31,7 +31,7 @@ $num-columns-right-area: 3;
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
-  color: darken($label-border, 2%);
+  color: darken($label-border, 10%);
 
   &.axis-top {
     grid-area: axis-top;
