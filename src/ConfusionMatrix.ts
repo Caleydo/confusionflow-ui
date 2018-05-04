@@ -297,7 +297,7 @@ export class ConfusionMatrix implements IAppView {
     this.$confusionMatrix.selectAll('div.cell').each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]));
     this.fpColumn.$node.selectAll('div.cell').each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]));
     this.fnColumn.$node.selectAll('div.cell').each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]));
-    events.off(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, null);
+    events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, null);
   }
 
   renderCells(datasets: ILoadedMalevoDataset[]) {
@@ -333,13 +333,19 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
       singleEpochIndex = data[1].heatcell.indexInMultiSelection;
 
-      confMatrixRendererProto = {offdiagonal: [{renderer: 'HeatmapMultiEpochRenderer', params:[DataStoreApplicationProperties.transposeCellRenderer]},
-        {renderer: 'SingleEpochMarker', params:[DataStoreApplicationProperties.transposeCellRenderer]}], diagonal: [{renderer: 'LabelCellRenderer', params: null}], functors: [this.setWeightUpdateListener]};
+      confMatrixRendererProto = {
+        offdiagonal: [{renderer: 'HeatmapMultiEpochRenderer', params: [DataStoreApplicationProperties.transposeCellRenderer]},
+        {renderer: 'SingleEpochMarker', params: [DataStoreApplicationProperties.transposeCellRenderer]}], diagonal: [{renderer: 'LabelCellRenderer', params: null}], functors: [this.setWeightUpdateListener]
+      };
 
-      fpfnRendererProto = {diagonal: [{renderer: 'MatrixLineCellRenderer', params: null}, {renderer: 'VerticalLineRenderer', params:[-1, -1]}], offdiagonal: null,
-        functors: [this.setWeightUpdateListener]};
-      precRendererProto = {diagonal: [{renderer: 'MatrixLineCellRenderer', params: null}, {renderer: 'VerticalLineRenderer', params:[-1, -1]}], offdiagonal: null,
-        functors: []};
+      fpfnRendererProto = {
+        diagonal: [{renderer: 'MatrixLineCellRenderer', params: null}, {renderer: 'VerticalLineRenderer', params: [-1, -1]}], offdiagonal: null,
+        functors: [this.setWeightUpdateListener]
+      };
+      precRendererProto = {
+        diagonal: [{renderer: 'MatrixLineCellRenderer', params: null}, {renderer: 'VerticalLineRenderer', params: [-1, -1]}], offdiagonal: null,
+        functors: []
+      };
 
     } else if (DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
       singleEpochContent = new SingleEpochCalculator().calculate(datasets);
@@ -359,8 +365,10 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
       singleEpochIndex = null;
 
-      confMatrixRendererProto = {offdiagonal: [new HeatmapMultiEpochRenderer(DataStoreApplicationProperties.transposeCellRenderer)],
-        diagonal: [new LabelCellRenderer()], functors: [this.setWeightUpdateListener]};
+      confMatrixRendererProto = {
+        offdiagonal: [new HeatmapMultiEpochRenderer(DataStoreApplicationProperties.transposeCellRenderer)],
+        diagonal: [new LabelCellRenderer()], functors: [this.setWeightUpdateListener]
+      };
       fpfnRendererProto = {offdiagonal: null, diagonal: [new MatrixLineCellRenderer()], functors: [this.setWeightUpdateListener]};
       precRendererProto = {offdiagonal: null, diagonal: [new MatrixLineCellRenderer(), new VerticalLineRenderer(-1, -1)], functors: []};
     }

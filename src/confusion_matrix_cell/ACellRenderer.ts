@@ -26,7 +26,7 @@ export interface IRendererConfig {
 export interface IMatrixRendererChain {
   offdiagonal: IRendererConfig[];
   diagonal: IRendererConfig[];
-  functors: { (renderer: ACellRenderer): void; } [];
+  functors: {(renderer: ACellRenderer): void;}[];
 }
 
 export abstract class ACellRenderer {
@@ -50,8 +50,8 @@ export class LineChartRenderer extends ACellRenderer {
   protected cell: MatrixCell | PanelCell;
 
   private update = () => {
-      const data: Line[] = [].concat.apply([], this.cell.data.linecell);
-      this.renderLine(data, this.cell.$node);
+    const data: Line[] = [].concat.apply([], this.cell.data.linecell);
+    this.renderLine(data, this.cell.$node);
   }
 
   constructor(protected width: number, protected height: number) {
@@ -83,11 +83,11 @@ export class LineChartRenderer extends ACellRenderer {
   }
 
   public addWeightFactorChangedListener() {
-    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   public removeWeightFactorChangedListener() {
-    events.off(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+    events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   protected render(cell: MatrixCell | PanelCell) {
@@ -264,7 +264,7 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
     const data: Line[] = [].concat.apply([], this.cell.data.linecell);
     const $subCells = this.cell.$node.selectAll('.heat-cell');
     $subCells.style('background', (datum: Line) => {
-      const colorScale = d3.scale.pow().exponent(DataStoreApplicationProperties.weightfactor).domain([0, datum.max]).range(<any>['white', datum.color]);
+      const colorScale = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, datum.max]).range(<any>['white', datum.color]);
       const widthInPercent = 100 / datum.values.length;
       let res = datum.values.reduce((acc, val, index) => {
         return acc + colorScale(val) + ' ' + (index) * widthInPercent + '%, ' + colorScale(val) + ' ' + (index + 1) * widthInPercent + '%, ';
@@ -275,11 +275,11 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
   }
 
   public addWeightFactorChangedListener() {
-    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   public removeWeightFactorChangedListener() {
-    events.off(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+    events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 }
 
@@ -320,8 +320,8 @@ export class AxisRenderer extends ACellRenderer {
   private $g: d3.Selection<any> = null;
 
   private update = () => {
-    if(this.$g !== null) {
-        this.updateYAxis(DataStoreApplicationProperties.weightfactor);
+    if (this.$g !== null) {
+      this.updateYAxis(DataStoreApplicationProperties.weightFactor);
     }
   }
 
@@ -333,15 +333,15 @@ export class AxisRenderer extends ACellRenderer {
   }
 
   public addWeightFactorChangedListener() {
-    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   public removeWeightFactorChangedListener() {
-    events.off(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+    events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   private updateYAxis(value: number) {
-    this.y.exponent(value).domain([0,getLargestLine(this.data).max]).range([this.height,0]);
+    this.y.exponent(value).domain([0, getLargestLine(this.data).max]).range([this.height, 0]);
     this.yAxis.scale(this.y);
     this.$g.select('.chart-axis-y').call(this.yAxis);
   }
@@ -426,28 +426,28 @@ function getLargestLine(data: Line[]): Line {
 }
 
 export function applyRendererChain2(rendererProto: IMatrixRendererChain, cell: ACell, target: IRendererConfig[]) {
-    let firstRenderer = null;
-    target.reduce((acc: ACellRenderer, val: IRendererConfig) => {
+  let firstRenderer = null;
+  target.reduce((acc: ACellRenderer, val: IRendererConfig) => {
     const copy = rendererFactory(val);
     rendererProto.functors.forEach((f) => f(copy));
-    if(acc === null) {
+    if (acc === null) {
       firstRenderer = copy;
       return copy;
     }
     acc.setNextRenderer(copy);
     return copy;
-    }, null);
-    cell.renderer = firstRenderer;
+  }, null);
+  cell.renderer = firstRenderer;
 }
 
 function rendererFactory(proto: IRendererConfig) {
-  switch(proto.renderer) {
+  switch (proto.renderer) {
     case 'HeatmapMultiEpochRenderer':
       return new HeatmapMultiEpochRenderer(proto.params[0]);
     case 'SingleEpochMarker':
       return new SingleEpochMarker(proto.params[0]);
     case 'LinechartRenderer':
-      return new LinechartRenderer(proto.params[0], proto.params[1]);
+      return new LineChartRenderer(proto.params[0], proto.params[1]);
     case 'AxisRenderer':
       return new AxisRenderer(proto.params[0], proto.params[1]);
     case 'VerticalLineRenderer':
@@ -470,7 +470,7 @@ export function createCellRenderers($cells: d3.Selection<any>, renderProto: IMat
 
 export function removeListeners(renderChain: ACellRenderer, funct: ((r: ACellRenderer) => any)[]) {
   let curRenderer = renderChain;
-  while(curRenderer !== null) {
+  while (curRenderer !== null) {
     funct.forEach((f) => f(curRenderer));
     curRenderer = curRenderer.nextRenderer;
   }
