@@ -83,11 +83,11 @@ export class LineChartRenderer extends ACellRenderer {
   }
 
   public addWeightFactorChangedListener() {
-    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   public removeWeightFactorChangedListener() {
-    events.off(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+    events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   protected render(cell: MatrixCell | PanelCell) {
@@ -264,7 +264,7 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
     const data: Line[] = [].concat.apply([], this.cell.data.linecell);
     const $subCells = this.cell.$node.selectAll('.heat-cell');
     $subCells.style('background', (datum: Line) => {
-      const colorScale = d3.scale.pow().exponent(DataStoreApplicationProperties.weightfactor).domain([0, datum.max]).range(<any>['white', datum.color]);
+      const colorScale = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, datum.max]).range(<any>['white', datum.color]);
       const widthInPercent = 100 / datum.values.length;
       let res = datum.values.reduce((acc, val, index) => {
         return acc + colorScale(val) + ' ' + (index) * widthInPercent + '%, ' + colorScale(val) + ' ' + (index + 1) * widthInPercent + '%, ';
@@ -275,11 +275,11 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
   }
 
   public addWeightFactorChangedListener() {
-    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   public removeWeightFactorChangedListener() {
-    events.off(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+    events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 }
 
@@ -321,7 +321,7 @@ export class AxisRenderer extends ACellRenderer {
 
   private update = () => {
     if(this.$g !== null) {
-        this.updateYAxis(DataStoreApplicationProperties.weightfactor);
+        this.updateYAxis(DataStoreApplicationProperties.weightFactor);
     }
   }
 
@@ -333,11 +333,11 @@ export class AxisRenderer extends ACellRenderer {
   }
 
   public addWeightFactorChangedListener() {
-    events.on(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   public removeWeightFactorChangedListener() {
-    events.off(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, this.update);
+    events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   private updateYAxis(value: number) {
@@ -446,8 +446,8 @@ function rendererFactory(proto: IRendererConfig) {
       return new HeatmapMultiEpochRenderer(proto.params[0]);
     case 'SingleEpochMarker':
       return new SingleEpochMarker(proto.params[0]);
-    case 'LinechartRenderer':
-      return new LinechartRenderer(proto.params[0], proto.params[1]);
+    case 'LineChartRenderer':
+      return new LineChartRenderer(proto.params[0], proto.params[1]);
     case 'AxisRenderer':
       return new AxisRenderer(proto.params[0], proto.params[1]);
     case 'VerticalLineRenderer':

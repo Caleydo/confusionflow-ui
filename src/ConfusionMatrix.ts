@@ -297,7 +297,6 @@ export class ConfusionMatrix implements IAppView {
     this.$confusionMatrix.selectAll('div.cell').each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]));
     this.fpColumn.$node.selectAll('div.cell').each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]));
     this.fnColumn.$node.selectAll('div.cell').each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]));
-    events.off(AppConstants.EVENT_WEIGHTFACTOR_CHANGED, null);
   }
 
   renderCells(datasets: ILoadedMalevoDataset[]) {
@@ -316,7 +315,6 @@ export class ConfusionMatrix implements IAppView {
     let multiEpochContent = null;
 
     let data: ICellData[] = null;
-    let datafpfn = null;
     let dataPrecision = null;
 
     let fpfnRendererProto: IMatrixRendererChain = null;
@@ -432,42 +430,21 @@ export class ConfusionMatrix implements IAppView {
     const fpData = this.fpPanelData(data);
     const fnData = this.fnPanelData(data);
 
-    const render = (type: string, data: ICellData[][], index: number, $div: d3.Selection<any>) => {
+    const createCell = (type: string, data: ICellData[][], index: number) => {
       const confusionMatrixRow = data[index].map((x) => x);
       const lineCells = confusionMatrixRow.map((x) => x.linecell);
       const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
-      const cell = new PanelCell({
+      return new PanelCell({
         linecell: res,
         heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
       }, type);
-      cell.init($div);
-      applyRendererChain2(renderer, cell, renderer.diagonal);
-      cell.render();
     };
-
-    const fpData1 = fpData.map((d, index) => {
-      const confusionMatrixRow = fpData[index].map((x) => x);
-      const lineCells = confusionMatrixRow.map((x) => x.linecell);
-      const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
-      return new PanelCell({
-        linecell: res,
-        heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
-      }, AppConstants.CELL_FP);
-    });
-
-    const fnData1 = fnData.map((d, index) => {
-      const confusionMatrixRow = fnData[index].map((x) => x);
-      const lineCells = confusionMatrixRow.map((x) => x.linecell);
-      const res = lineCells[index] !== null ? lineCells[0].map((_, i) => lineCells.map((elem, j) => lineCells[j][i])) : null;
-      return new PanelCell({
-        linecell: res,
-        heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
-      }, AppConstants.CELL_FN);
-    });
 
     this.fpColumn.$node
       .selectAll('div')
-      .data(fpData1)
+      .data(fpData.map((d, index) => {
+        return createCell(AppConstants.CELL_FP, fpData, index);
+      }))
       .enter()
       .append('div')
       .classed('cell', true)
@@ -479,7 +456,9 @@ export class ConfusionMatrix implements IAppView {
 
     this.fnColumn.$node
       .selectAll('div')
-      .data(fnData1)
+      .data(fnData.map((d, index) => {
+        return createCell(AppConstants.CELL_FN, fnData, index);
+      }))
       .enter()
       .append('div')
       .classed('cell', true)

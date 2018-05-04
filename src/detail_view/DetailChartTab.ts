@@ -102,7 +102,7 @@ export class DetailChartTab extends ADetailViewTab {
     this.cell.init(this.$svg);
 
     const wfc = (renderer: ACellRenderer) => renderer.addWeightFactorChangedListener();
-    const confMatrixRendererProto: IMatrixRendererChain = {diagonal: [{renderer: 'LinechartRenderer', params:[this.width, this.height]}, {renderer: 'AxisRenderer', params:[this.width, this.height]}, {renderer: 'VerticalLineRenderer',
+    const confMatrixRendererProto: IMatrixRendererChain = {diagonal: [{renderer: 'LineChartRenderer', params:[this.width, this.height]}, {renderer: 'AxisRenderer', params:[this.width, this.height]}, {renderer: 'VerticalLineRenderer',
       params:[this.width, this.height]}], offdiagonal: null, functors: [wfc]};
 
     applyRendererChain2(confMatrixRendererProto , this.cell, confMatrixRendererProto.diagonal);
