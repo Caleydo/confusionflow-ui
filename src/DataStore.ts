@@ -64,6 +64,13 @@ export class DataStoreCellSelection {
   }
 }
 
+export enum RenderMode {
+  CLEAR = 0,
+  SINGLE = 1,
+  MULTI = 2,
+  COMBINED = 3
+}
+
 /**
  * Stores every property that is modifiable by the user
  */
@@ -71,6 +78,7 @@ export class DataStoreApplicationProperties {
   private static _transposeCellRenderer = false;
   private static _switchCellRenderer = false;
   private static _weightFactor = 1;
+  public static renderMode: RenderMode = RenderMode.COMBINED;
 
 
   static get transposeCellRenderer(): boolean {
