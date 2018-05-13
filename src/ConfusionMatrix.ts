@@ -87,7 +87,7 @@ export class ConfusionMatrix implements IAppView {
     this.$node.append('div')
       .classed('malevo-label', true)
       .classed('label-bottom', true)
-      .text(Language.FP);
+      .html(`<span>${Language.FP}</span>`);
 
     this.$labelsTop = this.$node.append('div')
       .classed('malevo-label', true)
@@ -277,7 +277,7 @@ export class ConfusionMatrix implements IAppView {
       .classed('label-cell', true);
 
     $cells
-      .text((datum: string) => datum);
+      .html((datum: string) => `<span>${datum}</span>`);
 
     $cells.exit().remove();
   }
@@ -296,7 +296,10 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private detachListeners() {
-    const remove = (element: d3.Selection<any>) => element.selectAll('div.cell').each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]));
+    const remove = (element: d3.Selection<any>) => {
+      return element.selectAll('div.cell')
+        .each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]));
+    };
     remove(this.$confusionMatrix);
     remove(this.fpColumn.$node);
     remove(this.fnColumn.$node);
@@ -373,11 +376,11 @@ export class ConfusionMatrix implements IAppView {
 
       confMatrixRendererProto = {offdiagonal: [{renderer: 'HeatmapMultiEpochRenderer', params: [DataStoreApplicationProperties.transposeCellRenderer]}], diagonal: [{renderer: 'LabelCellRenderer', params: null}], functors: [this.setWeightUpdateListener]};
       fpfnRendererProto = {
-        diagonal: [{renderer: 'BarChartRenderer', params: null}], offdiagonal: null,
+        diagonal: [{renderer: 'MatrixLineCellRenderer', params: null}], offdiagonal: null,
         functors: [this.setWeightUpdateListener]
       };
       precRendererProto = {
-        diagonal: [{renderer: 'MatrixLineCellRenderer', params: null}, {renderer: 'VerticalLineRenderer', params: [-1, -1]}], offdiagonal: null,
+        diagonal: [{renderer: 'MatrixLineCellRenderer', params: null}], offdiagonal: null,
         functors: []
       };
     }

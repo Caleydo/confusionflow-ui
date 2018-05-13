@@ -5,14 +5,22 @@
 // number of columns placed to the right of the confusion matrix
 $num-columns-right-area: 3;
 
-.grid {
-  display: grid;
-  grid-template-areas: ". axis-top axis-top ." ". . label-top label-right" "axis-left label-left matrix chart-right" ". label-bottom chart-bottom .";
-  grid-template-columns: 40px 50px auto minmax(100px, 200px);
-  grid-template-rows: 40px 50px auto minmax(60px, 1fr);
+@mixin rotateSpanLabel() {
+  > span {
+    display: block;
+    transform: rotate(-180deg);
+    writing-mode: vertical-lr;
+    white-space: nowrap;
+  }
 }
 
-.cfm-axis,
+.grid {
+  display: grid;
+  grid-template-areas: ". . axis-top . ." ". . label-top . label-right" "axis-left label-left matrix . chart-right" ". . . . ." ". label-bottom chart-bottom . .";
+  grid-template-columns: 20px 45px auto 10px minmax(100px, 240px);
+  grid-template-rows: 20px 45px auto 10px minmax(60px, 1fr);
+}
+
 .malevo-label {
   font-weight: 500;
   font-size: 16px;
@@ -21,22 +29,22 @@ $num-columns-right-area: 3;
 .cfm-axis {
   background: $label-bg;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
+  color: darken($label-border, 10%);
 
   &.axis-top {
     grid-area: axis-top;
+    border-bottom: 1px solid lighten($label-border, 5%);
+    padding-left: 10px;
   }
 
   &.axis-left {
     grid-area: axis-left;
+    border-right: 1px solid lighten($label-border, 5%);
+    padding-top: 10px;
 
-    > span {
-      display: block;
-      transform: rotate(-180deg);
-      writing-mode: vertical-lr;
-      white-space: nowrap;
-    }
+    @include rotateSpanLabel();
   }
 }
 
@@ -60,6 +68,8 @@ $num-columns-right-area: 3;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @include rotateSpanLabel();
 }
 
 .label-top {
@@ -74,6 +84,10 @@ $num-columns-right-area: 3;
   position: relative;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+
+  .label-cell {
+    @include rotateSpanLabel();
+  }
 }
 
 .chart-right {

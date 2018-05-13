@@ -36,7 +36,7 @@ class SingleEpochSelector {
 }
 
 export class OverallTimeline {
-  public dataPoints:string[] = [];
+  public dataPoints: string[] = [];
 }
 
 export class TimelineData {
@@ -52,7 +52,7 @@ export class TimelineData {
 
     epochs.sort(sortNumber);
     const length = epochs[epochs.length - 1].id;
-    for(let i = 0; i <= length; i++) {
+    for (let i = 0; i <= length; i++) {
       const epoch = epochs.find((x) => x.id === i);
       const dp = epoch ? new DataPoint(true, i, epoch) : new DataPoint(false, i, epoch);
       this.datapoints.push(dp);
@@ -69,20 +69,21 @@ class DataPoint {
 export class Timeline {
   private $node: d3.Selection<any> = null;
   private $label: d3.Selection<any> = null;
-  data:TimelineData = null;
+  data: TimelineData = null;
   singleEpochSelector = null;
-  MARGIN_LEFT = 20; // 20 pixel margin from left border
+  readonly MARGIN_LEFT = 0; // 20 pixel margin from left border
+  readonly SHOW_LABEL = false;
   readonly tickmarkDistance = 5; // show ticks every 5 epoch
   readonly globalOffsetV = 15;
   private eventTimelineChangedListener = (evt: any, src: Timeline) => this.eventTimelineChanged(src);
 
   constructor(public datasetName: string, $parent: d3.Selection<any>) {
-   this.build($parent);
-   this.attachListeners();
+    this.build($parent);
+    this.attachListeners();
   }
 
   build($parent) {
-    if(this.$node) {
+    if (this.$node) {
       this.$node.remove();
     }
     this.$node = $parent.append('g')
@@ -92,7 +93,7 @@ export class Timeline {
 
   private eventTimelineChanged(src: Timeline) {
     // synchronizes single epoch marker
-    if(this.singleEpochSelector === null || src === this) {
+    if (this.singleEpochSelector === null || src === this) {
       return;
     }
     this.singleEpochSelector.setPosition(src.singleEpochSelector.curPos);
@@ -109,8 +110,12 @@ export class Timeline {
   }
 
   createLabel(datasetName: string) {
+    if (!this.SHOW_LABEL) {
+      return;
+    }
+
     this.$label = this.$node.append('g')
-      .attr('transform', 'translate(0,' + this.globalOffsetV +')')
+      .attr('transform', 'translate(0,' + this.globalOffsetV + ')')
       .append('text')
       .classed('tml-label', true)
       .style('fill', dataStoreTimelines.get(this.datasetName).datasetColor)
@@ -118,7 +123,11 @@ export class Timeline {
   }
 
   getDSLabelWidth(): number {
-    return (<any>this.$label[0][0]).getBBox().width;
+    return (this.$label) ? (<any>this.$label[0][0]).getBBox().width : 0;
+  }
+
+  getWidth(): number {
+    return (<any>this.$node[0][0]).getBBox().width;
   }
 
   node(): d3.Selection<any> {
@@ -164,7 +173,7 @@ export class Timeline {
       .style('fill', dataStoreTimelines.get(this.datasetName).datasetColor);
 
     brush.on('brush', () => this.brushmove(x, brush))
-         .on('brushend', () => that.brushAndFire(x, brush));
+      .on('brushend', () => that.brushAndFire(x, brush));
 
     const brushHeight = 15;
     $brushg.selectAll('rect')
@@ -173,15 +182,18 @@ export class Timeline {
     this.createSingleSelector(width, offsetH, x);
     this.setBrush(brush, x, width);
 
-    this.$label.on('dblclick', () => {
-      // if at least 1 epoch was selected
-      if(!brush.empty()) {
-        //to clear the brush, call this.setBrush(brush, x, 0);
-        this.setBrush(brush, x, width);
-        events.fire(AppConstants.EVENT_REDRAW);
-      }
+    if (this.$label) {
+      this.$label.on('dblclick', () => {
+        // if at least 1 epoch was selected
+        if (!brush.empty()) {
+          //to clear the brush, call this.setBrush(brush, x, 0);
+          this.setBrush(brush, x, width);
+          events.fire(AppConstants.EVENT_REDRAW);
+        }
 
-    });
+      });
+
+    }
   }
 
   setBrush(brush: any, x: any, width: number) {
@@ -203,14 +215,14 @@ export class Timeline {
 
       // this can happen when the timeline  is too long and has no tickmarks
       // the timeline needs to be cropped (see https://github.com/Caleydo/malevo/pull/87)
-      if(pos >= this.data.datapoints.length) {
+      if (pos >= this.data.datapoints.length) {
         pos = this.data.datapoints.length - 1;
       }
       const upperIndex = this.ceil(pos);
       const lowerIndex = this.floor(pos);
 
       console.assert(upperIndex >= pos && pos >= lowerIndex);
-      if(upperIndex - pos > pos - lowerIndex) {
+      if (upperIndex - pos > pos - lowerIndex) {
         return lowerIndex;
       } else {
         return upperIndex;
@@ -237,13 +249,13 @@ export class Timeline {
         $singleSelectionMarker.attr('x', x(pos.toString()));
       })
       .on('mouseup', function () {
-          let pos = posFromCoordinates(d3.mouse(this));
-          pos = getNearestExistPos(pos);
-          tml.singleEpochSelector.setPosition(pos);
-          // toggle single epoch selector
-          tml.updateSingleSelection();
-          events.fire(AppConstants.EVENT_TIMELINE_CHANGED, tml);
-          events.fire(AppConstants.EVENT_REDRAW);
+        let pos = posFromCoordinates(d3.mouse(this));
+        pos = getNearestExistPos(pos);
+        tml.singleEpochSelector.setPosition(pos);
+        // toggle single epoch selector
+        tml.updateSingleSelection();
+        events.fire(AppConstants.EVENT_TIMELINE_CHANGED, tml);
+        events.fire(AppConstants.EVENT_REDRAW);
       })
       .on('mouseleave', function () {
         $singleSelectionMarker.classed('hidden', true);
@@ -251,13 +263,13 @@ export class Timeline {
   }
 
   ceil(val: number) {
-    if(val < 0) {
+    if (val < 0) {
       return 0;
-    } else if(val >= this.data.datapoints.length) {
+    } else if (val >= this.data.datapoints.length) {
       return this.data.datapoints.length - 1;
     }
-    for(let i = val; i < this.data.datapoints.length; i++) {
-      if(this.data.datapoints[i].exists) {
+    for (let i = val; i < this.data.datapoints.length; i++) {
+      if (this.data.datapoints[i].exists) {
         return i;
       }
     }
@@ -265,26 +277,26 @@ export class Timeline {
   }
 
   floor(val: number) {
-    if(val < 0) {
+    if (val < 0) {
       return 0;
-    } else if(val >= this.data.datapoints.length) {
+    } else if (val >= this.data.datapoints.length) {
       return this.data.datapoints.length - 1;
     }
-    for(let i = val; i >= 0; i--) {
-      if(this.data.datapoints[i].exists) {
+    for (let i = val; i >= 0; i--) {
+      if (this.data.datapoints[i].exists) {
         return i;
       }
     }
     return null;
   }
 
-  brushmove(x: any, brush:any) {
+  brushmove(x: any, brush: any) {
     const extent = brush.extent();
     const y = d3.scale.linear().range(x.domain()).domain(x.range());
 
-    if(!brush.empty()) {
+    if (!brush.empty()) {
       const range = this.getDataIndices(+y(<number>extent[0]), +y(<number>extent[1]));
-      if(range[0] < range[1]) {
+      if (range[0] < range[1]) {
         this.$node.select('g.brush').call(<any>brush.extent([y.invert(range[0]), y.invert(range[1])]));
         this.singleEpochSelector.setPosition(range[1]);
         this.singleEpochSelector.hideNode(false);
@@ -302,7 +314,7 @@ export class Timeline {
 
   brushend(x: any, brush: any) {
     // if at least 1 epoch was selected
-    if(!brush.empty()) {
+    if (!brush.empty()) {
       const extent = brush.extent();
       const y = d3.scale.linear().range(x.domain()).domain(x.range());
       const range = this.getDataIndices(+y(<number>extent[0]), +y(<number>extent[1]));
@@ -322,8 +334,8 @@ export class Timeline {
 
   getSelectedEpochs(range: [number, number]) {
     const selEpochs = [];
-    for(let i = range[0]; i <= range[1]; i++) {
-      if(this.data.datapoints[i].exists) {
+    for (let i = range[0]; i <= range[1]; i++) {
+      if (this.data.datapoints[i].exists) {
         selEpochs.push(this.data.datapoints[i].epoch);
       }
     }
@@ -331,7 +343,7 @@ export class Timeline {
   }
 
   getDataIndices(n0: number, n1: number): [number, number] {
-    if(n0 > n1) {
+    if (n0 > n1) {
       const tmp = n1;
       n1 = n0;
       n0 = tmp;
@@ -340,14 +352,14 @@ export class Timeline {
     n0 = Math.round(n0);
     n1 = Math.round(n1);
     const brushStart = this.ceil(Math.ceil(n0));
-    const brushEnd =  this.ceil(Math.ceil(n1));
+    const brushEnd = this.ceil(Math.ceil(n1));
 
     return [brushStart, brushEnd];
   }
 
   updateSingleSelection() {
     dataStoreTimelines.get(this.datasetName).clearSingleSelection();
-    if(!this.singleEpochSelector.hidden) {
+    if (!this.singleEpochSelector.hidden) {
       console.assert(this.data.datapoints[this.singleEpochSelector.curPos].exists);
       const epoch = this.data.datapoints[this.singleEpochSelector.curPos].epoch;
       console.assert(!!epoch);

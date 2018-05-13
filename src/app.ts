@@ -88,8 +88,8 @@ export class App implements IAppView {
   constructor(parent: Element) {
     this.$node = d3.select(parent);
 
-    this.$node.append('div').classed('timeline-wrapper', true);
     const $main = this.$node.append('main').classed('main-wrapper', true);
+    $main.append('div').classed('timeline-wrapper', true);
     $main.append('div').classed('toolbar-wrapper', true);
     $main.append('div').classed('conf-matrix-wrapper', true);
     $main.append('div').classed('details-wrapper', true);

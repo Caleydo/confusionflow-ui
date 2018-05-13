@@ -241,30 +241,24 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
   protected render(cell: MatrixCell | PanelCell) {
     this.cell = cell;
     const data: Line[] = [].concat.apply([], cell.data.linecell);
-    const gradientDirection = (this.isTransposed) ? 'to bottom' : 'to right';
 
     const $subCells = cell.$node
       .selectAll('div')
       .data(data);
 
     $subCells.enter().append('div').classed('heat-cell', true);
-    $subCells.style('background', (datum: Line) => {
-      const colorScale = d3.scale.linear().domain([0, datum.max]).range(<any>['white', datum.color]);
-      const widthInPercent = 100 / datum.values.length;
-      let res = datum.values.reduce((acc, val, index) => {
-        return acc + colorScale(val) + ' ' + (index) * widthInPercent + '%, ' + colorScale(val) + ' ' + (index + 1) * widthInPercent + '%, ';
-      }, '');
-      res = res.substring(0, res.length - 2);
-      return `linear-gradient(${gradientDirection}, ${res})`;
-    });
+    this.update();
+  }
+
+  private getColorScale(datum: Line) {
+    return d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, datum.max]).range(<any>['white', datum.color]);
   }
 
   private update = () => {
     const gradientDirection = (this.isTransposed) ? 'to bottom' : 'to right';
-    const data: Line[] = [].concat.apply([], this.cell.data.linecell);
     const $subCells = this.cell.$node.selectAll('.heat-cell');
     $subCells.style('background', (datum: Line) => {
-      const colorScale = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, datum.max]).range(<any>['white', datum.color]);
+      const colorScale = this.getColorScale(datum);
       const widthInPercent = 100 / datum.values.length;
       let res = datum.values.reduce((acc, val, index) => {
         return acc + colorScale(val) + ' ' + (index) * widthInPercent + '%, ' + colorScale(val) + ' ' + (index + 1) * widthInPercent + '%, ';
