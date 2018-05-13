@@ -380,7 +380,7 @@ export class ConfusionMatrix implements IAppView {
         functors: [this.setWeightUpdateListener]
       };
       precRendererProto = {
-        diagonal: [{renderer: 'MatrixLineCellRenderer', params: null}, {renderer: 'VerticalLineRenderer', params: [-1, -1]}], offdiagonal: null,
+        diagonal: [{renderer: 'MatrixLineCellRenderer', params: null}], offdiagonal: null,
         functors: []
       };
     }
