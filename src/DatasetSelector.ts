@@ -24,6 +24,10 @@ class DataSetSelector implements IAppView {
 
   private $node;
   private $select;
+  private select2Options = {
+    maximumSelectionLength: AppConstants.MAX_DATASET_COUNT,
+    placeholder: Language.DATASET
+  };
 
   constructor() {
     this.$node = d3.select('.navbar-header')
@@ -63,10 +67,7 @@ class DataSetSelector implements IAppView {
 
     const that = this;
     (<any>$(this.$select.node()))
-      .select2({
-        maximumSelectionLength: AppConstants.MAX_DATASET_COUNT,
-        placeholder: Language.DATASET
-      })
+      .select2(this.select2Options)
       .on('select2:select', (evt) => {
         const dataset = d3.select(evt.params.data.element).data()[0];
         DataStoreDatasetSelection.datasetAdded(dataset);
@@ -114,7 +115,7 @@ class DataSetSelector implements IAppView {
         // set initial dataset
         if(Object.keys(data).length > 0) {
           const x = data[Object.keys(data)[0]];
-          $('#dataset-selector').select2().val(x.name).trigger('change');
+          $('#dataset-selector').select2(this.select2Options).val(x.name).trigger('change');
           DataStoreDatasetSelection.datasetAdded(x);
           this.updateSelectorColors();
         }
