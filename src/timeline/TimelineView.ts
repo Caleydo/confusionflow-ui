@@ -14,6 +14,7 @@ export default class TimelineView implements IAppView {
   private readonly $node: d3.Selection<any>;
   private timelineData: TimelineCollection;
   private width: number;
+  private readonly padding = 10;
 
   constructor(parent: Element) {
     this.width = parent.clientWidth;
@@ -28,7 +29,7 @@ export default class TimelineView implements IAppView {
   }
 
   updateSvg(timeLineCount: number, maxWidth: number) {
-    this.$node.attr('viewBox', `0 0 ${Math.max(this.width, maxWidth)} ${(timeLineCount) * AppConstants.TML_HEIGHT}`);
+    this.$node.attr('viewBox', `0 0 ${Math.max(this.width, maxWidth) + this.padding} ${(timeLineCount) * AppConstants.TML_HEIGHT}`);
     this.$node.attr('height', '100%');
     this.$node.classed('hidden', timeLineCount === 0);
   }
