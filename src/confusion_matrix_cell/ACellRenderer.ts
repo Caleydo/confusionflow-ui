@@ -60,12 +60,9 @@ export class LineChartRenderer extends ACellRenderer {
     super();
   }
 
-  private getYMax(data: Line[]) {
-    return DataStoreApplicationProperties.switchToAbsolute ? getLargestLine(data).max : 1;
-  }
   protected renderLine(data: Line[], $node: d3.Selection<any>) {
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, this.getYMax(data)]).rangeRound([this.height, 0]);
+    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(data)]).rangeRound([this.height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -84,7 +81,7 @@ export class LineChartRenderer extends ACellRenderer {
       .append('title')
       .text((d) => d.classLabel);
 
-    $node.select('g').selectAll('.instance-line').attr('d', (d) => line(d.values));
+    $node.select('g').selectAll('.instance-line').attr('d', (d) => line(DataStoreApplicationProperties.switchToAbsolute ? d.values : d.valuesInPercent));
   }
 
   public addWeightFactorChangedListener() {
@@ -360,8 +357,16 @@ export class AxisRenderer extends ACellRenderer {
     events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
+  public addYAxisScaleChangedListener() {
+    events.on(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
+  }
+
+  public removeYAxisScaleChangedListener() {
+    events.off(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
+  }
+
   private updateYAxis(value: number) {
-    this.y.exponent(value).domain([0, getLargestLine(this.data).max]).range([this.height, 0]);
+    this.y.exponent(value).domain([0, getYMax(this.data)]).range([this.height, 0]);
     this.yAxis.scale(this.y);
     this.$g.select('.chart-axis-y').call(this.yAxis);
   }
@@ -383,7 +388,7 @@ export class AxisRenderer extends ACellRenderer {
 
     const y = d3.scale.linear()
       .rangeRound([this.height, 0])
-      .domain([0, getLargestLine(this.data).max]);
+      .domain([0, getYMax(this.data)]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
     let tickFrequency = 1;
@@ -436,9 +441,6 @@ export class AxisRenderer extends ACellRenderer {
     }
     return text;
   }
-
-  public addYAxisScaleChangedListener() {}
-  public removeYAxisScaleChangedListener() {}
 }
 
 function getLargestLine(data: Line[]): Line {
@@ -502,3 +504,8 @@ export function removeListeners(renderChain: ACellRenderer, funct: ((r: ACellRen
     curRenderer = curRenderer.nextRenderer;
   }
 }
+
+export function getYMax(data: Line[]) {
+  return DataStoreApplicationProperties.switchToAbsolute ? getLargestLine(data).max : 1;
+}
+

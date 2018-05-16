@@ -442,7 +442,7 @@ export class ConfusionMatrix implements IAppView {
       .classed('cell', true)
       .each(function (datum, index) {
         const res = {
-          linecell: datum.map((x, i) => [{values: x, valuesInPercent: [], max: maxVal, classLabel: labels[index], color: colors[i]}]),
+          linecell: datum.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: labels[index], color: colors[i]}]),
           heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
         };
         const cell = new PanelCell(res, AppConstants.CELL_PRECISION);
