@@ -72,7 +72,7 @@ export class DetailChartTab extends ADetailViewTab {
       this.$header.html('');
       this.$g.remove();
       this.$g = null;
-      removeListeners(this.cell.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]);
+      removeListeners(this.cell.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener(), (r: ACellRenderer) => r.removeYAxisScaleChangedListener()]);
     }
   }
 

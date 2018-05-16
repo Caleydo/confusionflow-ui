@@ -299,7 +299,7 @@ export class ConfusionMatrix implements IAppView {
   private detachListeners() {
     const remove = (element: d3.Selection<any>) => {
       return element.selectAll('div.cell')
-        .each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]));
+        .each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener(), (r: ACellRenderer) => r.removeYAxisScaleChangedListener()]));
     };
     remove(this.$confusionMatrix);
     remove(this.fpColumn.$node);
