@@ -29,7 +29,7 @@ export class ToolbarView implements IAppView {
   private attachListeners() {
     events.on(AppConstants.EVENT_REDRAW, () => {
       this.setStateToHeatmap();
-      this.setStateToAbsolute();
+      this.setStateToRelative();
     });
   }
 
@@ -52,11 +52,11 @@ export class ToolbarView implements IAppView {
       .attr('role', 'group')
       .html(`
         <button class="btn btn-default absolute" title="Switch to absolute">
-          <i class="fa fa-line-chart"></i>
+          <i class="fa fa-cloud"></i>
           <span class="sr-only">&nbsp; Absolute Misclassification</span>
         </button>
-        <button class="btn btn-default relative active" title="Switch to proportional">
-          <i class="fa fa-barcode"></i>
+        <button class="btn btn-default relative active" title="Switch to relative">
+          <i class="fa fa-percent"></i>
           <span class="sr-only">&nbsp; Relative Misclassifications</span>
         </button>
       `);
@@ -68,21 +68,22 @@ export class ToolbarView implements IAppView {
 
       DataStoreApplicationProperties.switchToAbsolute = true;
       $div.selectAll('.active').classed('active', false);
+      $div.select('button.absolute').classed('active', true);
     });
 
     $div.select('button.relative').on('click', () => {
       if (DataStoreApplicationProperties.switchToAbsolute === false) {
-        return false;
+        return;
       }
 
-      this.setStateToAbsolute();
+      this.setStateToRelative();
     });
   }
 
-  private setStateToAbsolute() {
+  private setStateToRelative() {
     DataStoreApplicationProperties.switchToAbsolute = false;
-    this.$node.select('div').selectAll('.active').classed('active', false);
-    this.$node.select('div').select('button.relative').classed('active', true);
+    this.$node.select('div.toolbar-switch-y-axis-scale').selectAll('.active').classed('active', false);
+    this.$node.select('div.toolbar-switch-y-axis-scale').select('button.relative').classed('active', true);
   }
 
   private createSwitchCellsVisDiv() {
@@ -114,7 +115,7 @@ export class ToolbarView implements IAppView {
 
     $div.select('button.heatmap').on('click', () => {
       if (DataStoreApplicationProperties.switchCellRenderer === false) {
-        return false;
+        return;
       }
 
       this.setStateToHeatmap();
@@ -123,8 +124,8 @@ export class ToolbarView implements IAppView {
 
   private setStateToHeatmap() {
     DataStoreApplicationProperties.switchCellRenderer = false;
-    this.$node.select('div').selectAll('.active').classed('active', false);
-    this.$node.select('div').select('button.heatmap').classed('active', true);
+    this.$node.select('div.toolbar-switch-cell-vis').selectAll('.active').classed('active', false);
+    this.$node.select('div.toolbar-switch-cell-vis').select('button.heatmap').classed('active', true);
     this.$node.select('.toolbar-transpose-cell > button').attr('disabled', null);
   }
 

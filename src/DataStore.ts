@@ -77,7 +77,7 @@ export enum RenderMode {
 export class DataStoreApplicationProperties {
   private static _transposeCellRenderer = false;
   private static _switchCellRenderer = false;
-  private static _switchToAbsolute = false;
+  private static _isAbsolute = false;
   private static _weightFactor = 1;
   private static _renderMode: RenderMode = RenderMode.COMBINED;
 
@@ -127,11 +127,11 @@ export class DataStoreApplicationProperties {
   }
 
   static get switchToAbsolute(): boolean {
-    return this._switchToAbsolute;
+    return this._isAbsolute;
   }
 
   static set switchToAbsolute(val: boolean) {
-    this._switchToAbsolute = val;
+    this._isAbsolute = val;
     events.fire(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.switchToAbsolute);
   }
 }

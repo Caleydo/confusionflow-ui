@@ -149,6 +149,7 @@ export class ConfusionMatrix implements IAppView {
             removeListeners(currentMatrixRenderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener(), (r: ACellRenderer) => r.removeYAxisScaleChangedListener()]);
             c.renderer = new MatrixLineCellRenderer();
             this.setWeightUpdateListener(c.renderer);
+            this.setYAxisScaleListener(c.renderer);
             if (DataStoreApplicationProperties.renderMode === RenderMode.COMBINED) {
               c.renderer.setNextRenderer(new HeatmapSingleEpochRenderer(false, true))
                 .setNextRenderer(new VerticalLineRenderer(-1, -1));
@@ -159,6 +160,7 @@ export class ConfusionMatrix implements IAppView {
             removeListeners(currentMatrixRenderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener(), (r: ACellRenderer) => r.removeYAxisScaleChangedListener()]);
             c.renderer = new HeatmapMultiEpochRenderer(DataStoreApplicationProperties.transposeCellRenderer);
             this.setWeightUpdateListener(c.renderer);
+            this.setYAxisScaleListener(c.renderer);
             if (DataStoreApplicationProperties.renderMode === RenderMode.COMBINED) {
               c.renderer.setNextRenderer(new SingleEpochMarker(DataStoreApplicationProperties.transposeCellRenderer));
             }
