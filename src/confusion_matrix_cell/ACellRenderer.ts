@@ -295,8 +295,13 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
     events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
-  public addYAxisScaleChangedListener() {}
-  public removeYAxisScaleChangedListener() {}
+  public addYAxisScaleChangedListener() {
+    events.on(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
+  }
+
+  public removeYAxisScaleChangedListener() {
+    events.off(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
+  }
 }
 
 export class HeatmapSingleEpochRenderer extends ACellRenderer {
