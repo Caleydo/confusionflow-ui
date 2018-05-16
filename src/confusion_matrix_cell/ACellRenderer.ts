@@ -44,6 +44,8 @@ export abstract class ACellRenderer {
   protected abstract render(cell: ACell);
   public abstract addWeightFactorChangedListener();
   public abstract removeWeightFactorChangedListener();
+  public abstract addYAxisScaleChangedListener();
+  public abstract removeYAxisScaleChangedListener();
 }
 
 export class LineChartRenderer extends ACellRenderer {
@@ -58,9 +60,12 @@ export class LineChartRenderer extends ACellRenderer {
     super();
   }
 
+  private getYMax(data: Line[]) {
+    return DataStoreApplicationProperties.switchToAbsolute ? getLargestLine(data).max : 1;
+  }
   protected renderLine(data: Line[], $node: d3.Selection<any>) {
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getLargestLine(data).max]).rangeRound([this.height, 0]);
+    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, this.getYMax(data)]).rangeRound([this.height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -88,6 +93,14 @@ export class LineChartRenderer extends ACellRenderer {
 
   public removeWeightFactorChangedListener() {
     events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
+  }
+
+  public addYAxisScaleChangedListener() {
+    events.on(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
+  }
+
+  public removeYAxisScaleChangedListener() {
+    events.off(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
   }
 
   protected render(cell: MatrixCell | PanelCell) {
@@ -176,6 +189,8 @@ export class VerticalLineRenderer extends ACellRenderer {
 
   public addWeightFactorChangedListener() {}
   public removeWeightFactorChangedListener() {}
+  public addYAxisScaleChangedListener() {}
+  public removeYAxisScaleChangedListener() {}
 }
 
 export class SingleEpochMarker extends ACellRenderer implements ITransposeRenderer {
@@ -208,6 +223,8 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
 
   public addWeightFactorChangedListener() {}
   public removeWeightFactorChangedListener() {}
+  public addYAxisScaleChangedListener() {}
+  public removeYAxisScaleChangedListener() {}
 }
 
 export class BarChartRenderer extends ACellRenderer {
@@ -217,6 +234,8 @@ export class BarChartRenderer extends ACellRenderer {
 
   public addWeightFactorChangedListener() {}
   public removeWeightFactorChangedListener() {}
+  public addYAxisScaleChangedListener() {}
+  public removeYAxisScaleChangedListener() {}
 }
 
 export class LabelCellRenderer extends ACellRenderer {
@@ -229,6 +248,8 @@ export class LabelCellRenderer extends ACellRenderer {
 
   public addWeightFactorChangedListener() {}
   public removeWeightFactorChangedListener() {}
+  public addYAxisScaleChangedListener() {}
+  public removeYAxisScaleChangedListener() {}
 }
 
 export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITransposeRenderer {
@@ -275,6 +296,9 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
   public removeWeightFactorChangedListener() {
     events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
+
+  public addYAxisScaleChangedListener() {}
+  public removeYAxisScaleChangedListener() {}
 }
 
 export class HeatmapSingleEpochRenderer extends ACellRenderer {
@@ -305,6 +329,8 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
 
   public addWeightFactorChangedListener() {}
   public removeWeightFactorChangedListener() {}
+  public addYAxisScaleChangedListener() {}
+  public removeYAxisScaleChangedListener() {}
 }
 
 export class AxisRenderer extends ACellRenderer {
@@ -410,6 +436,9 @@ export class AxisRenderer extends ACellRenderer {
     }
     return text;
   }
+
+  public addYAxisScaleChangedListener() {}
+  public removeYAxisScaleChangedListener() {}
 }
 
 function getLargestLine(data: Line[]): Line {

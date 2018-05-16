@@ -29,6 +29,7 @@ export class ToolbarView implements IAppView {
   private attachListeners() {
     events.on(AppConstants.EVENT_REDRAW, () => {
       this.setStateToHeatmap();
+      this.setStateToAbsolute();
     });
   }
 
@@ -38,9 +39,50 @@ export class ToolbarView implements IAppView {
    */
   private build(): Promise<ToolbarView> {
     this.createSwitchCellsVisDiv();
+    this.createSwitchYAxisScale();
     this.createTransposeCellsDiv();
     this.addYScaleSlider();
     return Promise.resolve(this);
+  }
+
+  private createSwitchYAxisScale() {
+    const $div = this.$node.append('div')
+      .classed('toolbar-switch-y-axis-scale', true)
+      .classed('btn-group-vertical', true)
+      .attr('role', 'group')
+      .html(`
+        <button class="btn btn-default absolute" title="Switch to absolute">
+          <i class="fa fa-line-chart"></i>
+          <span class="sr-only">&nbsp; Absolute Misclassification</span>
+        </button>
+        <button class="btn btn-default relative active" title="Switch to proportional">
+          <i class="fa fa-barcode"></i>
+          <span class="sr-only">&nbsp; Relative Misclassifications</span>
+        </button>
+      `);
+
+    $div.select('button.absolute').on('click', () => {
+      if (DataStoreApplicationProperties.switchToAbsolute === true) {
+        return false;
+      }
+
+      DataStoreApplicationProperties.switchToAbsolute = true;
+      $div.selectAll('.active').classed('active', false);
+    });
+
+    $div.select('button.relative').on('click', () => {
+      if (DataStoreApplicationProperties.switchToAbsolute === false) {
+        return false;
+      }
+
+      this.setStateToAbsolute();
+    });
+  }
+
+  private setStateToAbsolute() {
+    DataStoreApplicationProperties.switchToAbsolute = false;
+    this.$node.select('div').selectAll('.active').classed('active', false);
+    this.$node.select('div').select('button.relative').classed('active', true);
   }
 
   private createSwitchCellsVisDiv() {

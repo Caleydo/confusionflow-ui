@@ -17,6 +17,7 @@ export class MatrixHeatCellContent {
 
 export class Line {
   values: number[];
+  valuesInPercent: number[];
   max: number;
   classLabel: string;
   color: string;
@@ -95,10 +96,11 @@ export class MultiEpochCalculator extends ACellContentCalculator {
     zipped.map((x, i) => {
       const label = datasets[0].labels[i % datasets[0].labels.length];
       return multiEpochData.push(x.map((y, dsIndex) => {
-        if (this.removeMainDiagonal && i % 11 === 0) {
-          return {values: [], max: 0, classLabel: label, color: datasets[dsIndex].datasetColor};
+        const classSize = datasets[dsIndex].classSizes[i % AppConstants.CONF_MATRIX_SIZE];
+        if (this.removeMainDiagonal && (i % (AppConstants.CONF_MATRIX_SIZE + 1)) === 0) {
+          return {values: [], valuesInPercent: [], max: 0, classLabel: label, color: datasets[dsIndex].datasetColor};
         } else {
-          return {values: y, max: maxVal, classLabel: label, color: datasets[dsIndex].datasetColor};
+          return {values: y, valuesInPercent: y.map((z) => z / classSize),  max: maxVal, classLabel: label, color: datasets[dsIndex].datasetColor};
         }
       }));
     });
