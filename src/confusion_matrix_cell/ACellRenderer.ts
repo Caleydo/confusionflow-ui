@@ -269,7 +269,7 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
   }
 
   private getColorScale(datum: Line) {
-    return d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, datum.max]).range(<any>['white', datum.color]);
+    return d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, DataStoreApplicationProperties.switchToAbsolute ? datum.max : 1]).range(<any>['white', datum.color]);
   }
 
   private update = () => {
@@ -278,7 +278,8 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
     $subCells.style('background', (datum: Line) => {
       const colorScale = this.getColorScale(datum);
       const widthInPercent = 100 / datum.values.length;
-      let res = datum.values.reduce((acc, val, index) => {
+      const values = DataStoreApplicationProperties.switchToAbsolute ? datum.values : datum.valuesInPercent;
+      let res = values.reduce((acc, val, index) => {
         return acc + colorScale(val) + ' ' + (index) * widthInPercent + '%, ' + colorScale(val) + ' ' + (index + 1) * widthInPercent + '%, ';
       }, '');
       res = res.substring(0, res.length - 2);
