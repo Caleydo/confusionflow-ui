@@ -511,7 +511,7 @@ export function removeListeners(renderChain: ACellRenderer, funct: ((r: ACellRen
   }
 }
 
-export function getYMax(data: Line[]) {
+function getYMax(data: Line[]) {
   return DataStoreApplicationProperties.switchToAbsolute ? getLargestLine(data).max : 1;
 }
 
