@@ -39,8 +39,8 @@ export class ToolbarView implements IAppView {
    */
   private build(): Promise<ToolbarView> {
     this.createSwitchCellsVisDiv();
-    this.createSwitchYAxisScale();
     this.createTransposeCellsDiv();
+    this.createSwitchYAxisScale();
     this.addYScaleSlider();
     return Promise.resolve(this);
   }
@@ -52,7 +52,7 @@ export class ToolbarView implements IAppView {
       .attr('role', 'group')
       .html(`
         <button class="btn btn-default absolute" title="Switch to absolute">
-          <i class="fa fa-cloud"></i>
+          <i class="fa fa-hashtag"></i>
           <span class="sr-only">&nbsp; Absolute Misclassification</span>
         </button>
         <button class="btn btn-default relative active" title="Switch to relative">
