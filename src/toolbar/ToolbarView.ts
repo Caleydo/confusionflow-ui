@@ -29,6 +29,7 @@ export class ToolbarView implements IAppView {
   private attachListeners() {
     events.on(AppConstants.EVENT_REDRAW, () => {
       this.setStateToHeatmap();
+      this.setStateToRelative();
     });
   }
 
@@ -39,8 +40,50 @@ export class ToolbarView implements IAppView {
   private build(): Promise<ToolbarView> {
     this.createSwitchCellsVisDiv();
     this.createTransposeCellsDiv();
+    this.createSwitchYAxisScale();
     this.addYScaleSlider();
     return Promise.resolve(this);
+  }
+
+  private createSwitchYAxisScale() {
+    const $div = this.$node.append('div')
+      .classed('toolbar-switch-y-axis-scale', true)
+      .classed('btn-group-vertical', true)
+      .attr('role', 'group')
+      .html(`
+        <button class="btn btn-default absolute" title="Switch to absolute">
+          <i class="fa fa-hashtag"></i>
+          <span class="sr-only">&nbsp; Absolute Misclassification</span>
+        </button>
+        <button class="btn btn-default relative active" title="Switch to relative">
+          <i class="fa fa-percent"></i>
+          <span class="sr-only">&nbsp; Relative Misclassifications</span>
+        </button>
+      `);
+
+    $div.select('button.absolute').on('click', () => {
+      if (DataStoreApplicationProperties.switchToAbsolute === true) {
+        return false;
+      }
+
+      DataStoreApplicationProperties.switchToAbsolute = true;
+      $div.selectAll('.active').classed('active', false);
+      $div.select('button.absolute').classed('active', true);
+    });
+
+    $div.select('button.relative').on('click', () => {
+      if (DataStoreApplicationProperties.switchToAbsolute === false) {
+        return;
+      }
+
+      this.setStateToRelative();
+    });
+  }
+
+  private setStateToRelative() {
+    DataStoreApplicationProperties.switchToAbsolute = false;
+    this.$node.select('div.toolbar-switch-y-axis-scale').selectAll('.active').classed('active', false);
+    this.$node.select('div.toolbar-switch-y-axis-scale').select('button.relative').classed('active', true);
   }
 
   private createSwitchCellsVisDiv() {
@@ -72,7 +115,7 @@ export class ToolbarView implements IAppView {
 
     $div.select('button.heatmap').on('click', () => {
       if (DataStoreApplicationProperties.switchCellRenderer === false) {
-        return false;
+        return;
       }
 
       this.setStateToHeatmap();
@@ -81,8 +124,8 @@ export class ToolbarView implements IAppView {
 
   private setStateToHeatmap() {
     DataStoreApplicationProperties.switchCellRenderer = false;
-    this.$node.select('div').selectAll('.active').classed('active', false);
-    this.$node.select('div').select('button.heatmap').classed('active', true);
+    this.$node.select('div.toolbar-switch-cell-vis').selectAll('.active').classed('active', false);
+    this.$node.select('div.toolbar-switch-cell-vis').select('button.heatmap').classed('active', true);
     this.$node.select('.toolbar-transpose-cell > button').attr('disabled', null);
   }
 

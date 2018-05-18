@@ -74,6 +74,12 @@ export class AppConstants {
   static EVENT_CELL_RENDERER_CHANGED = 'eventCellRendererChanged';
 
   /**
+   * Fires when y axis scale should be changed to absolute values
+   * @type {string}
+   */
+  static EVENT_SWITCH_SCALE_TO_ABSOLUTE = 'eventSwitchScaleToAbsolute';
+
+  /**
    * Represent the different cell types
    * @type {string}
    */

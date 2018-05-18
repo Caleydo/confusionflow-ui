@@ -44,6 +44,8 @@ export abstract class ACellRenderer {
   protected abstract render(cell: ACell);
   public abstract addWeightFactorChangedListener();
   public abstract removeWeightFactorChangedListener();
+  public abstract addYAxisScaleChangedListener();
+  public abstract removeYAxisScaleChangedListener();
 }
 
 export class LineChartRenderer extends ACellRenderer {
@@ -60,7 +62,7 @@ export class LineChartRenderer extends ACellRenderer {
 
   protected renderLine(data: Line[], $node: d3.Selection<any>) {
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getLargestLine(data).max]).rangeRound([this.height, 0]);
+    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(data)]).rangeRound([this.height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -79,7 +81,7 @@ export class LineChartRenderer extends ACellRenderer {
       .append('title')
       .text((d) => d.classLabel);
 
-    $node.select('g').selectAll('.instance-line').attr('d', (d) => line(d.values));
+    $node.select('g').selectAll('.instance-line').attr('d', (d) => line(DataStoreApplicationProperties.switchToAbsolute ? d.values : d.valuesInPercent));
   }
 
   public addWeightFactorChangedListener() {
@@ -88,6 +90,14 @@ export class LineChartRenderer extends ACellRenderer {
 
   public removeWeightFactorChangedListener() {
     events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
+  }
+
+  public addYAxisScaleChangedListener() {
+    events.on(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
+  }
+
+  public removeYAxisScaleChangedListener() {
+    events.off(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
   }
 
   protected render(cell: MatrixCell | PanelCell) {
@@ -176,6 +186,8 @@ export class VerticalLineRenderer extends ACellRenderer {
 
   public addWeightFactorChangedListener() {}
   public removeWeightFactorChangedListener() {}
+  public addYAxisScaleChangedListener() {}
+  public removeYAxisScaleChangedListener() {}
 }
 
 export class SingleEpochMarker extends ACellRenderer implements ITransposeRenderer {
@@ -208,6 +220,8 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
 
   public addWeightFactorChangedListener() {}
   public removeWeightFactorChangedListener() {}
+  public addYAxisScaleChangedListener() {}
+  public removeYAxisScaleChangedListener() {}
 }
 
 export class BarChartRenderer extends ACellRenderer {
@@ -217,6 +231,8 @@ export class BarChartRenderer extends ACellRenderer {
 
   public addWeightFactorChangedListener() {}
   public removeWeightFactorChangedListener() {}
+  public addYAxisScaleChangedListener() {}
+  public removeYAxisScaleChangedListener() {}
 }
 
 export class LabelCellRenderer extends ACellRenderer {
@@ -229,6 +245,8 @@ export class LabelCellRenderer extends ACellRenderer {
 
   public addWeightFactorChangedListener() {}
   public removeWeightFactorChangedListener() {}
+  public addYAxisScaleChangedListener() {}
+  public removeYAxisScaleChangedListener() {}
 }
 
 export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITransposeRenderer {
@@ -251,7 +269,7 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
   }
 
   private getColorScale(datum: Line) {
-    return d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, datum.max]).range(<any>['white', datum.color]);
+    return d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, DataStoreApplicationProperties.switchToAbsolute ? datum.max : 1]).range(<any>['white', datum.color]);
   }
 
   private update = () => {
@@ -260,7 +278,8 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
     $subCells.style('background', (datum: Line) => {
       const colorScale = this.getColorScale(datum);
       const widthInPercent = 100 / datum.values.length;
-      let res = datum.values.reduce((acc, val, index) => {
+      const values = DataStoreApplicationProperties.switchToAbsolute ? datum.values : datum.valuesInPercent;
+      let res = values.reduce((acc, val, index) => {
         return acc + colorScale(val) + ' ' + (index) * widthInPercent + '%, ' + colorScale(val) + ' ' + (index + 1) * widthInPercent + '%, ';
       }, '');
       res = res.substring(0, res.length - 2);
@@ -274,6 +293,14 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
 
   public removeWeightFactorChangedListener() {
     events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
+  }
+
+  public addYAxisScaleChangedListener() {
+    events.on(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
+  }
+
+  public removeYAxisScaleChangedListener() {
+    events.off(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
   }
 }
 
@@ -305,6 +332,8 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
 
   public addWeightFactorChangedListener() {}
   public removeWeightFactorChangedListener() {}
+  public addYAxisScaleChangedListener() {}
+  public removeYAxisScaleChangedListener() {}
 }
 
 export class AxisRenderer extends ACellRenderer {
@@ -334,8 +363,16 @@ export class AxisRenderer extends ACellRenderer {
     events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
+  public addYAxisScaleChangedListener() {
+    events.on(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
+  }
+
+  public removeYAxisScaleChangedListener() {
+    events.off(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
+  }
+
   private updateYAxis(value: number) {
-    this.y.exponent(value).domain([0, getLargestLine(this.data).max]).range([this.height, 0]);
+    this.y.exponent(value).domain([0, getYMax(this.data)]).range([this.height, 0]);
     this.yAxis.scale(this.y);
     this.$g.select('.chart-axis-y').call(this.yAxis);
   }
@@ -357,7 +394,7 @@ export class AxisRenderer extends ACellRenderer {
 
     const y = d3.scale.linear()
       .rangeRound([this.height, 0])
-      .domain([0, getLargestLine(this.data).max]);
+      .domain([0, getYMax(this.data)]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
     let tickFrequency = 1;
@@ -473,3 +510,8 @@ export function removeListeners(renderChain: ACellRenderer, funct: ((r: ACellRen
     curRenderer = curRenderer.nextRenderer;
   }
 }
+
+function getYMax(data: Line[]) {
+  return DataStoreApplicationProperties.switchToAbsolute ? getLargestLine(data).max : 1;
+}
+

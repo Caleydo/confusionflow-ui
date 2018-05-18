@@ -72,7 +72,7 @@ export class DetailChartTab extends ADetailViewTab {
       this.$header.html('');
       this.$g.remove();
       this.$g = null;
-      removeListeners(this.cell.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener()]);
+      removeListeners(this.cell.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener(), (r: ACellRenderer) => r.removeYAxisScaleChangedListener()]);
     }
   }
 
@@ -100,7 +100,7 @@ export class DetailChartTab extends ADetailViewTab {
     this.cell = new MatrixCell(cell.data, '', '', 0, 0);
     this.cell.init(this.$svg);
 
-    let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener()];
+    let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener(), (renderer: ACellRenderer) => renderer.addYAxisScaleChangedListener()];
     if (cell instanceof PanelCell && cell.type === AppConstants.CELL_PRECISION) {
       wfc = [];
     }
