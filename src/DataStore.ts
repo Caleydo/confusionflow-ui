@@ -7,37 +7,74 @@ import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
 import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, min, NumberMatrix} from './DataStructures';
 import {ACell} from './confusion_matrix_cell/Cell';
+import * as d3 from 'd3';
+import {extractEpochId} from './utils';
+
+export const dataStoreTimelines: Map<String, DataStoreSelectedRun> = new Map<String, DataStoreSelectedRun>();
 
 /**
  * Stores the selected datasets
  */
-export class DataStoreDatasetSelection {
+export class DataStoreSelectedRun {
+  singleSelected: IMalevoEpochInfo = null;
+  multiSelected: IMalevoEpochInfo[] = [];
 
-  static datasetAdded(ds: MalevoDataset) {
-    events.fire(AppConstants.EVENT_DATA_SET_ADDED, ds);
+  static runIndexArray = Array(AppConstants.MAX_DATASET_COUNT).fill(null);
+  color: string;
+
+  static getFreeIndex() {
+    const index = DataStoreSelectedRun.runIndexArray.findIndex((x) => x === null);
+    console.assert(index >= 0 && index < AppConstants.MAX_DATASET_COUNT);
+    return index;
   }
 
-  static datasetRemoved(ds: MalevoDataset) {
+  static setSelectionIndex(index: number, run: DataStoreSelectedRun) {
+    DataStoreSelectedRun.runIndexArray[index] = run;
+  }
+
+  static getColors(): string[] {
+    const colorScale = d3.scale.category10();
+    const colors = [];
+    for (let i = 0; i < AppConstants.MAX_DATASET_COUNT; i++) {
+      colors.push(colorScale(String(i)));
+    }
+    return colors;
+  }
+
+  constructor(public selectedDataset: MalevoDataset = null, public selectionIndex: number) {
+    this.color = DataStoreSelectedRun.getColors()[selectionIndex];
+  }
+
+  static add(ds: MalevoDataset) {
+    const selectionIndex = DataStoreSelectedRun.getFreeIndex();
+    const newRunObject = new DataStoreSelectedRun(ds, selectionIndex);
+    DataStoreSelectedRun.setSelectionIndex(selectionIndex, newRunObject);
+    dataStoreTimelines.set(ds.name, newRunObject);
+    DataStoreSelectedRun.updateRuns();
+    events.fire(AppConstants.EVENT_DATA_SET_ADDED, ds);
+    events.fire(AppConstants.EVENT_REDRAW);
+  }
+
+  static remove(ds: MalevoDataset) {
+    DataStoreSelectedRun.setSelectionIndex(dataStoreTimelines.get(ds.name).selectionIndex, null);
+    dataStoreTimelines.delete(ds.name);
     events.fire(AppConstants.EVENT_DATA_SET_REMOVED, ds);
+    events.fire(AppConstants.EVENT_REDRAW);
+  }
+
+  static updateRuns() {
+    dataStoreTimelines.forEach((timeline) => {
+        timeline.multiSelected = timeline.selectedDataset.epochInfos.slice(TimelineParameters.minIndex, TimelineParameters.maxIndex+1);
+    });
   }
 }
 
-/**
- * Stores selection from dataset/run selector and timeline
- */
-export class DataStoreTimelineSelection {
-  singleSelected: IMalevoEpochInfo = null;
-  multiSelected: IMalevoEpochInfo[] = [];
-  selectedDataset: MalevoDataset = null;
-  datasetColor: string;
-  indexInTimelineCollection = -1;
-
-  clearMultiSelection() {
-    this.multiSelected = [];
-  }
-
-  clearSingleSelection() {
-    this.singleSelected = null;
+export class TimelineParameters {
+  static minIndex = -1;
+  static maxIndex = -1;
+  static setRange(minIndex: number, maxIndex: number) {
+    TimelineParameters.minIndex = minIndex;
+    TimelineParameters.maxIndex = maxIndex;
   }
 }
 
@@ -135,5 +172,3 @@ export class DataStoreApplicationProperties {
     events.fire(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.switchToAbsolute);
   }
 }
-
-export const dataStoreTimelines: Map<String, DataStoreTimelineSelection> = new Map<String, DataStoreTimelineSelection>();

@@ -14,7 +14,7 @@ import Format = d3.time.Format;
 import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './MalevoDataset';
 import {ITable} from 'phovea_core/src/table';
 import * as $ from 'jquery';
-import {DataStoreDatasetSelection, dataStoreTimelines} from './DataStore';
+import {DataStoreSelectedRun, dataStoreTimelines} from './DataStore';
 import {extractEpochId} from './utils';
 /**
  * Shows a list of available datasets and lets the user choose one.
@@ -54,13 +54,8 @@ class DataSetSelector implements IAppView {
    * Build the basic DOM elements and binds the change function
    */
   private build() {
-    this.$node.append('select')
-      .attr('id', 'dataset-selector')
-      .attr('multiple', 'multiple')
-      .style('width', '800px');
-
     this.$node.html(`
-      <select id="dataset-selector" multiple="multiple" style="width:800px">
+      <select id="dataset-selector" multiple="multiple" style="width:70vw">
       </select> `);
 
     this.$select = this.$node.select('#dataset-selector');
@@ -70,12 +65,12 @@ class DataSetSelector implements IAppView {
       .select2(this.select2Options)
       .on('select2:select', (evt) => {
         const dataset = d3.select(evt.params.data.element).data()[0];
-        DataStoreDatasetSelection.datasetAdded(dataset);
+        DataStoreSelectedRun.add(dataset);
         that.updateSelectorColors();
       })
       .on('select2:unselect', (evt) => {
         const dataset = d3.select(evt.params.data.element).data()[0];
-        DataStoreDatasetSelection.datasetRemoved(dataset);
+        DataStoreSelectedRun.remove(dataset);
         that.updateSelectorColors();
       });
   }
@@ -85,7 +80,7 @@ class DataSetSelector implements IAppView {
       .forEach((d, i) => {
         const timeline = dataStoreTimelines.get(d.title);
         // set background to dataset color with opacity of 0.1
-        d3.select(d).style('background-color', timeline.datasetColor + '19');
+        d3.select(d).style('background-color', timeline.color + '19');
       });
   }
 
@@ -116,7 +111,7 @@ class DataSetSelector implements IAppView {
         if(Object.keys(data).length > 0) {
           const x = data[Object.keys(data)[0]];
           $('#dataset-selector').select2(this.select2Options).val(x.name).trigger('change');
-          DataStoreDatasetSelection.datasetAdded(x);
+          DataStoreSelectedRun.add(x);
           this.updateSelectorColors();
         }
         return this;

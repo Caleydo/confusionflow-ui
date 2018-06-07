@@ -6,16 +6,14 @@ import * as events from 'phovea_core/src/event';
 import {AppConstants} from '../AppConstants';
 import {MalevoDataset} from '../MalevoDataset';
 import {IAppView} from '../app';
-import {TimelineCollection} from './TimelineCollection';
-import {Timeline} from './Timeline';
-import {dataStoreTimelines, DataStoreTimelineSelection} from '../DataStore';
+import {Timeline, TimelineData} from './Timeline';
 
 export default class TimelineView implements IAppView {
   private readonly $node: d3.Selection<any>;
-  private timelineData: TimelineCollection;
   private width: number;
   private readonly padding = 10;
 
+  private timeline: Timeline = null;
   constructor(parent: Element) {
     this.width = parent.clientWidth;
     this.$node = d3.select(parent)
@@ -24,8 +22,6 @@ export default class TimelineView implements IAppView {
       .attr('width', '100%')
       .attr('height', '0px')
       .attr('viewBox', `0 0 ${this.width} 0`);
-
-    this.timelineData = new TimelineCollection(this.$node);
   }
 
   updateSvg(timeLineCount: number, maxWidth: number) {
@@ -36,13 +32,19 @@ export default class TimelineView implements IAppView {
 
   private attachListener() {
     events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds: MalevoDataset) => {
-      this.timelineData.add(this.$node, ds);
-      this.updateSvg(this.timelineData.timelineCount(), this.timelineData.getMaxDSWidth());
+      if(this.timeline === null) {
+        const marginLabelTimeline = 10; // 10 pixel margin between label and timeline
+        const tmData = new TimelineData(ds.epochInfos);
+        this.timeline = new Timeline(ds.name, this.$node);
+        this.timeline.data = tmData;
+        this.timeline.render(this.$node, marginLabelTimeline, 0);
+        this.updateSvg(1, this.timeline.getWidth());
+      }
     });
 
     events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds: MalevoDataset) => {
-      this.timelineData.remove(ds);
-      this.updateSvg(this.timelineData.timelineCount(), this.timelineData.getMaxDSWidth());
+      this.timeline = null;
+      this.updateSvg(0, 0);
     });
   }
 
