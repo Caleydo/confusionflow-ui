@@ -84,7 +84,7 @@ export class ConfusionMatrix implements IAppView {
     $labelRight.append('div')
       .text(Language.CLASS_SIZE);
 
-    this.$node.append('div')
+    const $labelBottom = this.$node.append('div')
       .classed('malevo-label', true)
       .classed('label-bottom', true)
       .html(`<span>${Language.FP}</span>`);
@@ -114,6 +114,12 @@ export class ConfusionMatrix implements IAppView {
 
     const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
     this.fpColumn = new ChartColumn($chartBottom.append('div'));
+
+    const numRightColumns = 3; // number of additional columns
+    this.$node.style('--num-right-columns', numRightColumns);
+
+    const numBottomColumns = 1; // number of additional columns
+    this.$node.style('--num-bottom-columns', numBottomColumns);
   }
 
   private attachListeners() {
@@ -361,8 +367,10 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.PPV));
       singleEpochIndex = data[0].heatcell.indexInMultiSelection;
 
-      confMatrixRendererProto = {offdiagonal: [{renderer: 'HeatmapSingleEpochRenderer', params: [false, false]}],
-        diagonal: [{renderer: 'LabelCellRenderer', params: null}], functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]};
+      confMatrixRendererProto = {
+        offdiagonal: [{renderer: 'HeatmapSingleEpochRenderer', params: [false, false]}],
+        diagonal: [{renderer: 'LabelCellRenderer', params: null}], functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
+      };
       fpfnRendererProto = {
         diagonal: [{renderer: 'BarChartRenderer', params: null}], offdiagonal: null,
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
@@ -379,8 +387,10 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
       singleEpochIndex = null;
 
-      confMatrixRendererProto = {offdiagonal: [{renderer: 'HeatmapMultiEpochRenderer', params: [DataStoreApplicationProperties.transposeCellRenderer]}],
-        diagonal: [{renderer: 'LabelCellRenderer', params: null}], functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]};
+      confMatrixRendererProto = {
+        offdiagonal: [{renderer: 'HeatmapMultiEpochRenderer', params: [DataStoreApplicationProperties.transposeCellRenderer]}],
+        diagonal: [{renderer: 'LabelCellRenderer', params: null}], functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
+      };
       fpfnRendererProto = {
         diagonal: [{renderer: 'MatrixLineCellRenderer', params: null}], offdiagonal: null,
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
