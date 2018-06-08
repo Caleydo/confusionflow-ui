@@ -108,6 +108,7 @@ export class DetailView implements IAppView {
     $node.classed('selected', true);
     tab.shouldDisplay(true);
     this.selectedDetailView = tab;
+    this.selectedDetailView.clear();
     this.selectedDetailView.render();
   }
 }
