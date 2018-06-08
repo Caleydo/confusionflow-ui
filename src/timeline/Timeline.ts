@@ -9,8 +9,30 @@ import {extractEpochId} from '../utils';
 import {dataStoreTimelines, DataStoreSelectedRun, TimelineParameters} from '../DataStore';
 import * as events from 'phovea_core/src/event';
 
-export class OverallTimeline {
-  public dataPoints: string[] = [];
+class SingleEpochSelector {
+  public $node: d3.Selection<any>;
+  hidden = true;
+  public curPos = -1;
+  readonly selectorWidth = 2;
+  readonly selectorHEIGHT = 30;
+
+  constructor($parent: d3.Selection<any>, offsetH: number, private x: any) {
+    this.$node = $parent.append('rect').classed('single-epoch-selector', true).attr('width', this.selectorWidth).attr('height', this.selectorHEIGHT)
+      .attr('transform', `translate(${offsetH}, 0)`)
+      .classed('hidden', this.hidden);
+  }
+
+  setPosition(pos: number) {
+    const posX = this.x(String(Math.round(pos)));
+    this.$node.attr('x', posX);
+    this.hideNode(!(this.curPos !== pos || this.hidden === true));
+    this.curPos = pos;
+  }
+
+  hideNode(val: boolean) {
+    this.hidden = val;
+    this.$node.classed('hidden', val);
+  }
 }
 
 export class TimelineData {
@@ -44,13 +66,16 @@ export class Timeline {
   private $node: d3.Selection<any> = null;
   private $label: d3.Selection<any> = null;
   data: TimelineData = null;
+  singleEpochSelector = null;
   readonly MARGIN_LEFT = 0; // 20 pixel margin from left border
   readonly SHOW_LABEL = false;
   readonly tickmarkDistance = 5; // show ticks every 5 epoch
   readonly globalOffsetV = 15;
+  private eventTimelineChangedListener = (evt: any, src: Timeline) => this.eventTimelineChanged(src);
 
   constructor(public datasetName: string, $parent: d3.Selection<any>) {
     this.build($parent);
+    this.attachListeners();
   }
 
   build($parent) {
@@ -60,6 +85,24 @@ export class Timeline {
     this.$node = $parent.append('g')
       .classed('timeline', true);
     this.createLabel(this.datasetName);
+  }
+
+  private eventTimelineChanged(src: Timeline) {
+    // synchronizes single epoch marker
+    if (this.singleEpochSelector === null || src === this) {
+      return;
+    }
+    this.singleEpochSelector.setPosition(src.singleEpochSelector.curPos);
+    this.singleEpochSelector.hideNode(src.singleEpochSelector.hidden);
+    this.updateSingleSelection();
+  }
+
+  private attachListeners() {
+    events.on(AppConstants.EVENT_TIMELINE_CHANGED, this.eventTimelineChangedListener);
+  }
+
+  detachListeners() {
+    events.off(AppConstants.EVENT_TIMELINE_CHANGED, this.eventTimelineChangedListener);
   }
 
   createLabel(datasetName: string) {
@@ -132,6 +175,7 @@ export class Timeline {
     $brushg.selectAll('rect')
       .attr('height', brushHeight);
 
+    this.createSingleSelector(width, offsetH, x);
     this.setBrush(brush, x, width);
 
     if (this.$label) {
@@ -151,6 +195,66 @@ export class Timeline {
     brush.extent([0, width]);
     this.brushmove(x, brush);
     this.brushend(x, brush);
+  }
+
+  createSingleSelector(width: number, offsetH: number, x: any) {
+    const invert = d3.scale.linear().range(<any>x.domain()).domain(x.range());
+
+    const posFromCoordinates = (coordinates: [number, number]) => {
+      let pos = invert(coordinates[0]);
+      pos = Math.round(pos);
+      return pos;
+    };
+
+    const getNearestExistPos = (pos: number) => {
+
+      // this can happen when the timeline  is too long and has no tickmarks
+      // the timeline needs to be cropped (see https://github.com/Caleydo/malevo/pull/87)
+      if (pos >= this.data.datapoints.length) {
+        pos = this.data.datapoints.length - 1;
+      }
+      const upperIndex = this.ceil(pos);
+      const lowerIndex = this.floor(pos);
+
+      console.assert(upperIndex >= pos && pos >= lowerIndex);
+      if (upperIndex - pos > pos - lowerIndex) {
+        return lowerIndex;
+      } else {
+        return upperIndex;
+      }
+    };
+
+    const markerWidth = 2;
+    const markerHeight = 15;
+    const $singleSelectionMarker = this.$node.append('rect').style('fill', 'rgb(0,0.255').attr('width', markerWidth)
+      .attr('height', markerHeight)
+      .attr('transform', `translate(${offsetH}, 0)`);
+
+    const tml = this;
+    this.singleEpochSelector = new SingleEpochSelector(this.$node, offsetH, x);
+    const areaHeight = 15;
+    this.$node.append('rect').attr('transform', `translate(${offsetH}, ${areaHeight + 1})`)
+      .attr('width', width)
+      .attr('height', areaHeight)
+      .style('opacity', 0)
+      .on('mousemove', function () {
+        $singleSelectionMarker.classed('hidden', false);
+        let pos = posFromCoordinates(d3.mouse(this));
+        pos = getNearestExistPos(pos);
+        $singleSelectionMarker.attr('x', x(pos.toString()));
+      })
+      .on('mouseup', function () {
+        let pos = posFromCoordinates(d3.mouse(this));
+        pos = getNearestExistPos(pos);
+        tml.singleEpochSelector.setPosition(pos);
+        // toggle single epoch selector
+        tml.updateSingleSelection();
+        events.fire(AppConstants.EVENT_TIMELINE_CHANGED, tml);
+        events.fire(AppConstants.EVENT_REDRAW);
+      })
+      .on('mouseleave', function () {
+        $singleSelectionMarker.classed('hidden', true);
+      });
   }
 
   ceil(val: number) {
@@ -189,6 +293,8 @@ export class Timeline {
       const range = this.getDataIndices(+y(<number>extent[0]), +y(<number>extent[1]));
       if (range[0] < range[1]) {
         this.$node.select('g.brush').call(<any>brush.extent([y.invert(range[0]), y.invert(range[1])]));
+        this.singleEpochSelector.setPosition(range[1]);
+        this.singleEpochSelector.hideNode(false);
         events.fire(AppConstants.EVENT_TIMELINE_CHANGED, this);
       } else {
         this.$node.select('g.brush').call(<any>brush.clear());
@@ -210,6 +316,12 @@ export class Timeline {
 
       TimelineParameters.setRange(range[0], range[1]);
       DataStoreSelectedRun.updateRuns();
+
+      // set single epoch selector to the end
+      this.singleEpochSelector.setPosition(range[1]);
+      this.singleEpochSelector.hideNode(false);
+      events.fire(AppConstants.EVENT_TIMELINE_CHANGED, this);
+      this.updateSingleSelection();
     } else {
       TimelineParameters.setRange(-1, -1);
       DataStoreSelectedRun.updateRuns();
@@ -240,5 +352,15 @@ export class Timeline {
     const brushEnd = this.ceil(Math.ceil(n1));
 
     return [brushStart, brushEnd];
+  }
+
+  updateSingleSelection() {
+    if (!this.singleEpochSelector.hidden) {
+      console.assert(this.data.datapoints[this.singleEpochSelector.curPos].exists);
+      TimelineParameters.singleIndex = this.singleEpochSelector.curPos;
+    } else {
+      TimelineParameters.singleIndex = -1;
+    }
+    DataStoreSelectedRun.updateRuns();
   }
 }
