@@ -10,6 +10,8 @@ export class Language {
   static FN = 'FN';
   static FP = 'FP';
   static PRECISION = 'Precision';
+  static RECALL = 'Recall';
+  static F1_SCORE = 'F1 Score';
   static CLASS_SIZE = 'Class Size';
   static CHART_VIEW = 'Charts';
   static IMAGE_VIEW = 'Images';
