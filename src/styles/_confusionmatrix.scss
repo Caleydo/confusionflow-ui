@@ -2,9 +2,6 @@
 @import '~font-awesome/scss/variables';
 @import '~font-awesome/scss/mixins';
 
-// number of columns placed to the right of the confusion matrix
-$num-columns-right-area: 3;
-
 @mixin rotateSpanLabel() {
   > span {
     display: block;
@@ -51,7 +48,7 @@ $num-columns-right-area: 3;
 .label-right {
   grid-area: label-right;
   background: $label-bg;
-  grid-template-columns: repeat(auto-fill, minmax(100% / $num-columns-right-area, 1fr));
+  grid-template-columns: repeat(var(--num-right-columns), 1fr);
   display: grid;
 
   div {
@@ -94,14 +91,14 @@ $num-columns-right-area: 3;
   grid-area: chart-right;
   position: relative;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100% / $num-columns-right-area, 1fr)); // 100% for one column, 50% for 2 columns, 33% for 3 columns ...
+  grid-template-columns: repeat(var(--num-right-columns), 1fr);
 }
 
 .chart-bottom {
   grid-area: chart-bottom;
   position: relative;
   display: grid;
-  grid-template-rows: repeat(auto-fill, minmax(100%, 1fr)); // 100% for one row, 50% for 2 rows, ...
+  grid-template-rows: repeat(var(--num-bottom-columns), 1fr);
 }
 
 .matrix-wrapper {
