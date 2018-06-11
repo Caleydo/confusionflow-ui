@@ -43,12 +43,13 @@ export class DetailChartTab extends ADetailViewTab {
     return Promise.resolve(this);
   }
 
-
-  createHeaderText() {
+  createHeaderText = () => {
+    this.$header.text('');
     let text = '';
     const cell = DataStoreCellSelection.getCell();
     if (cell instanceof MatrixCell) {
-      text = Language.CONFUSION_Y_LABEL;
+      const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
+      text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
       text = text + ' ' + Language.FOR_CLASS + ' ';
       text += cell.groundTruthLabel;
       text += ' with ';
@@ -60,6 +61,14 @@ export class DetailChartTab extends ADetailViewTab {
         text = Language.FN_RATE;
       } else if (cell.type === AppConstants.CELL_PRECISION) {
         text = Language.PRECISION_Y_LABEL;
+        text = text + ' ' + Language.FOR_CLASS + ' ';
+        text += cell.data.linecell[0][0].classLabel;
+      } else if (cell.type === AppConstants.CELL_RECALL) {
+        text = Language.RECALL_Y_LABEL;
+        text = text + ' ' + Language.FOR_CLASS + ' ';
+        text += cell.data.linecell[0][0].classLabel;
+      } else if (cell.type === AppConstants.CELL_F1_SCORE) {
+        text = Language.F1_SCORE_Y_LABEL;
         text = text + ' ' + Language.FOR_CLASS + ' ';
         text += cell.data.linecell[0][0].classLabel;
       }

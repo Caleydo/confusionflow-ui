@@ -1,6 +1,5 @@
 import * as d3 from 'd3';
 import {IAppView} from '../app';
-import {ConfusionMatrix} from '../ConfusionMatrix';
 import {AppConstants} from '../AppConstants';
 import * as events from 'phovea_core/src/event';
 import * as plugins from 'phovea_core/src/plugin';
@@ -33,7 +32,7 @@ export class DetailView implements IAppView {
   }
 
   private attachListeners() {
-    events.on(AppConstants.EVENT_CELL_SELECTED, () => {
+    events.on(AppConstants.EVENT_CELL_SELECTED + events.EventHandler.MULTI_EVENT_SEPARATOR + AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, () => {
       if (this.selectedDetailView !== null) {
         this.selectedDetailView.clear();
         this.selectedDetailView.render();

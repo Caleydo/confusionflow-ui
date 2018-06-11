@@ -37,6 +37,8 @@ export class ConfusionMatrix implements IAppView {
   private fpColumn: ChartColumn;
   private fnColumn: ChartColumn;
   private precisionColumn: ChartColumn;
+  private recallColumn: ChartColumn;
+  private f1ScoreColumn: ChartColumn;
   private classSizeColumn: ChartColumn;
   private $cells = null;
 
@@ -81,6 +83,12 @@ export class ConfusionMatrix implements IAppView {
       .text(Language.PRECISION);
 
     $labelRight.append('div')
+      .text(Language.RECALL);
+
+    $labelRight.append('div')
+      .text(Language.F1_SCORE);
+
+    $labelRight.append('div')
       .text(Language.CLASS_SIZE);
 
     const $labelBottom = this.$node.append('div')
@@ -109,12 +117,14 @@ export class ConfusionMatrix implements IAppView {
     const $chartRight = this.$node.append('div').classed('chart-right', true);
     this.fnColumn = new ChartColumn($chartRight.append('div'));
     this.precisionColumn = new ChartColumn($chartRight.append('div'));
+    this.recallColumn = new ChartColumn($chartRight.append('div'));
+    this.f1ScoreColumn = new ChartColumn($chartRight.append('div'));
     this.classSizeColumn = new ChartColumn($chartRight.append('div'));
 
     const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
     this.fpColumn = new ChartColumn($chartBottom.append('div'));
 
-    const numRightColumns = 3; // number of additional columns
+    const numRightColumns = 5; // number of additional columns
     this.$node.style('--num-right-columns', numRightColumns);
 
     const numBottomColumns = 1; // number of additional columns
@@ -321,6 +331,8 @@ export class ConfusionMatrix implements IAppView {
     this.fpColumn.$node.selectAll('div').remove();
     this.fnColumn.$node.selectAll('div').remove();
     this.precisionColumn.$node.selectAll('div').remove();
+    this.recallColumn.$node.selectAll('div').remove();
+    this.f1ScoreColumn.$node.selectAll('div').remove();
     this.classSizeColumn.$node.selectAll('div').remove();
 
     if (DataStoreApplicationProperties.renderMode === RenderMode.CLEAR) {
@@ -332,6 +344,8 @@ export class ConfusionMatrix implements IAppView {
 
     let data: ICellData[] = null;
     let dataPrecision = null;
+    let dataRecall = null;
+    let dataF1 = null;
 
     let fpfnRendererProto: IMatrixRendererChain = null;
     let confMatrixRendererProto: IMatrixRendererChain = null;
@@ -345,6 +359,8 @@ export class ConfusionMatrix implements IAppView {
       data = zippedData.map((x) => ({heatcell: x[0], linecell: x[1]}));
 
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
+      dataRecall = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.TPR));
+      dataF1 = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.F1));
       singleEpochIndex = data[1].heatcell.indexInMultiSelection;
 
       confMatrixRendererProto = {
@@ -366,6 +382,9 @@ export class ConfusionMatrix implements IAppView {
       data = singleEpochContent.map((x) => ({heatcell: x, linecell: null}));
 
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.PPV));
+      dataRecall = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.TPR));
+      dataF1 = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.F1));
+
       singleEpochIndex = data[0].heatcell.indexInMultiSelection;
 
       confMatrixRendererProto = {
@@ -386,6 +405,8 @@ export class ConfusionMatrix implements IAppView {
       data = multiEpochContent.map((x) => ({heatcell: null, linecell: x}));
 
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
+      dataRecall = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.TPR));
+      dataF1 = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.F1));
       singleEpochIndex = null;
 
       confMatrixRendererProto = {
@@ -436,10 +457,58 @@ export class ConfusionMatrix implements IAppView {
     this.renderFPFN(data, fpfnRendererProto, singleEpochIndex);
     this.renderClassSize(datasets, new LabelCellRenderer());
     this.renderPrecisionColumn(dataPrecision, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
+    this.renderRecallColumn(dataRecall, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
+    this.renderF1ScoreColumn(dataF1, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
   }
 
   private renderConfMatrixCells() {
     this.$cells.each((r) => r.render());
+  }
+
+  renderF1ScoreColumn(data: Matrix<number[]>[], renderer: IMatrixRendererChain, labels: string[], singleEpochIndex: number[], colors: string[]) {
+    const maxVal = Math.max(...data.map((x: Matrix<number[]>) => max(x, (d) => Math.max(...d))));
+    let transformedData = data.map((x) => x.to1DArray());
+    transformedData = zip(transformedData);
+
+    this.f1ScoreColumn.$node
+      .selectAll('div')
+      .data(transformedData)
+      .enter()
+      .append('div')
+      .classed('cell', true)
+      .each(function (datum, index) {
+        const res = {
+          linecell: datum.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: labels[index], color: colors[i]}]),
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
+        };
+        const cell = new PanelCell(res, AppConstants.CELL_F1_SCORE);
+        cell.init(d3.select(this));
+        applyRendererChain(renderer, cell, renderer.diagonal);
+        cell.render();
+      });
+  }
+
+  renderRecallColumn(data: Matrix<number[]>[], renderer: IMatrixRendererChain, labels: string[], singleEpochIndex: number[], colors: string[]) {
+    const maxVal = Math.max(...data.map((x: Matrix<number[]>) => max(x, (d) => Math.max(...d))));
+    let transformedData = data.map((x) => x.to1DArray());
+    transformedData = zip(transformedData);
+
+    this.recallColumn.$node
+      .selectAll('div')
+      .data(transformedData)
+      .enter()
+      .append('div')
+      .classed('cell', true)
+      .each(function (datum, index) {
+        const res = {
+          linecell: datum.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: labels[index], color: colors[i]}]),
+          heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
+        };
+        const cell = new PanelCell(res, AppConstants.CELL_RECALL);
+        cell.init(d3.select(this));
+        applyRendererChain(renderer, cell, renderer.diagonal);
+        cell.render();
+      });
   }
 
   renderPrecisionColumn(data: Matrix<number[]>[], renderer: IMatrixRendererChain, labels: string[], singleEpochIndex: number[], colors: string[]) {
