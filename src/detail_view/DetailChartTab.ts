@@ -43,12 +43,13 @@ export class DetailChartTab extends ADetailViewTab {
     return Promise.resolve(this);
   }
 
-
-  createHeaderText() {
+  createHeaderText = () => {
+    this.$header.text('');
     let text = '';
     const cell = DataStoreCellSelection.getCell();
     if (cell instanceof MatrixCell) {
-      text = Language.CONFUSION_Y_LABEL;
+      const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
+      text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
       text = text + ' ' + Language.FOR_CLASS + ' ';
       text += cell.groundTruthLabel;
       text += ' with ';

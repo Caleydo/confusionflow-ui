@@ -435,7 +435,8 @@ export class AxisRenderer extends ACellRenderer {
     let text = '';
     const cell = DataStoreCellSelection.getCell();
     if (cell instanceof MatrixCell) {
-      text = Language.CONFUSION_Y_LABEL;
+      const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
+      text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
     } else if (cell instanceof PanelCell) {
       if (cell.type === AppConstants.CELL_FP) {
         text = Language.FP_RATE;

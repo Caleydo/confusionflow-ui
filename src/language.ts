@@ -17,7 +17,9 @@ export class Language {
   static IMAGE_VIEW = 'Images';
   static SOFTMAX_STAMP_VIEW = 'Softmax Stamps';
   static EPOCH = 'Epoch';
-  static CONFUSION_Y_LABEL = '# of Confused Instances';
+  static NUMBER = '#';
+  static PERCENT = '%';
+  static CONFUSION_Y_LABEL = 'of Confused Instances';
   static PRECISION_Y_LABEL = 'Precision [%]';
   static RECALL_Y_LABEL = 'Recall [%]';
   static F1_SCORE_Y_LABEL = 'F1 Score [%]';
