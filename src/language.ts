@@ -19,6 +19,8 @@ export class Language {
   static EPOCH = 'Epoch';
   static CONFUSION_Y_LABEL = '# of Confused Instances';
   static PRECISION_Y_LABEL = 'Precision [%]';
+  static RECALL_Y_LABEL = 'Recall [%]';
+  static F1_SCORE_Y_LABEL = 'F1 Score [%]';
   static OVERALL_PRECISION = 'Overall Precision';
   static FP_RATE = 'False Positive Rate';
   static FN_RATE = 'False Negative Rate';

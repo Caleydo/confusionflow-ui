@@ -443,6 +443,10 @@ export class AxisRenderer extends ACellRenderer {
         text = Language.FN_RATE;
       } else if (cell.type === AppConstants.CELL_PRECISION) {
         text = Language.PRECISION;
+      } else if (cell.type === AppConstants.CELL_RECALL) {
+        text = Language.RECALL;
+      } else if (cell.type === AppConstants.CELL_F1_SCORE) {
+        text = Language.F1_SCORE;
       }
     }
     return text;

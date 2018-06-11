@@ -38,19 +38,35 @@ export function TN(matrix: NumberMatrix, index: number): number {
 }
 
 export function TPR(matrix: NumberMatrix, index: number): number {
-  return TP(matrix, index) / (TP(matrix, index) + FN(matrix, index));
+  const denom = (TP(matrix, index) + FN(matrix, index));
+  if(denom === 0) {
+    return 0;
+  }
+  return TP(matrix, index) / denom;
 }
 
 export function ACC(matrix: NumberMatrix, index: number): number {
-  return (TP(matrix, index) + TN(matrix, index)) / (TP(matrix, index) + TN(matrix, index) + FP(matrix, index) + FN(matrix, index));
+  const denom = (TP(matrix, index) + TN(matrix, index) + FP(matrix, index) + FN(matrix, index));
+  if(denom === 0) {
+    return 0;
+  }
+  return (TP(matrix, index) + TN(matrix, index)) / denom;
 }
 
 export function PPV(matrix: NumberMatrix, index: number): number {
-  return TP(matrix, index) / (TP(matrix, index) + FP(matrix, index));
+  const denom = (TP(matrix, index) + FP(matrix, index));
+  if(denom === 0) {
+    return 0;
+  }
+  return TP(matrix, index) / denom;
 }
 
 export function F1(matrix: NumberMatrix, index: number): number {
-  return 2 * ((PPV(matrix, index) * TPR(matrix, index)) / (PPV(matrix, index) + TPR(matrix, index)));
+  const denom = (PPV(matrix, index) + TPR(matrix, index));
+  if(denom === 0) {
+    return 0;
+  }
+  return 2 * ((PPV(matrix, index) * TPR(matrix, index)) / denom);
 }
 
 export function calcForMultipleClasses(matrix: NumberMatrix, funct: (matrix: NumberMatrix, index: number) => number): number[] {

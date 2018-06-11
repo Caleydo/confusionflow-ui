@@ -62,6 +62,14 @@ export class DetailChartTab extends ADetailViewTab {
         text = Language.PRECISION_Y_LABEL;
         text = text + ' ' + Language.FOR_CLASS + ' ';
         text += cell.data.linecell[0][0].classLabel;
+      } else if (cell.type === AppConstants.CELL_RECALL) {
+        text = Language.RECALL_Y_LABEL;
+        text = text + ' ' + Language.FOR_CLASS + ' ';
+        text += cell.data.linecell[0][0].classLabel;
+      } else if (cell.type === AppConstants.CELL_F1_SCORE) {
+        text = Language.F1_SCORE_Y_LABEL;
+        text = text + ' ' + Language.FOR_CLASS + ' ';
+        text += cell.data.linecell[0][0].classLabel;
       }
     }
     this.$header.text(text);

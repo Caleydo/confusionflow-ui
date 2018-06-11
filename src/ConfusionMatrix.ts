@@ -480,7 +480,7 @@ export class ConfusionMatrix implements IAppView {
           linecell: datum.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: labels[index], color: colors[i]}]),
           heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
         };
-        const cell = new PanelCell(res, AppConstants.CELL_PRECISION);
+        const cell = new PanelCell(res, AppConstants.CELL_F1_SCORE);
         cell.init(d3.select(this));
         applyRendererChain(renderer, cell, renderer.diagonal);
         cell.render();
@@ -503,7 +503,7 @@ export class ConfusionMatrix implements IAppView {
           linecell: datum.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: labels[index], color: colors[i]}]),
           heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
         };
-        const cell = new PanelCell(res, AppConstants.CELL_PRECISION);
+        const cell = new PanelCell(res, AppConstants.CELL_RECALL);
         cell.init(d3.select(this));
         applyRendererChain(renderer, cell, renderer.diagonal);
         cell.render();
