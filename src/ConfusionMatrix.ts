@@ -16,8 +16,7 @@ import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {SquareMatrix, max, Matrix} from './DataStructures';
 import {
-  DataStoreApplicationProperties, dataStoreTimelines,
-  DataStoreTimelineSelection, RenderMode
+  DataStoreApplicationProperties, DataStoreSelectedRun, dataStoreTimelines, RenderMode
 } from './DataStore';
 import {
   SingleEpochCalculator, Line, MultiEpochCalculator, MatrixHeatCellContent
@@ -220,13 +219,13 @@ export class ConfusionMatrix implements IAppView {
 
 
   updateViews() {
-    const dataStoreTimelineArray = Array.from(dataStoreTimelines.values()).sort((a, b) => a.indexInTimelineCollection - b.indexInTimelineCollection);
-    const allPromises = dataStoreTimelineArray.map((value: DataStoreTimelineSelection) => {
+    const dataStoreTimelineArray = Array.from(dataStoreTimelines.values()).sort((a, b) => a.selectionIndex - b.selectionIndex);
+    const allPromises = dataStoreTimelineArray.map((value: DataStoreSelectedRun) => {
       const loadDataPromises = [];
       loadDataPromises.push(this.loadEpochs(value.multiSelected, value.selectedDataset));
       loadDataPromises.push(this.loadEpochs([value.singleSelected], value.selectedDataset));
       loadDataPromises.push(this.loadLabels(value.selectedDataset.classLabels, value.selectedDataset));
-      loadDataPromises.push(Promise.resolve(value.datasetColor));
+      loadDataPromises.push(Promise.resolve(value.color));
 
       return Promise.all(loadDataPromises)
         .then((d: any[]) => { // [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]
@@ -238,7 +237,9 @@ export class ConfusionMatrix implements IAppView {
     Promise.all(allPromises).then((allDatasets) => {
       this.chooseRenderMode(allDatasets);
       this.renderCells(allDatasets);
-      this.addRowAndColumnLabels(allDatasets[0].labels);
+      if(allDatasets.length > 0) {
+        this.addRowAndColumnLabels(allDatasets[0].labels);
+      }
     });
   }
 
@@ -540,11 +541,12 @@ export class ConfusionMatrix implements IAppView {
   }
 
   calcClassSizes(data: any) {
-    if (data[0].length === 0) {
-      return confMeasures.calcForMultipleClasses(data[1][0].confusionData, confMeasures.ClassSize);
-    } else {
+    if(data[0].length !== 0) {
       return confMeasures.calcForMultipleClasses(data[0][0].confusionData, confMeasures.ClassSize);
+    } else if(data[1].length !== 0) {
+      return confMeasures.calcForMultipleClasses(data[1][0].confusionData, confMeasures.ClassSize);
     }
+    return null;
   }
 
   setWeightUpdateListener(renderer: ACellRenderer) {

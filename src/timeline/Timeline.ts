@@ -6,7 +6,7 @@ import {MalevoDataset, IMalevoEpochInfo} from '../MalevoDataset';
 import * as d3 from 'd3';
 import {AppConstants} from '../AppConstants';
 import {extractEpochId} from '../utils';
-import {dataStoreTimelines, DataStoreTimelineSelection} from '../DataStore';
+import {dataStoreTimelines, DataStoreSelectedRun, TimelineParameters} from '../DataStore';
 import * as events from 'phovea_core/src/event';
 
 class SingleEpochSelector {
@@ -33,10 +33,6 @@ class SingleEpochSelector {
     this.hidden = val;
     this.$node.classed('hidden', val);
   }
-}
-
-export class OverallTimeline {
-  public dataPoints: string[] = [];
 }
 
 export class TimelineData {
@@ -118,7 +114,7 @@ export class Timeline {
       .attr('transform', 'translate(0,' + this.globalOffsetV + ')')
       .append('text')
       .classed('tml-label', true)
-      .style('fill', dataStoreTimelines.get(this.datasetName).datasetColor)
+      .style('fill', dataStoreTimelines.get(this.datasetName).color)
       .text(datasetName);
   }
 
@@ -134,15 +130,15 @@ export class Timeline {
     return this.$node;
   }
 
-  render($parent, offsetH: number, offsetV: number, otl: OverallTimeline) {
+  render($parent, offsetH: number, offsetV: number) {
     this.build($parent);
     this.$node.attr('transform', `translate(${this.MARGIN_LEFT}, ${offsetV})`);
 
-    const width = otl.dataPoints.length * 5;
+    const width = this.data.datapoints.length * 5;
     const x = d3.scale.ordinal()
       .rangePoints([0, width])
-      .domain(otl.dataPoints.map(function (d) {
-        return String(d);
+      .domain(this.data.datapoints.map(function (d) {
+        return String(d.position);
       }));
 
     const xAxis = d3.svg.axis()
@@ -170,7 +166,7 @@ export class Timeline {
       .call(brush);
 
     $brushg.select('.extent')
-      .style('fill', dataStoreTimelines.get(this.datasetName).datasetColor);
+      .style('fill', 'grey');
 
     brush.on('brush', () => this.brushmove(x, brush))
       .on('brushend', () => that.brushAndFire(x, brush));
@@ -192,7 +188,6 @@ export class Timeline {
         }
 
       });
-
     }
   }
 
@@ -319,7 +314,8 @@ export class Timeline {
       const y = d3.scale.linear().range(x.domain()).domain(x.range());
       const range = this.getDataIndices(+y(<number>extent[0]), +y(<number>extent[1]));
 
-      dataStoreTimelines.get(this.datasetName).multiSelected = this.getSelectedEpochs(range);
+      TimelineParameters.setRange(range[0], range[1]);
+      DataStoreSelectedRun.updateRuns();
 
       // set single epoch selector to the end
       this.singleEpochSelector.setPosition(range[1]);
@@ -327,7 +323,8 @@ export class Timeline {
       events.fire(AppConstants.EVENT_TIMELINE_CHANGED, this);
       this.updateSingleSelection();
     } else {
-      dataStoreTimelines.get(this.datasetName).clearMultiSelection();
+      TimelineParameters.setRange(-1, -1);
+      DataStoreSelectedRun.updateRuns();
       this.$node.select('g.brush').call(<any>brush.clear());
     }
   }
@@ -358,12 +355,12 @@ export class Timeline {
   }
 
   updateSingleSelection() {
-    dataStoreTimelines.get(this.datasetName).clearSingleSelection();
     if (!this.singleEpochSelector.hidden) {
       console.assert(this.data.datapoints[this.singleEpochSelector.curPos].exists);
-      const epoch = this.data.datapoints[this.singleEpochSelector.curPos].epoch;
-      console.assert(!!epoch);
-      dataStoreTimelines.get(this.datasetName).singleSelected = epoch;
+      TimelineParameters.singleIndex = this.singleEpochSelector.curPos;
+    } else {
+      TimelineParameters.singleIndex = -1;
     }
+    DataStoreSelectedRun.updateRuns();
   }
 }
