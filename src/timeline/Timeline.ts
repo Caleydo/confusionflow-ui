@@ -42,15 +42,10 @@ export class TimelineData {
   datapoints: DataPoint[] = [];
 
   build(epochs: IMalevoEpochInfo[]) {
-    /*function sortNumber(a: IMalevoEpochInfo, b: IMalevoEpochInfo) {
-      return extractEpochId(a) - extractEpochId(b);
-    }
-
-    epochs.sort(sortNumber);*/
     const length = epochs[epochs.length - 1].id;
     for (let i = 0; i <= length; i++) {
-      const epoch = epochs[i];
-      const dp = epoch ? new DataPoint(true, i, epoch) : new DataPoint(false, i, epoch);
+      const isValid = (epochs[i] !== null);
+      const dp = new DataPoint(isValid, i, epochs[i]);
       this.datapoints.push(dp);
     }
   }
