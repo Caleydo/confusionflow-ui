@@ -257,6 +257,7 @@ export class ConfusionMatrix implements IAppView {
     if (matrix === null || matrix[0] === null) { // if a single epoch or multiepoch-range was deselected
       return Promise.resolve([]);
     }
+    matrix = matrix.filter((epochInfo) => epochInfo !== null);
     const res = matrix.map((x) => {
       return x.confusionInfo.data();
     });

@@ -42,14 +42,14 @@ export class TimelineData {
   datapoints: DataPoint[] = [];
 
   build(epochs: IMalevoEpochInfo[]) {
-    function sortNumber(a: IMalevoEpochInfo, b: IMalevoEpochInfo) {
+    /*function sortNumber(a: IMalevoEpochInfo, b: IMalevoEpochInfo) {
       return extractEpochId(a) - extractEpochId(b);
     }
 
-    epochs.sort(sortNumber);
+    epochs.sort(sortNumber);*/
     const length = epochs[epochs.length - 1].id;
     for (let i = 0; i <= length; i++) {
-      const epoch = epochs.find((x) => x.id === i);
+      const epoch = epochs[i];
       const dp = epoch ? new DataPoint(true, i, epoch) : new DataPoint(false, i, epoch);
       this.datapoints.push(dp);
     }
