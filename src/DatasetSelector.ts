@@ -11,7 +11,7 @@ import {Language} from './language';
 import {INumericalMatrix} from 'phovea_core/src/matrix';
 import * as d3 from 'd3';
 import Format = d3.time.Format;
-import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo} from './MalevoDataset';
+import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo, ILoadedMalevoDataset} from './MalevoDataset';
 import {ITable} from 'phovea_core/src/table';
 import * as $ from 'jquery';
 import {DataStoreSelectedRun, dataStoreTimelines} from './DataStore';
@@ -148,6 +148,32 @@ class DataProvider {
     });
   }
 
+  private fillMissingEpochs(dsc: IMalevoDatasetCollection) {
+    function sortNumber(a: IMalevoEpochInfo, b: IMalevoEpochInfo) {
+      if(a === null && b === null) {
+        return null;
+      } else if(a === null) {
+        return extractEpochId(b);
+      } else if(b === null) {
+        return extractEpochId(a);
+      }
+      return extractEpochId(a) - extractEpochId(b);
+    }
+
+    Object.values(dsc).forEach((dataset: MalevoDataset) => {
+      const epochs = dataset.epochInfos;
+      epochs.sort(sortNumber);
+      const newEpochs = [];
+      const length = epochs[epochs.length - 1].id;
+      for (let i = 0; i <= length; i++) {
+        const epoch = epochs.find((x) => x.id === i);
+        const dp = epoch ? epoch : null;
+        newEpochs.push(dp);
+      }
+      dataset.epochInfos = newEpochs;
+    });
+  }
+
   prepareClassLabels(data: ITable[]): {[key: string]: ITable} {
     const labelCollection:{[key: string]: ITable} = {};
     for(const x of data) {
@@ -193,6 +219,7 @@ class DataProvider {
       }
 
     }
+    this.fillMissingEpochs(dsc);
     return dsc;
   }
 
