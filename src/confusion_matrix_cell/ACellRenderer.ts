@@ -386,7 +386,7 @@ export class AxisRenderer extends ACellRenderer {
     const timelineArray = Array.from(dataStoreTimelines.values());
     const selectedRangesLength = timelineArray.map((x) => x.multiSelected.length);
     const largest = selectedRangesLength.indexOf(Math.max(...selectedRangesLength));
-    const values = timelineArray[largest].multiSelected.map((x) => extractEpochId(x).toString());
+    const values = timelineArray[largest].multiSelected.filter((x) => x !== null).map((x) => extractEpochId(x).toString());
 
     const x = d3.scale.ordinal()
       .domain(values)
