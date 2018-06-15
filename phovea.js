@@ -46,6 +46,7 @@ module.exports = function (registry) {
     'order': 10
   });
 
+  /*
   registry.push('malevoView', 'DetailImageTab', function () {
     return System.import('./src/detail_view/DetailImageTab');
   }, {
@@ -61,6 +62,7 @@ module.exports = function (registry) {
     'isDetailWindow': true,
     'order': 30
   });
+  */
 
   // generator-phovea:end
 };
