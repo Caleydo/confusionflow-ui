@@ -121,7 +121,8 @@ export class DataStoreApplicationProperties {
   private static _transposeCellRenderer = false;
   private static _switchCellRenderer = false;
   private static _isAbsolute = false;
-  private static _weightFactor = 1;
+  private static _weightFactor = 0.5;
+  static weightFactorChart = 1.0;
   private static _renderMode: RenderMode = RenderMode.COMBINED;
 
   static get renderMode(): RenderMode {
