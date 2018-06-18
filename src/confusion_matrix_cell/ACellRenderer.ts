@@ -62,7 +62,7 @@ export class LineChartRenderer extends ACellRenderer {
 
   protected renderLine(data: Line[], $node: d3.Selection<any>) {
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(data)]).rangeRound([this.height, 0]);
+    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactorChart).domain([0, getYMax(data)]).rangeRound([this.height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -344,7 +344,7 @@ export class AxisRenderer extends ACellRenderer {
 
   private update = () => {
     if (this.$g !== null) {
-      this.updateYAxis(DataStoreApplicationProperties.weightFactor);
+      this.updateYAxis(DataStoreApplicationProperties.weightFactorChart);
     }
   }
 
@@ -399,7 +399,7 @@ export class AxisRenderer extends ACellRenderer {
     //todo these are magic constants: use a more sophisticated algo to solve this
     let tickFrequency = 1;
     if (selectedRangesLength[largest] > 20) {
-      tickFrequency = 4;
+      tickFrequency = 10;
     }
 
     const ticks = values.filter((x, i) => i % tickFrequency === 0);
@@ -412,7 +412,7 @@ export class AxisRenderer extends ACellRenderer {
       .attr('transform', 'translate(0,' + this.height + ')')
       .call(xAxis);
 
-    this.updateYAxis(DataStoreApplicationProperties.weightFactor);
+    this.updateYAxis(DataStoreApplicationProperties.weightFactorChart);
 
     this.$g.append('g')
       .attr('class', 'chart-axis-y')

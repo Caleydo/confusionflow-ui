@@ -287,7 +287,8 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private renderLabels($node: d3.Selection<any>, labels: string[]) {
-    const classColors = d3.scale.category10();
+    //const classColors = d3.scale.category10();
+    const classColors = ['#C87A8A', '#BE8368', '#A98E4B', '#8A9748', '#609F60', '#22A382', '#00A2A2', '#3E9BBA', '#7C8FC7', '#A782C3'];
 
     const $cells = $node.selectAll('div')
       .data(labels);
