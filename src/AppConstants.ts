@@ -88,6 +88,7 @@ export class AppConstants {
   static CELL_PRECISION = 'cellPrecision';
   static CELL_RECALL = 'cellRecall';
   static CELL_F1_SCORE = 'cellF1Score';
+  static CELL_OVERALL_ACCURACY_SCORE = 'overallPrecisionScore';
 
   /**
    * Initial size of a heatmap cells for the softmax stampx

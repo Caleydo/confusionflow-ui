@@ -13,7 +13,7 @@
 
 .grid {
   display: grid;
-  grid-template-areas: ". . axis-top . ." ". . label-top . label-right" "axis-left label-left matrix . chart-right" ". . . . ." ". label-bottom chart-bottom . .";
+  grid-template-areas: ". . axis-top . ." ". . label-top . label-right" "axis-left label-left matrix . chart-right" ". . . . ." ". label-bottom chart-bottom . overall";
   grid-template-columns: 20px 45px auto 10px minmax(100px, 300px);
   grid-template-rows: 20px 45px auto 10px minmax(60px, 1fr);
 }
@@ -43,6 +43,13 @@
 
     @include rotateSpanLabel();
   }
+}
+
+.overall {
+  grid-area: overall;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--num-right-columns), 1fr);
 }
 
 .label-right {
@@ -159,6 +166,7 @@
   }
 }
 
+.overall,
 .chart-right,
 .chart-bottom,
 .matrix {

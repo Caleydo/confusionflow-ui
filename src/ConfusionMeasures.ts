@@ -95,10 +95,34 @@ export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMa
     const res = calcForMultipleClasses(m, funct);
     matrix.values.map((c, i) => c[0].push(res[i]));
   }
-
-  //const summedPercent = calcSummedPercent(matrices);
-  //matrix[order - 1][0] = summedPercent;
   return matrix;
+}
+
+export function calcOverallAccuracy(matrices: NumberMatrix[]): number[] {
+  const order = matrices[0].order();
+  const arr = [];
+  if(matrices.length === 0) {
+    return arr;
+  }
+
+  for(const m of matrices) {
+    const res = calcSummedPercent1(m);
+    arr.push(res);
+  }
+  return arr;
+}
+
+export function calcSummedPercent1(matrix: NumberMatrix) {
+  let tpSum = 0;
+  let classSizeSum = 0;
+  for(let i = 0; i < matrix.order(); i++) {
+    tpSum += TP(matrix, i);
+    classSizeSum += ClassSize(matrix, i);
+  }
+  if(classSizeSum === 0) {
+    return 0;
+  }
+  return tpSum / classSizeSum;
 }
 
 

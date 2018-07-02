@@ -1,4 +1,4 @@
-import {IAppView} from './app';
+import {App, IAppView} from './app';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
@@ -14,7 +14,7 @@ import {ACell, LabelCell, MatrixCell, PanelCell} from './confusion_matrix_cell/C
 import {zip} from './utils';
 import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
-import {SquareMatrix, max, Matrix} from './DataStructures';
+import {SquareMatrix, max, Matrix, matrixSum} from './DataStructures';
 import {
   DataStoreApplicationProperties, DataStoreSelectedRun, dataStoreTimelines, RenderMode
 } from './DataStore';
@@ -41,6 +41,7 @@ export class ConfusionMatrix implements IAppView {
   private f1ScoreColumn: ChartColumn;
   private classSizeColumn: ChartColumn;
   private $cells = null;
+  private $overallAccuracyCell: d3.Selection<any>;
 
   constructor(parent: Element) {
     this.$node = d3.select(parent)
@@ -129,6 +130,9 @@ export class ConfusionMatrix implements IAppView {
 
     const numBottomColumns = 1; // number of additional columns
     this.$node.style('--num-bottom-columns', numBottomColumns);
+
+    this.$overallAccuracyCell = this.$node.append('div').classed('overall', true)
+      .append('div').classed('cell', true);
   }
 
   private attachListeners() {
@@ -347,6 +351,7 @@ export class ConfusionMatrix implements IAppView {
     let dataPrecision = null;
     let dataRecall = null;
     let dataF1 = null;
+    let dataOverallAccuracy = null;
 
     let fpfnRendererProto: IMatrixRendererChain = null;
     let confMatrixRendererProto: IMatrixRendererChain = null;
@@ -362,6 +367,7 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
       dataRecall = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.TPR));
       dataF1 = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.F1));
+      dataOverallAccuracy = datasets.map((x) => confMeasures.calcOverallAccuracy(x.multiEpochData.map((y) => y.confusionData)));
       singleEpochIndex = data[1].heatcell.indexInMultiSelection;
 
       confMatrixRendererProto = {
@@ -408,6 +414,7 @@ export class ConfusionMatrix implements IAppView {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.PPV));
       dataRecall = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.TPR));
       dataF1 = datasets.map((x) => confMeasures.calcEvolution(x.multiEpochData.map((y) => y.confusionData), confMeasures.F1));
+      dataOverallAccuracy = datasets.map((x) => confMeasures.calcOverallAccuracy(x.multiEpochData.map((y) => y.confusionData)));
       singleEpochIndex = null;
 
       confMatrixRendererProto = {
@@ -460,6 +467,7 @@ export class ConfusionMatrix implements IAppView {
     this.renderPrecisionColumn(dataPrecision, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
     this.renderRecallColumn(dataRecall, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
     this.renderF1ScoreColumn(dataF1, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
+    this.renderOverallAccuracyCell(dataOverallAccuracy, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
   }
 
   private renderConfMatrixCells() {
@@ -487,6 +495,19 @@ export class ConfusionMatrix implements IAppView {
         applyRendererChain(renderer, cell, renderer.diagonal);
         cell.render();
       });
+  }
+
+  renderOverallAccuracyCell(data: number[][], renderer: IMatrixRendererChain, labels: string[], singleEpochIndex: number[], colors: string[]) {
+    const maxVal = Math.max(...data.map((x: number[]) => Math.max(...x)));
+
+    const res = {
+        linecell: data.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: null, color: colors[i]}]),
+        heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
+      };
+      const cell = new PanelCell(res, AppConstants.CELL_OVERALL_ACCURACY_SCORE);
+      cell.init(this.$overallAccuracyCell);
+      applyRendererChain(renderer, cell, renderer.diagonal);
+      cell.render();
   }
 
   renderRecallColumn(data: Matrix<number[]>[], renderer: IMatrixRendererChain, labels: string[], singleEpochIndex: number[], colors: string[]) {
