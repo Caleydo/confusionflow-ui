@@ -71,6 +71,8 @@ export class DetailChartTab extends ADetailViewTab {
         text = Language.F1_SCORE_Y_LABEL;
         text = text + ' ' + Language.FOR_CLASS + ' ';
         text += cell.data.linecell[0][0].classLabel;
+      } else if (cell.type === AppConstants.CELL_OVERALL_ACCURACY_SCORE) {
+        text = Language.OVERALL_ACCURACY;
       }
     }
     this.$header.text(text);
