@@ -26,12 +26,6 @@ module.exports = function (registry) {
     'name': 'TimelineView'
   });
 
-  registry.push('malevoView', 'DetailView', function () {
-    return System.import('./src/detail_view/DetailView');
-  }, {
-    'name': 'DetailView'
-  });
-
   registry.push('malevoView', 'ToolbarView', function () {
     return System.import('./src/toolbar/ToolbarView');
   }, {
@@ -39,7 +33,7 @@ module.exports = function (registry) {
   });
 
   registry.push('malevoView', 'DetailChartTab', function () {
-    return System.import('./src/detail_view/DetailChartTab');
+    return System.import('./src/detail_view/DetailChart');
   }, {
     'name': 'DetailChartTab',
     'isDetailWindow': true,

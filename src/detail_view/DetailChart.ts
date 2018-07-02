@@ -40,7 +40,19 @@ export class DetailChartTab extends ADetailViewTab {
 
   init(): Promise<DetailChartTab> {
     this.$node.attr('id', this.id);
+    this.attachListeners();
     return Promise.resolve(this);
+  }
+
+  private attachListeners() {
+    events.on(AppConstants.EVENT_CELL_SELECTED + events.EventHandler.MULTI_EVENT_SEPARATOR + AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, () => {
+      this.clear();
+      this.render();
+    });
+
+    events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
+     this.clear();
+    });
   }
 
   createHeaderText = () => {
@@ -100,7 +112,6 @@ export class DetailChartTab extends ADetailViewTab {
     if (cell.data.linecell === null) {
       return;
     }
-    const multiEpochData = cell.data.linecell;
 
     this.createHeaderText();
     const margin = {top: 5, right: 10, bottom: 140, left: 65}; // set left + bottom to show axis and labels
