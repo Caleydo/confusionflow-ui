@@ -105,11 +105,7 @@ export function calcOverallAccuracy(matrices: NumberMatrix[]): number[] {
     return arr;
   }
 
-  for(const m of matrices) {
-    const res = calcSummedPercent1(m);
-    arr.push(res);
-  }
-  return arr;
+  return matrices.map((m) => calcSummedPercent1(m));
 }
 
 export function calcSummedPercent1(matrix: NumberMatrix) {

@@ -498,16 +498,15 @@ export class ConfusionMatrix implements IAppView {
   }
 
   renderOverallAccuracyCell(data: number[][], renderer: IMatrixRendererChain, labels: string[], singleEpochIndex: number[], colors: string[]) {
-    const maxVal = Math.max(...data.map((x: number[]) => Math.max(...x)));
-
+    const maxVal = Math.max(...[].concat(...data));
     const res = {
-        linecell: data.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: null, color: colors[i]}]),
-        heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
-      };
-      const cell = new PanelCell(res, AppConstants.CELL_OVERALL_ACCURACY_SCORE);
-      cell.init(this.$overallAccuracyCell);
-      applyRendererChain(renderer, cell, renderer.diagonal);
-      cell.render();
+      linecell: data.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: null, color: colors[i]}]),
+      heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
+    };
+    const cell = new PanelCell(res, AppConstants.CELL_OVERALL_ACCURACY_SCORE);
+    cell.init(this.$overallAccuracyCell);
+    applyRendererChain(renderer, cell, renderer.diagonal);
+    cell.render();
   }
 
   renderRecallColumn(data: Matrix<number[]>[], renderer: IMatrixRendererChain, labels: string[], singleEpochIndex: number[], colors: string[]) {
