@@ -32,10 +32,10 @@ module.exports = function (registry) {
     'name': 'ToolbarView'
   });
 
-  registry.push('malevoView', 'DetailChartTab', function () {
+  registry.push('malevoView', 'DetailChart', function () {
     return System.import('./src/detail_view/DetailChart');
   }, {
-    'name': 'DetailChartTab',
+    'name': 'DetailChart',
     'isDetailWindow': true,
     'order': 10
   });

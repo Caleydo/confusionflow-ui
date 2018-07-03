@@ -51,7 +51,7 @@ export class DetailChartTab extends ADetailViewTab {
     });
 
     events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
-     this.clear();
+      this.clear();
     });
   }
 
