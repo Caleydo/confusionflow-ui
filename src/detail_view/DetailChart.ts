@@ -1,4 +1,3 @@
-import {ADetailViewTab} from './ADetailViewTab';
 import {DataStoreApplicationProperties, DataStoreCellSelection, RenderMode} from '../DataStore';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
@@ -11,7 +10,7 @@ import {
 } from '../confusion_matrix_cell/ACellRenderer';
 import * as events from 'phovea_core/src/event';
 
-export class DetailChart extends ADetailViewTab {
+export class DetailChart {
   private width: number;
   private height: number;
   private $g: d3.Selection<any> = null;
@@ -20,9 +19,10 @@ export class DetailChart extends ADetailViewTab {
   private $header: d3.Selection<any> = null;
   public id: string = AppConstants.CHART_VIEW;
   public name: string = Language.CHART_VIEW;
+  private $node: d3.Selection<any>;
 
   constructor(parent: Element) {
-    super(parent);
+    this.$node = d3.select(parent).append('div').classed('viewpanel-content', true);
 
     this.width = parent.clientWidth;
     this.height = parent.clientHeight;
@@ -36,6 +36,10 @@ export class DetailChart extends ADetailViewTab {
       .style('width', '100%')
       .style('height', '500px')
       .attr('viewbox', `0 0 ${this.width} 500`);
+  }
+
+  shouldDisplay(show = true) {
+    this.$node.classed('hidden', !show);
   }
 
   init(): Promise<DetailChart> {

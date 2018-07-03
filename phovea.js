@@ -40,21 +40,5 @@ module.exports = function (registry) {
     'order': 10
   });
 
-  registry.push('malevoView', 'DetailImageTab', function () {
-    return System.import('./src/detail_view/DetailImageTab');
-  }, {
-    'name': 'DetailImageTab',
-    'isDetailWindow': true,
-    'order': 20
-  });
-
-  registry.push('malevoView', 'SoftmaxStampTab', function () {
-    return System.import('./src/detail_view/SoftmaxStampTab');
-  }, {
-    'name': 'SoftmaxStampTab',
-    'isDetailWindow': true,
-    'order': 30
-  });
-
   // generator-phovea:end
 };
