@@ -4,7 +4,6 @@
 
 import 'select2';
 import * as data from 'phovea_core/src/data';
-import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
 import {IAppView} from './app';
 import {Language} from './language';
@@ -63,6 +62,11 @@ class DataSetSelector implements IAppView {
     const that = this;
     (<any>$(this.$select.node()))
       .select2(this.select2Options)
+      .on('select2:open', (evt) => {
+        setTimeout(() => {
+          that.updateSelectorColors(d3.selectAll('li.select2-results__option[aria-selected="true"]'), (el: HTMLElement) => el.innerText);
+        }, 10); // wait until select2 generated the result list
+      })
       .on('select2:select', (evt) => {
         const dataset = d3.select(evt.params.data.element).data()[0];
         DataStoreSelectedRun.add(dataset);
@@ -75,10 +79,10 @@ class DataSetSelector implements IAppView {
       });
   }
 
-  private updateSelectorColors() {
-    this.$node.selectAll('li.select2-selection__choice')[0]
+  private updateSelectorColors(selection = this.$node.selectAll('li.select2-selection__choice'), attrFunc = (el: HTMLElement) => el.title) {
+    selection[0]
       .forEach((d, i) => {
-        const timeline = dataStoreTimelines.get(d.title);
+        const timeline = dataStoreTimelines.get(attrFunc(d));
         // set background to dataset color with opacity of 0.1
         d3.select(d).style('background-color', timeline.color + '19');
       });

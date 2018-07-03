@@ -55,3 +55,7 @@ b,
 .dataSelector label {
   margin-right: 10px;
 }
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background-color: #5897fb !important; // override the dataset background color set via style attribute
+}
