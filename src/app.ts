@@ -70,7 +70,7 @@ export class App implements IAppView {
       }
     },
     {
-      view: 'DetailView',
+      view: 'DetailChart',
       parent: 'details-wrapper',
       options: {
         eventName: ''

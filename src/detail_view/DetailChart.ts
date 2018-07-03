@@ -1,4 +1,3 @@
-import {ADetailViewTab} from './ADetailViewTab';
 import {DataStoreApplicationProperties, DataStoreCellSelection, RenderMode} from '../DataStore';
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
@@ -11,7 +10,7 @@ import {
 } from '../confusion_matrix_cell/ACellRenderer';
 import * as events from 'phovea_core/src/event';
 
-export class DetailChartTab extends ADetailViewTab {
+export class DetailChart {
   private width: number;
   private height: number;
   private $g: d3.Selection<any> = null;
@@ -20,9 +19,10 @@ export class DetailChartTab extends ADetailViewTab {
   private $header: d3.Selection<any> = null;
   public id: string = AppConstants.CHART_VIEW;
   public name: string = Language.CHART_VIEW;
+  private $node: d3.Selection<any>;
 
   constructor(parent: Element) {
-    super(parent);
+    this.$node = d3.select(parent).append('div').classed('viewpanel-content', true);
 
     this.width = parent.clientWidth;
     this.height = parent.clientHeight;
@@ -38,9 +38,21 @@ export class DetailChartTab extends ADetailViewTab {
       .attr('viewbox', `0 0 ${this.width} 500`);
   }
 
-  init(): Promise<DetailChartTab> {
+  init(): Promise<DetailChart> {
     this.$node.attr('id', this.id);
+    this.attachListeners();
     return Promise.resolve(this);
+  }
+
+  private attachListeners() {
+    events.on(AppConstants.EVENT_CELL_SELECTED + events.EventHandler.MULTI_EVENT_SEPARATOR + AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, () => {
+      this.clear();
+      this.render();
+    });
+
+    events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
+      this.clear();
+    });
   }
 
   createHeaderText = () => {
@@ -57,8 +69,12 @@ export class DetailChartTab extends ADetailViewTab {
     } else if (cell instanceof PanelCell) {
       if (cell.type === AppConstants.CELL_FP) {
         text = Language.FP_RATE;
+        text = text + ' ' + Language.FOR_CLASS + ' ';
+        text += cell.data.linecell[0][0].classLabel;
       } else if (cell.type === AppConstants.CELL_FN) {
         text = Language.FN_RATE;
+        text = text + ' ' + Language.FOR_CLASS + ' ';
+        text += cell.data.linecell[0][0].classLabel;
       } else if (cell.type === AppConstants.CELL_PRECISION) {
         text = Language.PRECISION_Y_LABEL;
         text = text + ' ' + Language.FOR_CLASS + ' ';
@@ -96,7 +112,6 @@ export class DetailChartTab extends ADetailViewTab {
     if (cell.data.linecell === null) {
       return;
     }
-    const multiEpochData = cell.data.linecell;
 
     this.createHeaderText();
     const margin = {top: 5, right: 10, bottom: 140, left: 65}; // set left + bottom to show axis and labels
@@ -129,5 +144,5 @@ export class DetailChartTab extends ADetailViewTab {
  * @returns {DetailChartWindow}
  */
 export function create(parent: Element, options: any) {
-  return new DetailChartTab(parent);
+  return new DetailChart(parent);
 }
