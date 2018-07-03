@@ -99,12 +99,6 @@ export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMa
 }
 
 export function calcOverallAccuracy(matrices: NumberMatrix[]): number[] {
-  const order = matrices[0].order();
-  const arr = [];
-  if(matrices.length === 0) {
-    return arr;
-  }
-
   return matrices.map((m) => calcSummedPercent1(m));
 }
 
