@@ -3,7 +3,7 @@
  */
 
 export class Language {
-  static APP_NAME = 'Malevo';
+  static APP_NAME = 'ConfusionFlow';
   static DATASET = 'Select a Dataset';
   static GROUND_TRUTH = 'Ground Truth';
   static PREDICTED = 'Predicted';
