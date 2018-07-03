@@ -23,7 +23,7 @@ export class Language {
   static PRECISION_Y_LABEL = 'Precision [%]';
   static RECALL_Y_LABEL = 'Recall [%]';
   static F1_SCORE_Y_LABEL = 'F1 Score [%]';
-  static OVERALL_PRECISION = 'Overall Precision';
+  static OVERALL_ACCURACY = 'Overall Accuracy';
   static FP_RATE = 'False Positive Rate';
   static FN_RATE = 'False Negative Rate';
   static FOR_CLASS = 'for class';

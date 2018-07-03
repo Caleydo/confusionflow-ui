@@ -398,7 +398,8 @@ export class AxisRenderer extends ACellRenderer {
 
     //todo these are magic constants: use a more sophisticated algo to solve this
     let tickFrequency = 1;
-    if (selectedRangesLength[largest] > 20) {
+    const stride = Number(values[1]) - Number(values[0]);
+    if (stride <= 5) {
       tickFrequency = 4;
     }
 
