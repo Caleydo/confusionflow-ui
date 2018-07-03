@@ -11,7 +11,7 @@ import {
 } from '../confusion_matrix_cell/ACellRenderer';
 import * as events from 'phovea_core/src/event';
 
-export class DetailChartTab extends ADetailViewTab {
+export class DetailChart extends ADetailViewTab {
   private width: number;
   private height: number;
   private $g: d3.Selection<any> = null;
@@ -38,7 +38,7 @@ export class DetailChartTab extends ADetailViewTab {
       .attr('viewbox', `0 0 ${this.width} 500`);
   }
 
-  init(): Promise<DetailChartTab> {
+  init(): Promise<DetailChart> {
     this.$node.attr('id', this.id);
     this.attachListeners();
     return Promise.resolve(this);
@@ -144,5 +144,5 @@ export class DetailChartTab extends ADetailViewTab {
  * @returns {DetailChartWindow}
  */
 export function create(parent: Element, options: any) {
-  return new DetailChartTab(parent);
+  return new DetailChart(parent);
 }
