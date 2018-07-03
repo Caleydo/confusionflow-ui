@@ -91,7 +91,7 @@ class DataSetSelector implements IAppView {
   private update() {
     const dataprovider = new DataProvider();
     return dataprovider.load()
-      .then((data:IMalevoDatasetCollection) => {
+      .then((data: IMalevoDatasetCollection) => {
         const resultArray = Object.keys(data).map((index) => data[index]);
 
         const $options = this.$select.selectAll('option').data(resultArray);
@@ -108,7 +108,7 @@ class DataSetSelector implements IAppView {
         this.$node.classed('hidden', false);
 
         // set initial dataset
-        if(Object.keys(data).length > 0) {
+        if (Object.keys(data).length > 0) {
           const x = data[Object.keys(data)[0]];
           $('#dataset-selector').select2(this.select2Options).val(x.name).trigger('change');
           DataStoreSelectedRun.add(x);
@@ -125,23 +125,23 @@ class DataProvider {
    * Loads the data and retruns a promise
    * @returns {Promise<MalevoDataset[]>}
    */
-  load():Promise<IMalevoDatasetCollection> {
-      const promMatrix = data
-        .list({'type': 'matrix'}) // use server-side filtering
-        .then((list: INumericalMatrix[]) => {
-          return this.prepareEpochData(list);
-        });
-      const promTable = data
-        .list({'type': 'table'})
-        .then((list: ITable[]) => {
-          return this.prepareClassLabels(list);
-        });
+  load(): Promise<IMalevoDatasetCollection> {
+    const promMatrix = data
+      .list({'type': 'matrix'}) // use server-side filtering
+      .then((list: INumericalMatrix[]) => {
+        return this.prepareEpochData(list);
+      });
+    const promTable = data
+      .list({'type': 'table'})
+      .then((list: ITable[]) => {
+        return this.prepareClassLabels(list);
+      });
 
-    return Promise.all([promMatrix, promTable]).then((results:any) => {
-      const dsc:IMalevoDatasetCollection = results[0];
+    return Promise.all([promMatrix, promTable]).then((results: any) => {
+      const dsc: IMalevoDatasetCollection = results[0];
       const tables = results[1];
 
-      for(const key of Object.keys(tables)) {
+      for (const key of Object.keys(tables)) {
         dsc[key].classLabels = tables[key];
       }
       return dsc;
@@ -150,11 +150,11 @@ class DataProvider {
 
   private fillMissingEpochs(dsc: IMalevoDatasetCollection) {
     function sortNumber(a: IMalevoEpochInfo, b: IMalevoEpochInfo) {
-      if(a === null && b === null) {
+      if (a === null && b === null) {
         return null;
-      } else if(a === null) {
+      } else if (a === null) {
         return extractEpochId(b);
-      } else if(b === null) {
+      } else if (b === null) {
         return extractEpochId(a);
       }
       return extractEpochId(a) - extractEpochId(b);
@@ -175,8 +175,8 @@ class DataProvider {
   }
 
   prepareClassLabels(data: ITable[]): {[key: string]: ITable} {
-    const labelCollection:{[key: string]: ITable} = {};
-    for(const x of data) {
+    const labelCollection: {[key: string]: ITable} = {};
+    for (const x of data) {
       const parts = this.getDatasetName(x);
       labelCollection[parts[0]] = x;
     }
@@ -185,7 +185,7 @@ class DataProvider {
 
   prepareEpochData(data: INumericalMatrix[]): IMalevoDatasetCollection {
     const getOrCreateMalevoDataset = (dsc: IMalevoDatasetCollection, datasetName: string) => {
-      if(!dsc[datasetName]) {
+      if (!dsc[datasetName]) {
         const ds = new MalevoDataset();
         ds.name = datasetName;
         ds.epochInfos = [];
@@ -197,7 +197,7 @@ class DataProvider {
 
     const getOrCreateEpochInfo = (dataset: MalevoDataset, epochName: string) => {
       let epochInfo = dataset.epochInfos.find((x) => x.name === epochName);
-      if(!epochInfo) {
+      if (!epochInfo) {
         epochInfo = {name: epochName, confusionInfo: null, id: null};
         epochInfo.id = extractEpochId(epochInfo);
         dataset.epochInfos.push(epochInfo);
@@ -208,13 +208,13 @@ class DataProvider {
 
     const dsc: IMalevoDatasetCollection = {};
 
-    for(const x of data) {
+    for (const x of data) {
       try {
         const parts = this.getDatasetName(x);
         const dataset = getOrCreateMalevoDataset(dsc, parts[0]);
         const epochInfo: IMalevoEpochInfo = getOrCreateEpochInfo(dataset, parts[2]);
         epochInfo.confusionInfo = x;
-      } catch(e) {
+      } catch (e) {
         // handle invalid server response data here
       }
 
@@ -225,7 +225,7 @@ class DataProvider {
 
   getDatasetName(x: INumericalMatrix | ITable) {
     const parts = x.desc.name.split('-');
-    if(parts.length < 2 || parts.length > 4) {
+    if (parts.length < 2 || parts.length > 4) {
       throw new Error('The received filename is not valid');
     }
     return parts;
@@ -238,6 +238,6 @@ class DataProvider {
  * @param options
  * @returns {DataSetSelector}
  */
-export function create(parent:Element, options:any) {
+export function create(parent: Element, options: any) {
   return new DataSetSelector();
 }

@@ -64,13 +64,13 @@ export class DataStoreSelectedRun {
 
   static updateRuns() {
     dataStoreTimelines.forEach((timeline) => {
-        timeline.multiSelected = timeline.selectedDataset.epochInfos.slice(TimelineParameters.minIndex, TimelineParameters.maxIndex+1);
-        timeline.singleSelected = timeline.selectedDataset.epochInfos[TimelineParameters.singleIndex];
+      timeline.multiSelected = timeline.selectedDataset.epochInfos.slice(TimelineParameters.minIndex, TimelineParameters.maxIndex + 1);
+      timeline.singleSelected = timeline.selectedDataset.epochInfos[TimelineParameters.singleIndex];
     });
 
     //const epoch = this.data.datapoints[this.singleEpochSelector.curPos].epoch;
-      //console.assert(!!epoch);
-      //dataStoreTimelines.get(this.datasetName).singleSelected = epoch;
+    //console.assert(!!epoch);
+    //dataStoreTimelines.get(this.datasetName).singleSelected = epoch;
   }
 }
 
