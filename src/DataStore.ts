@@ -10,7 +10,7 @@ import {ACell} from './confusion_matrix_cell/Cell';
 import * as d3 from 'd3';
 import {extractEpochId} from './utils';
 
-export const dataStoreTimelines: Map<String, DataStoreSelectedRun> = new Map<String, DataStoreSelectedRun>();
+export const dataStoreTimelines: Map<string, DataStoreSelectedRun> = new Map<string, DataStoreSelectedRun>();
 
 /**
  * Stores the selected datasets
@@ -64,13 +64,9 @@ export class DataStoreSelectedRun {
 
   static updateRuns() {
     dataStoreTimelines.forEach((timeline) => {
-        timeline.multiSelected = timeline.selectedDataset.epochInfos.slice(TimelineParameters.minIndex, TimelineParameters.maxIndex+1);
-        timeline.singleSelected = timeline.selectedDataset.epochInfos[TimelineParameters.singleIndex];
+      timeline.multiSelected = timeline.selectedDataset.epochInfos.slice(TimelineParameters.minIndex, TimelineParameters.maxIndex + 1);
+      timeline.singleSelected = timeline.selectedDataset.epochInfos[TimelineParameters.singleIndex];
     });
-
-    //const epoch = this.data.datapoints[this.singleEpochSelector.curPos].epoch;
-      //console.assert(!!epoch);
-      //dataStoreTimelines.get(this.datasetName).singleSelected = epoch;
   }
 }
 
