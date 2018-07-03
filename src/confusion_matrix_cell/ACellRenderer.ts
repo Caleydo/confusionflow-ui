@@ -398,7 +398,8 @@ export class AxisRenderer extends ACellRenderer {
 
     //todo these are magic constants: use a more sophisticated algo to solve this
     let tickFrequency = 1;
-    if (selectedRangesLength[largest] > 20) {
+    const stride = Number(values[1]) - Number(values[0]);
+    if (stride <= 5) {
       tickFrequency = 4;
     }
 
@@ -427,7 +428,7 @@ export class AxisRenderer extends ACellRenderer {
 
     this.$g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-      .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance)) + ')')  // centre below axis
+      .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance / 2)) + ')')  // centre below axis
       .text(Language.EPOCH);
   }
 
