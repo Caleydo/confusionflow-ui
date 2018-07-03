@@ -38,10 +38,6 @@ export class DetailChart {
       .attr('viewbox', `0 0 ${this.width} 500`);
   }
 
-  shouldDisplay(show = true) {
-    this.$node.classed('hidden', !show);
-  }
-
   init(): Promise<DetailChart> {
     this.$node.attr('id', this.id);
     this.attachListeners();
