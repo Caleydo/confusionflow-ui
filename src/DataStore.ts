@@ -10,7 +10,7 @@ import {ACell} from './confusion_matrix_cell/Cell';
 import * as d3 from 'd3';
 import {extractEpochId} from './utils';
 
-export const dataStoreTimelines: Map<String, DataStoreSelectedRun> = new Map<String, DataStoreSelectedRun>();
+export const dataStoreTimelines: Map<string, DataStoreSelectedRun> = new Map<string, DataStoreSelectedRun>();
 
 /**
  * Stores the selected datasets
