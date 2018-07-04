@@ -191,11 +191,19 @@ export class VerticalLineRenderer extends ACellRenderer {
 }
 
 export class SingleEpochMarker extends ACellRenderer implements ITransposeRenderer {
+  protected cell: MatrixCell | PanelCell;
+
   constructor(public isTransposed = false) {
     super();
   }
 
+  private update = () => {
+    //const data: Line[] = [].concat.apply([], this.cell.data.linecell);
+    this.render(this.cell);
+  }
+
   protected render(cell: MatrixCell | PanelCell) {
+    this.cell = cell;
     if (cell.data.heatcell === null) {
       return;
     }
@@ -218,8 +226,14 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
     firstHCPart.style('background', bg);
   }
 
-  public addWeightFactorChangedListener() {}
-  public removeWeightFactorChangedListener() {}
+  public addWeightFactorChangedListener() {
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
+  }
+
+  public removeWeightFactorChangedListener() {
+    events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
+  }
+
   public addYAxisScaleChangedListener() {}
   public removeYAxisScaleChangedListener() {}
 }
