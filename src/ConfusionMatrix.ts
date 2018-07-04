@@ -249,12 +249,34 @@ export class ConfusionMatrix implements IAppView {
 
     // wait until datasets are loaded
     Promise.all(allPromises).then((allDatasets) => {
+      const startIndex = 0;
+      const endIndex = 1;
+      allDatasets = this.filter(allDatasets, startIndex, endIndex);
+      AppConstants.CONF_MATRIX_SIZE = endIndex - startIndex + 1;
       this.chooseRenderMode(allDatasets);
       this.renderCells(allDatasets);
       if(allDatasets.length > 0) {
         this.addRowAndColumnLabels(allDatasets[0].labels);
       }
     });
+  }
+
+  filter(datasets: ILoadedMalevoDataset[], startIndex: number, endIndex: number): ILoadedMalevoDataset[] {
+    return datasets.map((ds: ILoadedMalevoDataset) => {
+      const newMultiEpochData = ds.multiEpochData.map((epoch) => {
+        const newMatrix = epoch.confusionData.slice(startIndex, endIndex);
+        return {name: epoch.name, id: epoch.id, confusionData: newMatrix};
+      });
+
+      ds.singleEpochData.confusionData = ds.singleEpochData.confusionData.slice(startIndex, endIndex);
+
+      return { multiEpochData: newMultiEpochData,
+        singleEpochData: ds.singleEpochData,
+        labels: ds.labels.slice(startIndex, endIndex + 1),
+        datasetColor: ds.datasetColor,
+        classSizes: ds.classSizes.slice(startIndex, endIndex + 1)};
+    });
+
   }
 
   private loadEpochs(matrix: IMalevoEpochInfo[], dataset: MalevoDataset): Promise<ILoadedMalevoEpoch[]> {

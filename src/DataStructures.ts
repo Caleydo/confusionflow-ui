@@ -89,6 +89,21 @@ export class SquareMatrix<U> extends Matrix<U> {
     }
     return sqm;
   }
+
+  slice(startIndex: number, endIndex: number) {
+    if(startIndex < 0 || endIndex >= this.order() || startIndex > endIndex) {
+      throw new Error('Start index or end Index is invalid');
+    }
+    const order = endIndex - startIndex + 1;
+    const sqm = new SquareMatrix<U>(order);
+    for(let r = 0; r < startIndex + order; r++) {
+      sqm.values[r] = [];
+      for(let c = 0; c < startIndex + order; c++) {
+        sqm.values[r][c] = this.values[r + startIndex][c + startIndex];
+      }
+    }
+    return sqm;
+  }
 }
 
 export type NumberMatrix = SquareMatrix<number>;

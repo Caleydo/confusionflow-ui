@@ -104,7 +104,7 @@ export class AppConstants {
   /**
    * Number of rows and columns of the confusion matrix
    */
-  static readonly CONF_MATRIX_SIZE = 10;
+  static CONF_MATRIX_SIZE = 10;
 
   /**
    * Size of timeline components
