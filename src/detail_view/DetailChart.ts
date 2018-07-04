@@ -125,6 +125,7 @@ export class DetailChart {
 
     this.cell = new MatrixCell(cell.data, '', '', 0, 0);
     this.cell.init(this.$svg);
+    this.cell.detachListener();
 
     let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener(), (renderer: ACellRenderer) => renderer.addYAxisScaleChangedListener()];
     if (cell instanceof PanelCell && cell.type === AppConstants.CELL_PRECISION) {

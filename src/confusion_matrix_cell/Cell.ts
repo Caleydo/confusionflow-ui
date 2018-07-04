@@ -20,13 +20,17 @@ export abstract class ACell {
 
   init($node: d3.Selection<any>) {
     this._$node = $node;
-    this.attachListener($node);
+    this.attachListener();
   }
 
-  protected attachListener($node: d3.Selection<any>) {
-    $node.on('click', () => {
+  protected attachListener() {
+    this._$node.on('click', () => {
       DataStoreCellSelection.cellSelected(this);
     });
+  }
+
+  public detachListener() {
+    this._$node.on('click', null);
   }
 
   public render() {
