@@ -231,7 +231,6 @@ export class ConfusionMatrix implements IAppView {
 
   }
 
-
   updateViews() {
     const dataStoreTimelineArray = Array.from(dataStoreTimelines.values()).sort((a, b) => a.selectionIndex - b.selectionIndex);
     const allPromises = dataStoreTimelineArray.map((value: DataStoreSelectedRun) => {
@@ -249,10 +248,11 @@ export class ConfusionMatrix implements IAppView {
 
     // wait until datasets are loaded
     Promise.all(allPromises).then((allDatasets) => {
-      const startIndex = 0;
-      const endIndex = 1;
+      const startIndex = 1;
+      const endIndex = 2;
       allDatasets = this.filter(allDatasets, startIndex, endIndex);
       AppConstants.CONF_MATRIX_SIZE = endIndex - startIndex + 1;
+      this.$node.style('--matrix-size', AppConstants.CONF_MATRIX_SIZE);
       this.chooseRenderMode(allDatasets);
       this.renderCells(allDatasets);
       if(allDatasets.length > 0) {

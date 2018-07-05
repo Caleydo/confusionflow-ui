@@ -114,8 +114,8 @@
 
 .matrix {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: repeat(var(--matrix-size), 1fr);
+  grid-template-rows: repeat(var(--matrix-size), 1fr);
 }
 
 .labels,
@@ -128,16 +128,16 @@
 }
 
 .label-left > .labels {
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-rows: repeat(var(--matrix-size), 1fr);
 }
 
 .chart-right > .chart {
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-rows: repeat(var(--matrix-size), 1fr);
 }
 
 .label-top > .labels,
 .chart-bottom > .chart {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(var(--matrix-size), 1fr);
 }
 
 .cell {
