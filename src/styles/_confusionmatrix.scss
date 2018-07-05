@@ -13,7 +13,7 @@
 
 .grid {
   display: grid;
-  grid-template-areas: ". . axis-top . ." ". . label-top . label-right" "axis-left label-left matrix . chart-right" ". . . . ." ". label-bottom chart-bottom . overall";
+  grid-template-areas: ". . axis-top . ." ". . label-top . label-right" "axis-left label-left matrix . chart-right" ". . . . ." ". label-bottom chart-bottom . chart-bottom-right";
   grid-template-columns: 20px 45px auto 10px minmax(100px, 300px);
   grid-template-rows: 20px 45px auto 10px minmax(60px, 1fr);
 }
@@ -45,8 +45,8 @@
   }
 }
 
-.overall {
-  grid-area: overall;
+.chart-bottom-right {
+  grid-area: chart-bottom-right;
   position: relative;
   display: grid;
   grid-template-columns: repeat(var(--num-right-columns), 1fr);
@@ -166,7 +166,7 @@
   }
 }
 
-.overall,
+.chart-bottom-right,
 .chart-right,
 .chart-bottom,
 .matrix {
