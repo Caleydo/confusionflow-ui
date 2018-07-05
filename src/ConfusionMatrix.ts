@@ -4,7 +4,7 @@ import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
 import {MalevoDataset, IMalevoEpochInfo, ILoadedMalevoEpoch, ILoadedMalevoDataset} from './MalevoDataset';
 import {ITable} from 'phovea_core/src/table';
-import {ChartColumn} from './ChartColumn';
+import {ChartColumn, MultiTypeChartColumn} from './ChartColumn';
 import {
   ACellRenderer, MatrixLineCellRenderer,
   VerticalLineRenderer, BarChartRenderer, LabelCellRenderer, HeatmapMultiEpochRenderer, HeatmapSingleEpochRenderer,
@@ -41,7 +41,8 @@ export class ConfusionMatrix implements IAppView {
   private f1ScoreColumn: ChartColumn;
   private classSizeColumn: ChartColumn;
   private $cells = null;
-  private $overallAccuracyCell: d3.Selection<any>;
+  private cellsBottomRight: MultiTypeChartColumn;
+  //private $overallAccuracyCell: d3.Selection<any>;
 
   constructor(parent: Element) {
     this.$node = d3.select(parent)
@@ -131,8 +132,8 @@ export class ConfusionMatrix implements IAppView {
     const numBottomColumns = 1; // number of additional columns
     this.$node.style('--num-bottom-columns', numBottomColumns);
 
-    this.$overallAccuracyCell = this.$node.append('div').classed('overall', true)
-      .append('div').classed('cell', true);
+    const $chartBottomRight = this.$node.append('div').classed('chart-bottom-right', true);
+    this.cellsBottomRight = new MultiTypeChartColumn($chartBottomRight);
   }
 
   private attachListeners() {
@@ -339,6 +340,7 @@ export class ConfusionMatrix implements IAppView {
     this.recallColumn.$node.selectAll('div').remove();
     this.f1ScoreColumn.$node.selectAll('div').remove();
     this.classSizeColumn.$node.selectAll('div').remove();
+    this.cellsBottomRight.$node.selectAll('div').remove();
 
     if (DataStoreApplicationProperties.renderMode === RenderMode.CLEAR) {
       return;
@@ -498,13 +500,17 @@ export class ConfusionMatrix implements IAppView {
   }
 
   renderOverallAccuracyCell(data: number[][], renderer: IMatrixRendererChain, labels: string[], singleEpochIndex: number[], colors: string[]) {
+    const $overallAccuracyCell = this.cellsBottomRight.$node
+      .append('div')
+      .classed('cell', true);
+
     const maxVal = Math.max(...[].concat(...data));
     const res = {
       linecell: data.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: null, color: colors[i]}]),
       heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
     };
     const cell = new PanelCell(res, AppConstants.CELL_OVERALL_ACCURACY_SCORE);
-    cell.init(this.$overallAccuracyCell);
+    cell.init($overallAccuracyCell);
     applyRendererChain(renderer, cell, renderer.diagonal);
     cell.render();
   }

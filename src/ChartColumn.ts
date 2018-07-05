@@ -3,7 +3,7 @@
  */
 import * as d3 from 'd3';
 import {ACellRenderer, MatrixLineCellRenderer} from './confusion_matrix_cell/ACellRenderer';
-import {Line, MatrixHeatCellContent} from './confusion_matrix_cell/CellContent';
+import {ACell} from './confusion_matrix_cell/Cell';
 import {ICellData} from './ConfusionMatrix';
 
 export class ChartColumn {
@@ -14,5 +14,12 @@ export class ChartColumn {
 
   render(lineContent: ICellData, renderer: ACellRenderer) {
     const x = 0;
+  }
+}
+
+export class MultiTypeChartColumn {
+  cells: ACell[] = [];
+  constructor(public $node: d3.Selection<any>) {
+    $node.classed('chart', true);
   }
 }

@@ -1,6 +1,6 @@
 import * as events from 'phovea_core/src/event';
 import {Line, MatrixHeatCellContent} from './CellContent';
-import {ACell, LabelCell, MatrixCell, PanelCell} from './Cell';
+import {ACell, DetailChartCell, LabelCell, MatrixCell, PanelCell} from './Cell';
 import {adaptTextColorToBgColor, extractEpochId} from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
@@ -62,7 +62,7 @@ export class LineChartRenderer extends ACellRenderer {
 
   protected renderLine(data: Line[], $node: d3.Selection<any>) {
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(data)]).rangeRound([this.height, 0]);
+    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([this.height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -191,11 +191,19 @@ export class VerticalLineRenderer extends ACellRenderer {
 }
 
 export class SingleEpochMarker extends ACellRenderer implements ITransposeRenderer {
+  protected cell: MatrixCell | PanelCell;
+
   constructor(public isTransposed = false) {
     super();
   }
 
+  private update = () => {
+    //const data: Line[] = [].concat.apply([], this.cell.data.linecell);
+    this.render(this.cell);
+  }
+
   protected render(cell: MatrixCell | PanelCell) {
+    this.cell = cell;
     if (cell.data.heatcell === null) {
       return;
     }
@@ -218,8 +226,14 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
     firstHCPart.style('background', bg);
   }
 
-  public addWeightFactorChangedListener() {}
-  public removeWeightFactorChangedListener() {}
+  public addWeightFactorChangedListener() {
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
+  }
+
+  public removeWeightFactorChangedListener() {
+    events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
+  }
+
   public addYAxisScaleChangedListener() {}
   public removeYAxisScaleChangedListener() {}
 }
@@ -341,6 +355,7 @@ export class AxisRenderer extends ACellRenderer {
   private yAxis: any;
   private y: any;
   private $g: d3.Selection<any> = null;
+  private cell: MatrixCell | PanelCell;
 
   private update = () => {
     if (this.$g !== null) {
@@ -372,13 +387,14 @@ export class AxisRenderer extends ACellRenderer {
   }
 
   private updateYAxis(value: number) {
-    this.y.exponent(value).domain([0, getYMax(this.data)]).range([this.height, 0]);
+    this.y.exponent(value).domain([0, getYMax(this.cell, this.data)]).range([this.height, 0]);
     this.yAxis.scale(this.y);
     this.$g.select('.chart-axis-y').call(this.yAxis);
   }
 
   protected render(cell: MatrixCell | PanelCell) {
     this.$g = cell.$node.select('g');
+    this.cell = cell;
     if (this.$g === null) {
       return;
     }
@@ -394,7 +410,7 @@ export class AxisRenderer extends ACellRenderer {
 
     const y = d3.scale.linear()
       .rangeRound([this.height, 0])
-      .domain([0, getYMax(this.data)]);
+      .domain([0, getYMax(cell, this.data)]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
     let tickFrequency = 1;
@@ -517,7 +533,13 @@ export function removeListeners(renderChain: ACellRenderer, funct: ((r: ACellRen
   }
 }
 
-function getYMax(data: Line[]) {
-  return DataStoreApplicationProperties.switchToAbsolute ? getLargestLine(data).max : 1;
+function getYMax(cell: ACell, data: Line[]) {
+  const maxScale = 1;
+
+  // cell types with no absolute values always have a max value of 1
+  if (cell instanceof DetailChartCell && cell.child instanceof PanelCell && cell.child.hasType([AppConstants.CELL_PRECISION, AppConstants.CELL_RECALL, AppConstants.CELL_F1_SCORE])) {
+    return maxScale;
+  }
+  return DataStoreApplicationProperties.switchToAbsolute ? getLargestLine(data).max : maxScale;
 }
 

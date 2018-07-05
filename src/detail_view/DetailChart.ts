@@ -2,7 +2,7 @@ import {DataStoreApplicationProperties, DataStoreCellSelection, RenderMode} from
 import {AppConstants} from '../AppConstants';
 import * as d3 from 'd3';
 import {Language} from '../language';
-import {ACell, MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
+import {ACell, DetailChartCell, MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
 import {
   ACellRenderer, applyRendererChain,
   AxisRenderer, IMatrixRendererChain, LineChartRenderer, removeListeners,
@@ -123,11 +123,12 @@ export class DetailChart {
     this.$g = this.$svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
     this.$g.classed('linechart', true);
 
-    this.cell = new MatrixCell(cell.data, '', '', 0, 0);
+    this.cell = new DetailChartCell(cell);
     this.cell.init(this.$svg);
+    this.cell.detachListener();
 
     let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener(), (renderer: ACellRenderer) => renderer.addYAxisScaleChangedListener()];
-    if (cell instanceof PanelCell && cell.type === AppConstants.CELL_PRECISION) {
+    if (cell instanceof PanelCell && (cell.hasType([AppConstants.CELL_PRECISION, AppConstants.CELL_RECALL, AppConstants.CELL_F1_SCORE]))) {
       wfc = [];
     }
 

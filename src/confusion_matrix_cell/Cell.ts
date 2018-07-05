@@ -20,13 +20,17 @@ export abstract class ACell {
 
   init($node: d3.Selection<any>) {
     this._$node = $node;
-    this.attachListener($node);
+    this.attachListener();
   }
 
-  protected attachListener($node: d3.Selection<any>) {
-    $node.on('click', () => {
+  protected attachListener() {
+    this._$node.on('click', () => {
       DataStoreCellSelection.cellSelected(this);
     });
+  }
+
+  public detachListener() {
+    this._$node.on('click', null);
   }
 
   public render() {
@@ -52,5 +56,17 @@ export class PanelCell extends ACell {
   constructor(public data: {linecell: Line[][], heatcell: MatrixHeatCellContent},
     public type: string) {
     super();
+  }
+
+  hasType(types: string[]) {
+    return types.includes(this.type);
+  }
+}
+
+export class DetailChartCell extends ACell {
+  public data: {linecell: Line[][], heatcell: MatrixHeatCellContent};
+  constructor(public child: MatrixCell | PanelCell) {
+    super();
+    this.data = child.data;
   }
 }
