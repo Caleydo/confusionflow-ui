@@ -29,4 +29,5 @@ export class Language {
   static FOR_CLASS = 'for class';
   static PREDICTED_AS = 'predicted as';
   static SELECT_CLASSES = 'Select classes';
+  static APPLY = 'Apply';
 }

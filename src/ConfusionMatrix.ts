@@ -78,17 +78,25 @@ export class ConfusionMatrix implements IAppView {
         </div>
 
         <div class="dropdown-menu" aria-labelledby="classSelectorLabel">
-        <form>
-          <ul></ul>
-          <button type="submit">Show</button>
+          <form action="#" method="GET">
+            <div></div>
+            <button type="submit" class="btn btn-sm btn-primary">${Language.APPLY}</button>
           </form>
         </div>
       </div>
       `);
 
     this.$classSelector = $axisTop.select('.dropdown-menu');
+
     this.$classSelector.on('click', () => {
       (<any>d3.event).stopPropagation(); // prevent closing the bootstrap dropdown
+    });
+
+    this.$classSelector.select('form').on('submit', () => {
+      (<any>d3.event).stopPropagation(); // prevent sending the form
+      $($axisTop.select('#classSelectorLabel').node()).dropdown('toggle');
+      const classIds = this.$classSelector.selectAll('div.checkbox input[type="checkbox"]:checked')[0].map((d: HTMLInputElement) => +d.value);
+      DataStoreApplicationProperties.selectedClassIndices = classIds;
     });
 
     this.$node.append('div')
@@ -279,13 +287,13 @@ export class ConfusionMatrix implements IAppView {
 
     // wait until datasets are loaded
     Promise.all(allPromises).then((allDatasets: ILoadedMalevoDataset[]) => {
+      if (allDatasets.length === 0) {
+        return;
+      }
+
       DataStoreLoadedRuns.runs = allDatasets;
       DataStoreApplicationProperties.selectedClassIndices = allDatasets[0].labelIds; // -> fires event -> listener calls render()
-
-      if (allDatasets.length > 0) {
-        this.renderClassSelector(allDatasets[0].labelIds, allDatasets[0].labels, DataStoreApplicationProperties.selectedClassIndices);
-        this.addRowAndColumnLabels(allDatasets[0].labels);
-      }
+      this.renderClassSelector(allDatasets[0].labelIds, allDatasets[0].labels, DataStoreApplicationProperties.selectedClassIndices);
     });
   }
 
@@ -295,6 +303,9 @@ export class ConfusionMatrix implements IAppView {
     this.$node.style('--matrix-size', AppConstants.CONF_MATRIX_SIZE);
     this.chooseRenderMode(filteredAllDatasets);
     this.renderCells(filteredAllDatasets);
+    if (DataStoreLoadedRuns.runs.length > 0) {
+      this.addRowAndColumnLabels(filteredAllDatasets[0].labels);
+    }
   }
 
   private filter(datasets: ILoadedMalevoDataset[], indexArray: number[]): ILoadedMalevoDataset[] {
@@ -346,9 +357,8 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private renderClassSelector(labelIds: number[], labels: string[], selected: number[]) {
-    const res = zip([labelIds, labels]);
-    const $labels = this.$classSelector.select('ul').selectAll('li').data(res);
-    $labels.enter().append('li').classed('checkbox', true)
+    const $labels = this.$classSelector.select('div').selectAll('div.checkbox').data(zip([labelIds, labels]));
+    $labels.enter().append('div').classed('checkbox', true)
       .html((d) => {
         const checked = (selected.indexOf(d[0]) > -1) ? ` checked="checked"` : '';
         return `<label><input type="checkbox" value="${d[0]}" ${checked}>${d[1]}</label>`;
