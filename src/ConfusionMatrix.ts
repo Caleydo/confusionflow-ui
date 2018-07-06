@@ -16,7 +16,7 @@ import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {SquareMatrix, max, Matrix, matrixSum} from './DataStructures';
 import {
-  DataStoreApplicationProperties, DataStoreSelectedRun, dataStoreTimelines, RenderMode
+  DataStoreApplicationProperties, DataStoreSelectedRun, dataStoreTimelines, RenderMode, DataStoreLoadedRuns
 } from './DataStore';
 import {
   SingleEpochCalculator, Line, MultiEpochCalculator, MatrixHeatCellContent
@@ -193,6 +193,10 @@ export class ConfusionMatrix implements IAppView {
       this.removeConfusionMatrixCellsContent();
       this.renderConfMatrixCells();
     });
+
+    events.on(AppConstants.EVENT_CLASS_INDICES_CHANGED, (evt) => {
+      this.render();
+    });
   }
 
 
@@ -234,34 +238,42 @@ export class ConfusionMatrix implements IAppView {
 
   updateViews() {
     const dataStoreTimelineArray = Array.from(dataStoreTimelines.values()).sort((a, b) => a.selectionIndex - b.selectionIndex);
-    const allPromises = dataStoreTimelineArray.map((value: DataStoreSelectedRun) => {
+    const allPromises: Promise<ILoadedMalevoDataset>[] = dataStoreTimelineArray.map((value: DataStoreSelectedRun) => {
       const loadDataPromises = [];
       loadDataPromises.push(this.loadEpochs(value.multiSelected, value.selectedDataset));
       loadDataPromises.push(this.loadEpochs([value.singleSelected], value.selectedDataset));
-      loadDataPromises.push(this.loadLabels(value.selectedDataset.classLabels, value.selectedDataset));
+      loadDataPromises.push(value.selectedDataset.classLabels.data());
       loadDataPromises.push(Promise.resolve(value.color));
 
       return Promise.all(loadDataPromises)
-        .then((d: any[]) => { // [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]
-          return {multiEpochData: <ILoadedMalevoEpoch[]>d[0], singleEpochData: <ILoadedMalevoEpoch>d[1][0], labels: <string[]>d[2], datasetColor: <string>d[3], classSizes: this.calcClassSizes(d)};
+        .then((d: any[]): ILoadedMalevoDataset => { // [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]
+          const labels: string[] = d[2].map((x) => x[1]);
+          const labelIds: number[] = d[2].map((x) => x[0]);
+
+          return {multiEpochData: <ILoadedMalevoEpoch[]>d[0], singleEpochData: <ILoadedMalevoEpoch>d[1][0], labels, labelIds, datasetColor: <string>d[3], classSizes: this.calcClassSizes(d)};
         });
     });
 
     // wait until datasets are loaded
-    Promise.all(allPromises).then((allDatasets) => {
-      const indexArray = [2, 7, 9];
-      allDatasets = this.filter(allDatasets, indexArray);
-      AppConstants.CONF_MATRIX_SIZE = indexArray.length;
-      this.$node.style('--matrix-size', AppConstants.CONF_MATRIX_SIZE);
-      this.chooseRenderMode(allDatasets);
-      this.renderCells(allDatasets);
-      if(allDatasets.length > 0) {
+    Promise.all(allPromises).then((allDatasets: ILoadedMalevoDataset[]) => {
+      DataStoreLoadedRuns.runs = allDatasets;
+      DataStoreApplicationProperties.selectedClassIndices = allDatasets[0].labelIds; // -> fires event -> listener calls render()
+
+      if (allDatasets.length > 0) {
         this.addRowAndColumnLabels(allDatasets[0].labels);
       }
     });
   }
 
-  filter(datasets: ILoadedMalevoDataset[], indexArray: number[]): ILoadedMalevoDataset[] {
+  private render() {
+    const filteredAllDatasets = this.filter(DataStoreLoadedRuns.runs, DataStoreApplicationProperties.selectedClassIndices);
+    AppConstants.CONF_MATRIX_SIZE = DataStoreApplicationProperties.selectedClassIndices.length;
+    this.$node.style('--matrix-size', AppConstants.CONF_MATRIX_SIZE);
+    this.chooseRenderMode(filteredAllDatasets);
+    this.renderCells(filteredAllDatasets);
+  }
+
+  private filter(datasets: ILoadedMalevoDataset[], indexArray: number[]): ILoadedMalevoDataset[] {
     return datasets.map((ds: ILoadedMalevoDataset) => {
       const newMultiEpochData = ds.multiEpochData.map((epoch) => {
         const newMatrix = epoch.confusionData.filter(indexArray);
@@ -270,13 +282,15 @@ export class ConfusionMatrix implements IAppView {
 
       ds.singleEpochData.confusionData = ds.singleEpochData.confusionData.filter(indexArray);
 
-      return { multiEpochData: newMultiEpochData,
+      return {
+        multiEpochData: newMultiEpochData,
         singleEpochData: ds.singleEpochData,
         labels: indexArray.map((x) => ds.labels[x]),
+        labelIds: indexArray.map((x) => ds.labelIds[x]),
         datasetColor: ds.datasetColor,
-        classSizes: indexArray.map((x) => ds.classSizes[x])};
+        classSizes: indexArray.map((x) => ds.classSizes[x])
+      };
     });
-
   }
 
   private loadEpochs(matrix: IMalevoEpochInfo[], dataset: MalevoDataset): Promise<ILoadedMalevoEpoch[]> {
@@ -300,7 +314,7 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
-  private loadLabels(table: ITable, dataset: MalevoDataset): Promise<any> {
+  private loadLabels(table: ITable, dataset: MalevoDataset): Promise<string[]> {
     return table.data()
       .then((x: [[number, string]]) => {
         return x.map((x) => x[1]);
@@ -658,9 +672,9 @@ export class ConfusionMatrix implements IAppView {
   }
 
   calcClassSizes(data: any) {
-    if(data[0].length !== 0) {
+    if (data[0].length !== 0) {
       return confMeasures.calcForMultipleClasses(data[0][0].confusionData, confMeasures.ClassSize);
-    } else if(data[1].length !== 0) {
+    } else if (data[1].length !== 0) {
       return confMeasures.calcForMultipleClasses(data[1][0].confusionData, confMeasures.ClassSize);
     }
     return null;

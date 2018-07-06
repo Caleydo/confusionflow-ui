@@ -80,6 +80,12 @@ export class AppConstants {
   static EVENT_SWITCH_SCALE_TO_ABSOLUTE = 'eventSwitchScaleToAbsolute';
 
   /**
+   * Fires when the selected class indicies are changed
+   * @type {string}
+   */
+  static EVENT_CLASS_INDICES_CHANGED = 'eventClassIndicesChanged';
+
+  /**
    * Represent the different cell types
    * @type {string}
    */
