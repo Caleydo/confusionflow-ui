@@ -1,5 +1,7 @@
 import {App, IAppView} from './app';
 import * as d3 from 'd3';
+import 'select2';
+import * as $ from 'jquery';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
 import {MalevoDataset, IMalevoEpochInfo, ILoadedMalevoEpoch, ILoadedMalevoDataset} from './MalevoDataset';
@@ -32,6 +34,7 @@ export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
   private $matrixWrapper: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
+  private $classSelector: d3.Selection<any>;
   private $labelsTop: d3.Selection<any>;
   private $labelsLeft: d3.Selection<any>;
   private fpColumn: ChartColumn;
@@ -63,10 +66,30 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private setupLayout() {
-    this.$node.append('div')
+    const $axisTop = this.$node.append('div')
       .classed('cfm-axis', true)
       .classed('axis-top', true)
-      .text(Language.PREDICTED);
+      .html(`
+        <div>${Language.PREDICTED}</div>
+        <div class="dropdown">
+        <div id="classSelectorLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <i class="fa fa-cog" aria-hide="true" title="${Language.SELECT_CLASSES}"></i>
+          <span class="sr-only">${Language.SELECT_CLASSES}</span>
+        </div>
+
+        <div class="dropdown-menu" aria-labelledby="classSelectorLabel">
+        <form>
+          <ul></ul>
+          <button type="submit">Show</button>
+          </form>
+        </div>
+      </div>
+      `);
+
+    this.$classSelector = $axisTop.select('.dropdown-menu');
+    this.$classSelector.on('click', () => {
+      (<any>d3.event).stopPropagation(); // prevent closing the bootstrap dropdown
+    });
 
     this.$node.append('div')
       .classed('cfm-axis', true)
@@ -260,6 +283,7 @@ export class ConfusionMatrix implements IAppView {
       DataStoreApplicationProperties.selectedClassIndices = allDatasets[0].labelIds; // -> fires event -> listener calls render()
 
       if (allDatasets.length > 0) {
+        this.renderClassSelector(allDatasets[0].labelIds, allDatasets[0].labels, DataStoreApplicationProperties.selectedClassIndices);
         this.addRowAndColumnLabels(allDatasets[0].labels);
       }
     });
@@ -319,6 +343,17 @@ export class ConfusionMatrix implements IAppView {
       .then((x: [[number, string]]) => {
         return x.map((x) => x[1]);
       });
+  }
+
+  private renderClassSelector(labelIds: number[], labels: string[], selected: number[]) {
+    const res = zip([labelIds, labels]);
+    const $labels = this.$classSelector.select('ul').selectAll('li').data(res);
+    $labels.enter().append('li').classed('checkbox', true)
+      .html((d) => {
+        const checked = (selected.indexOf(d[0]) > -1) ? ` checked="checked"` : '';
+        return `<label><input type="checkbox" value="${d[0]}" ${checked}>${d[1]}</label>`;
+      });
+    $labels.exit().remove();
   }
 
   private addRowAndColumnLabels(labels: string[]) {
