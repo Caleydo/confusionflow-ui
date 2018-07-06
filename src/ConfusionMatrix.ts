@@ -81,7 +81,10 @@ export class ConfusionMatrix implements IAppView {
             <div class="checkbox select-all"><label><input type="checkbox" value="all">Select all</label></div>
             <form action="#" method="GET">
               <div class="form-group"></div>
-              <button type="submit" class="btn btn-sm btn-primary">${Language.APPLY}</button>
+              <div class="form-footer">
+                <p class="text-warning hidden">Select at least 2 classes</p>
+                <button type="submit" class="btn btn-sm btn-primary">${Language.APPLY}</button>
+              </div>
             </form>
           </div>
         </div>
@@ -89,20 +92,11 @@ export class ConfusionMatrix implements IAppView {
 
     this.$classSelector = $axisTop.select('.dropdown-menu');
 
-    this.$classSelector.on('click', () => {
-      (<any>d3.event).stopPropagation(); // prevent closing the bootstrap dropdown
-    });
-
     this.$classSelector.select('form').on('submit', () => {
       (<any>d3.event).stopPropagation(); // prevent sending the form
       $($axisTop.select('#classSelectorLabel').node()).dropdown('toggle');
       const classIds = this.$classSelector.selectAll('div.form-group input[type="checkbox"]:checked')[0].map((d: HTMLInputElement) => +d.value);
       DataStoreApplicationProperties.selectedClassIndices = classIds;
-    });
-
-    this.$classSelector.select('.select-all input').on('change', () => {
-      const selectAll = this.$classSelector.select('.select-all input').property('checked');
-      this.$classSelector.select('form').selectAll('input[type="checkbox"]').property('checked', selectAll);
     });
 
     this.$node.append('div')
@@ -365,11 +359,28 @@ export class ConfusionMatrix implements IAppView {
   private renderClassSelector(labelIds: number[], labels: string[], selected: number[]) {
     this.$classSelector.select('.select-all input').property('checked', (labelIds.length === selected.length));
 
+    this.$classSelector.on('click', () => {
+      (<any>d3.event).stopPropagation(); // prevent closing the bootstrap dropdown
+    });
+
+    this.$classSelector.select('.select-all input').on('change', () => {
+      const isSelectAll = this.$classSelector.select('.select-all input').property('checked');
+      this.$classSelector.select('form').selectAll('input[type="checkbox"]').property('checked', isSelectAll);
+      this.$classSelector.select('.form-footer button').property('disabled', (isSelectAll === false));
+      this.$classSelector.select('.form-footer p').classed('hidden', (isSelectAll === true));
+    });
+
     const $labels = this.$classSelector.select('div.form-group').selectAll('div.checkbox').data(zip([labelIds, labels]));
-    $labels.enter().append('div').classed('checkbox', true)
+    const $labelsEnter = $labels.enter().append('div').classed('checkbox', true)
       .html((d) => {
-        const checked = (selected.indexOf(d[0]) > -1) ? ` checked="checked"` : '';
-        return `<label><input type="checkbox" value="${d[0]}" ${checked}>${d[1]}</label>`;
+        return `<label><input type="checkbox" value="${d[0]}">${d[1]}</label>`;
+      });
+    $labelsEnter.select('input')
+      .property('checked', (d) => (selected.indexOf(d[0]) > -1))
+      .on('change', () => {
+        const numSelected = this.$classSelector.selectAll('div.form-group input[type="checkbox"]:checked')[0].length;
+        this.$classSelector.select('.form-footer button').property('disabled', (numSelected < 2));
+        this.$classSelector.select('.form-footer p').classed('hidden', (numSelected >= 2));
       });
     $labels.exit().remove();
   }
