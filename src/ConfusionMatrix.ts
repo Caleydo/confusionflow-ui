@@ -72,18 +72,19 @@ export class ConfusionMatrix implements IAppView {
       .html(`
         <div>${Language.PREDICTED}</div>
         <div class="dropdown">
-        <div id="classSelectorLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <i class="fa fa-cog" aria-hide="true" title="${Language.SELECT_CLASSES}"></i>
-          <span class="sr-only">${Language.SELECT_CLASSES}</span>
-        </div>
+          <a href="#" id="classSelectorLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-cog" aria-hide="true" title="${Language.SELECT_CLASSES}"></i>
+            <span class="sr-only">${Language.SELECT_CLASSES}</span>
+          </a>
 
-        <div class="dropdown-menu" aria-labelledby="classSelectorLabel">
-          <form action="#" method="GET">
-            <div></div>
-            <button type="submit" class="btn btn-sm btn-primary">${Language.APPLY}</button>
-          </form>
+          <div class="dropdown-menu" aria-labelledby="classSelectorLabel">
+            <div class="checkbox select-all"><label><input type="checkbox" value="all">Select all</label></div>
+            <form action="#" method="GET">
+              <div class="form-group"></div>
+              <button type="submit" class="btn btn-sm btn-primary">${Language.APPLY}</button>
+            </form>
+          </div>
         </div>
-      </div>
       `);
 
     this.$classSelector = $axisTop.select('.dropdown-menu');
@@ -95,8 +96,13 @@ export class ConfusionMatrix implements IAppView {
     this.$classSelector.select('form').on('submit', () => {
       (<any>d3.event).stopPropagation(); // prevent sending the form
       $($axisTop.select('#classSelectorLabel').node()).dropdown('toggle');
-      const classIds = this.$classSelector.selectAll('div.checkbox input[type="checkbox"]:checked')[0].map((d: HTMLInputElement) => +d.value);
+      const classIds = this.$classSelector.selectAll('div.form-group input[type="checkbox"]:checked')[0].map((d: HTMLInputElement) => +d.value);
       DataStoreApplicationProperties.selectedClassIndices = classIds;
+    });
+
+    this.$classSelector.select('.select-all input').on('change', () => {
+      const selectAll = this.$classSelector.select('.select-all input').property('checked');
+      this.$classSelector.select('form').selectAll('input[type="checkbox"]').property('checked', selectAll);
     });
 
     this.$node.append('div')
@@ -357,7 +363,9 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private renderClassSelector(labelIds: number[], labels: string[], selected: number[]) {
-    const $labels = this.$classSelector.select('div').selectAll('div.checkbox').data(zip([labelIds, labels]));
+    this.$classSelector.select('.select-all input').property('checked', (labelIds.length === selected.length));
+
+    const $labels = this.$classSelector.select('div.form-group').selectAll('div.checkbox').data(zip([labelIds, labels]));
     $labels.enter().append('div').classed('checkbox', true)
       .html((d) => {
         const checked = (selected.indexOf(d[0]) > -1) ? ` checked="checked"` : '';
