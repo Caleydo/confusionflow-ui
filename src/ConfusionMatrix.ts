@@ -249,10 +249,9 @@ export class ConfusionMatrix implements IAppView {
 
     // wait until datasets are loaded
     Promise.all(allPromises).then((allDatasets) => {
-      const startIndex = 1;
-      const endIndex = 2;
-      allDatasets = this.filter(allDatasets, startIndex, endIndex);
-      AppConstants.CONF_MATRIX_SIZE = endIndex - startIndex + 1;
+      const indexArray = [2, 7, 9];
+      allDatasets = this.filter(allDatasets, indexArray);
+      AppConstants.CONF_MATRIX_SIZE = indexArray.length;
       this.$node.style('--matrix-size', AppConstants.CONF_MATRIX_SIZE);
       this.chooseRenderMode(allDatasets);
       this.renderCells(allDatasets);
@@ -262,20 +261,20 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
-  filter(datasets: ILoadedMalevoDataset[], startIndex: number, endIndex: number): ILoadedMalevoDataset[] {
+  filter(datasets: ILoadedMalevoDataset[], indexArray: number[]): ILoadedMalevoDataset[] {
     return datasets.map((ds: ILoadedMalevoDataset) => {
       const newMultiEpochData = ds.multiEpochData.map((epoch) => {
-        const newMatrix = epoch.confusionData.slice(startIndex, endIndex);
+        const newMatrix = epoch.confusionData.filter(indexArray);
         return {name: epoch.name, id: epoch.id, confusionData: newMatrix};
       });
 
-      ds.singleEpochData.confusionData = ds.singleEpochData.confusionData.slice(startIndex, endIndex);
+      ds.singleEpochData.confusionData = ds.singleEpochData.confusionData.filter(indexArray);
 
       return { multiEpochData: newMultiEpochData,
         singleEpochData: ds.singleEpochData,
-        labels: ds.labels.slice(startIndex, endIndex + 1),
+        labels: indexArray.map((x) => ds.labels[x]),
         datasetColor: ds.datasetColor,
-        classSizes: ds.classSizes.slice(startIndex, endIndex + 1)};
+        classSizes: indexArray.map((x) => ds.classSizes[x])};
     });
 
   }
