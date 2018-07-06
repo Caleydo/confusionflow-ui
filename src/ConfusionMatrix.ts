@@ -315,11 +315,11 @@ export class ConfusionMatrix implements IAppView {
         return {name: epoch.name, id: epoch.id, confusionData: newMatrix};
       });
 
-      ds.singleEpochData.confusionData = ds.singleEpochData.confusionData.filter(indexArray);
+      const newSingleEpochData = {name: ds.singleEpochData.name, confusionData: ds.singleEpochData.confusionData.filter(indexArray), id: ds.singleEpochData.id};
 
       return {
         multiEpochData: newMultiEpochData,
-        singleEpochData: ds.singleEpochData,
+        singleEpochData: newSingleEpochData,
         labels: indexArray.map((x) => ds.labels[x]),
         labelIds: indexArray.map((x) => ds.labelIds[x]),
         datasetColor: ds.datasetColor,
