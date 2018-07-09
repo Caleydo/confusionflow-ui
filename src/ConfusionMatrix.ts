@@ -6,7 +6,7 @@ import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
 import {MalevoDataset, IMalevoEpochInfo, ILoadedMalevoEpoch, ILoadedMalevoDataset} from './MalevoDataset';
 import {ITable} from 'phovea_core/src/table';
-import {ChartColumn, MultiTypeChartColumn} from './ChartColumn';
+import {ChartColumn} from './ChartColumn';
 import {
   ACellRenderer, MatrixLineCellRenderer,
   VerticalLineRenderer, BarChartRenderer, LabelCellRenderer, HeatmapMultiEpochRenderer, HeatmapSingleEpochRenderer,
@@ -44,7 +44,7 @@ export class ConfusionMatrix implements IAppView {
   private f1ScoreColumn: ChartColumn;
   private classSizeColumn: ChartColumn;
   private $cells = null;
-  private cellsBottomRight: MultiTypeChartColumn;
+  private cellsBottomRight: ChartColumn;
   //private $overallAccuracyCell: d3.Selection<any>;
 
   constructor(parent: Element) {
@@ -164,7 +164,7 @@ export class ConfusionMatrix implements IAppView {
     this.$node.style('--num-bottom-columns', numBottomColumns);
 
     const $chartBottomRight = this.$node.append('div').classed('chart-bottom-right', true);
-    this.cellsBottomRight = new MultiTypeChartColumn($chartBottomRight);
+    this.cellsBottomRight = new ChartColumn($chartBottomRight);
   }
 
   private attachListeners() {

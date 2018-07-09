@@ -8,7 +8,7 @@ export default class ConfusionMeasuresView implements IAppView {
   private $node: d3.Selection<any>;
 
   constructor(parent: Element) {
-    this.$node = d3.select(parent).append('div').classed('metrics-table-content', true);
+    this.$node = d3.select(parent).append('table').classed('metrics-table-content', true);
   }
 
   /**
@@ -31,7 +31,7 @@ export default class ConfusionMeasuresView implements IAppView {
  * Factory method to create a new HeatMap instance
  * @param parent
  * @param options
- * @returns {HeatMap}
+ * @returns {ConfusionMeasuresView}
  */
 export function create(parent: Element, options: any) {
   return new ConfusionMeasuresView(parent);
