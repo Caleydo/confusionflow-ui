@@ -92,6 +92,7 @@ export class App implements IAppView {
     $main.append('div').classed('timeline-wrapper', true);
     $main.append('div').classed('toolbar-wrapper', true);
     $main.append('div').classed('conf-matrix-wrapper', true);
+    $main.append('div').classed('metrics-table-wrapper', true);
     $main.append('div').classed('details-wrapper', true);
   }
 

@@ -22,15 +22,20 @@ b,
   display: grid;
   grid-template-areas:
     "toolbar matrix timeline"
+    "toolbar matrix metrics-table"
     "toolbar matrix details";
   grid-template-columns: 40px minmax(auto, 92vh) minmax(40%, auto);
-  grid-template-rows: minmax(35px, max-content) minmax(min-content, 80vh);
+  grid-template-rows: minmax(35px, max-content) minmax(min-content, 38vh) minmax(min-content, 38vh);
   grid-gap: 20px;
   margin: 10px;
 }
 
 .conf-matrix-wrapper {
   grid-area: matrix;
+}
+
+.metrics-table-wrapper {
+  grid-area: metrics-table;
 }
 
 .details-wrapper {
