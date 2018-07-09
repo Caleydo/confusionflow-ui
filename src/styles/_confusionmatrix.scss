@@ -34,6 +34,7 @@
     grid-area: axis-top;
     border-bottom: 1px solid lighten($label-border, 5%);
     padding-left: 10px;
+    justify-content: space-between;
   }
 
   &.axis-left {
@@ -42,6 +43,44 @@
     padding-top: 10px;
 
     @include rotateSpanLabel();
+  }
+
+  .dropdown {
+    a {
+      color: darken($label-border, 10%);
+
+      &:active,
+      &:hover,
+      &:focus {
+        color: black;
+      }
+    }
+
+    .form-footer {
+      margin-left: 10px;
+      margin-bottom: 10px;
+    }
+
+    .checkbox {
+      margin: 0;
+    }
+
+    label {
+      display: block;
+      color: darken($label-border, 30%);
+      padding: 5px 30px;
+
+      &:focus-within,
+      &:hover {
+        color: black;
+        background-color: lighten($label-border, 10%);
+      }
+    }
+
+    .checkbox.select-all,
+    .form-group {
+      border-bottom: 1px solid lighten($label-border, 5%);
+    }
   }
 }
 
@@ -114,8 +153,8 @@
 
 .matrix {
   display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  grid-template-rows: repeat(10, 1fr);
+  grid-template-columns: repeat(var(--matrix-size), 1fr);
+  grid-template-rows: repeat(var(--matrix-size), 1fr);
 }
 
 .labels,
@@ -128,16 +167,16 @@
 }
 
 .label-left > .labels {
-  grid-template-rows: repeat(10, 1fr);
+  grid-template-rows: repeat(var(--matrix-size), 1fr);
 }
 
 .chart-right > .chart {
-  grid-template-rows: repeat(10, 1fr);
+  grid-template-rows: repeat(var(--matrix-size), 1fr);
 }
 
 .label-top > .labels,
 .chart-bottom > .chart {
-  grid-template-columns: repeat(10, 1fr);
+  grid-template-columns: repeat(var(--matrix-size), 1fr);
 }
 
 .cell {

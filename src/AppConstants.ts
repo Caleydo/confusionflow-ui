@@ -80,6 +80,12 @@ export class AppConstants {
   static EVENT_SWITCH_SCALE_TO_ABSOLUTE = 'eventSwitchScaleToAbsolute';
 
   /**
+   * Fires when the selected class indicies are changed
+   * @type {string}
+   */
+  static EVENT_CLASS_INDICES_CHANGED = 'eventClassIndicesChanged';
+
+  /**
    * Represent the different cell types
    * @type {string}
    */
@@ -104,7 +110,7 @@ export class AppConstants {
   /**
    * Number of rows and columns of the confusion matrix
    */
-  static readonly CONF_MATRIX_SIZE = 10;
+  static CONF_MATRIX_SIZE = 10;
 
   /**
    * Size of timeline components

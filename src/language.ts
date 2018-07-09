@@ -28,4 +28,6 @@ export class Language {
   static FN_RATE = 'False Negative Rate';
   static FOR_CLASS = 'for class';
   static PREDICTED_AS = 'predicted as';
+  static SELECT_CLASSES = 'Select classes';
+  static APPLY = 'Apply';
 }

@@ -1,5 +1,7 @@
 import {App, IAppView} from './app';
 import * as d3 from 'd3';
+import 'select2';
+import * as $ from 'jquery';
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
 import {MalevoDataset, IMalevoEpochInfo, ILoadedMalevoEpoch, ILoadedMalevoDataset} from './MalevoDataset';
@@ -16,7 +18,7 @@ import * as confMeasures from './ConfusionMeasures';
 import {Language} from './language';
 import {SquareMatrix, max, Matrix, matrixSum} from './DataStructures';
 import {
-  DataStoreApplicationProperties, DataStoreSelectedRun, dataStoreTimelines, RenderMode
+  DataStoreApplicationProperties, DataStoreSelectedRun, dataStoreTimelines, RenderMode, DataStoreLoadedRuns
 } from './DataStore';
 import {
   SingleEpochCalculator, Line, MultiEpochCalculator, MatrixHeatCellContent
@@ -32,6 +34,7 @@ export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
   private $matrixWrapper: d3.Selection<any>;
   private $confusionMatrix: d3.Selection<any>;
+  private $classSelector: d3.Selection<any>;
   private $labelsTop: d3.Selection<any>;
   private $labelsLeft: d3.Selection<any>;
   private fpColumn: ChartColumn;
@@ -63,10 +66,38 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private setupLayout() {
-    this.$node.append('div')
+    const $axisTop = this.$node.append('div')
       .classed('cfm-axis', true)
       .classed('axis-top', true)
-      .text(Language.PREDICTED);
+      .html(`
+        <div>${Language.PREDICTED}</div>
+        <div class="dropdown">
+          <a href="#" id="classSelectorLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-cog" aria-hide="true" title="${Language.SELECT_CLASSES}"></i>
+            <span class="sr-only">${Language.SELECT_CLASSES}</span>
+          </a>
+
+          <div class="dropdown-menu" aria-labelledby="classSelectorLabel">
+            <div class="checkbox select-all"><label><input type="checkbox" value="all">Select all</label></div>
+            <form action="#" method="GET">
+              <div class="form-group"></div>
+              <div class="form-footer">
+                <p class="text-warning hidden">Select at least 2 classes</p>
+                <button type="submit" class="btn btn-sm btn-primary">${Language.APPLY}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `);
+
+    this.$classSelector = $axisTop.select('.dropdown-menu');
+
+    this.$classSelector.select('form').on('submit', () => {
+      (<any>d3.event).stopPropagation(); // prevent sending the form
+      $($axisTop.select('#classSelectorLabel').node()).dropdown('toggle');
+      const classIds = this.$classSelector.selectAll('div.form-group input[type="checkbox"]:checked')[0].map((d: HTMLInputElement) => +d.value);
+      DataStoreApplicationProperties.selectedClassIndices = classIds;
+    });
 
     this.$node.append('div')
       .classed('cfm-axis', true)
@@ -193,6 +224,10 @@ export class ConfusionMatrix implements IAppView {
       this.removeConfusionMatrixCellsContent();
       this.renderConfMatrixCells();
     });
+
+    events.on(AppConstants.EVENT_CLASS_INDICES_CHANGED, (evt) => {
+      this.render();
+    });
   }
 
 
@@ -232,29 +267,64 @@ export class ConfusionMatrix implements IAppView {
 
   }
 
-
   updateViews() {
     const dataStoreTimelineArray = Array.from(dataStoreTimelines.values()).sort((a, b) => a.selectionIndex - b.selectionIndex);
-    const allPromises = dataStoreTimelineArray.map((value: DataStoreSelectedRun) => {
+    const allPromises: Promise<ILoadedMalevoDataset>[] = dataStoreTimelineArray.map((value: DataStoreSelectedRun) => {
       const loadDataPromises = [];
       loadDataPromises.push(this.loadEpochs(value.multiSelected, value.selectedDataset));
       loadDataPromises.push(this.loadEpochs([value.singleSelected], value.selectedDataset));
-      loadDataPromises.push(this.loadLabels(value.selectedDataset.classLabels, value.selectedDataset));
+      loadDataPromises.push(value.selectedDataset.classLabels.data());
       loadDataPromises.push(Promise.resolve(value.color));
 
       return Promise.all(loadDataPromises)
-        .then((d: any[]) => { // [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]
-          return {multiEpochData: <ILoadedMalevoEpoch[]>d[0], singleEpochData: <ILoadedMalevoEpoch>d[1][0], labels: <string[]>d[2], datasetColor: <string>d[3], classSizes: this.calcClassSizes(d)};
+        .then((d: any[]): ILoadedMalevoDataset => { // [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]
+          const labels: string[] = d[2].map((x) => x[1]);
+          const labelIds: number[] = d[2].map((x) => x[0]);
+
+          return {multiEpochData: <ILoadedMalevoEpoch[]>d[0], singleEpochData: <ILoadedMalevoEpoch>d[1][0], labels, labelIds, datasetColor: <string>d[3], classSizes: this.calcClassSizes(d)};
         });
     });
 
     // wait until datasets are loaded
-    Promise.all(allPromises).then((allDatasets) => {
-      this.chooseRenderMode(allDatasets);
-      this.renderCells(allDatasets);
-      if(allDatasets.length > 0) {
-        this.addRowAndColumnLabels(allDatasets[0].labels);
+    Promise.all(allPromises).then((allDatasets: ILoadedMalevoDataset[]) => {
+      if (allDatasets.length === 0) {
+        return;
       }
+
+      DataStoreLoadedRuns.runs = allDatasets;
+      DataStoreApplicationProperties.selectedClassIndices = allDatasets[0].labelIds; // -> fires event -> listener calls render()
+      this.renderClassSelector(allDatasets[0].labelIds, allDatasets[0].labels, DataStoreApplicationProperties.selectedClassIndices);
+    });
+  }
+
+  private render() {
+    const filteredAllDatasets = this.filter(DataStoreLoadedRuns.runs, DataStoreApplicationProperties.selectedClassIndices);
+    AppConstants.CONF_MATRIX_SIZE = DataStoreApplicationProperties.selectedClassIndices.length;
+    this.$node.style('--matrix-size', AppConstants.CONF_MATRIX_SIZE);
+    this.chooseRenderMode(filteredAllDatasets);
+    this.renderCells(filteredAllDatasets);
+    if (DataStoreLoadedRuns.runs.length > 0) {
+      this.addRowAndColumnLabels(filteredAllDatasets[0].labels);
+    }
+  }
+
+  private filter(datasets: ILoadedMalevoDataset[], indexArray: number[]): ILoadedMalevoDataset[] {
+    return datasets.map((ds: ILoadedMalevoDataset) => {
+      const newMultiEpochData = ds.multiEpochData.map((epoch) => {
+        const newMatrix = epoch.confusionData.filter(indexArray);
+        return {name: epoch.name, id: epoch.id, confusionData: newMatrix};
+      });
+
+      const newSingleEpochData = {name: ds.singleEpochData.name, confusionData: ds.singleEpochData.confusionData.filter(indexArray), id: ds.singleEpochData.id};
+
+      return {
+        multiEpochData: newMultiEpochData,
+        singleEpochData: newSingleEpochData,
+        labels: indexArray.map((x) => ds.labels[x]),
+        labelIds: indexArray.map((x) => ds.labelIds[x]),
+        datasetColor: ds.datasetColor,
+        classSizes: indexArray.map((x) => ds.classSizes[x])
+      };
     });
   }
 
@@ -279,11 +349,40 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
-  private loadLabels(table: ITable, dataset: MalevoDataset): Promise<any> {
+  private loadLabels(table: ITable, dataset: MalevoDataset): Promise<string[]> {
     return table.data()
       .then((x: [[number, string]]) => {
         return x.map((x) => x[1]);
       });
+  }
+
+  private renderClassSelector(labelIds: number[], labels: string[], selected: number[]) {
+    this.$classSelector.select('.select-all input').property('checked', (labelIds.length === selected.length));
+
+    this.$classSelector.on('click', () => {
+      (<any>d3.event).stopPropagation(); // prevent closing the bootstrap dropdown
+    });
+
+    this.$classSelector.select('.select-all input').on('change', () => {
+      const isSelectAll = this.$classSelector.select('.select-all input').property('checked');
+      this.$classSelector.select('form').selectAll('input[type="checkbox"]').property('checked', isSelectAll);
+      this.$classSelector.select('.form-footer button').property('disabled', (isSelectAll === false));
+      this.$classSelector.select('.form-footer p').classed('hidden', (isSelectAll === true));
+    });
+
+    const $labels = this.$classSelector.select('div.form-group').selectAll('div.checkbox').data(zip([labelIds, labels]));
+    const $labelsEnter = $labels.enter().append('div').classed('checkbox', true)
+      .html((d) => {
+        return `<label><input type="checkbox" value="${d[0]}">${d[1]}</label>`;
+      });
+    $labelsEnter.select('input')
+      .property('checked', (d) => (selected.indexOf(d[0]) > -1))
+      .on('change', () => {
+        const numSelected = this.$classSelector.selectAll('div.form-group input[type="checkbox"]:checked')[0].length;
+        this.$classSelector.select('.form-footer button').property('disabled', (numSelected < 2));
+        this.$classSelector.select('.form-footer p').classed('hidden', (numSelected >= 2));
+      });
+    $labels.exit().remove();
   }
 
   private addRowAndColumnLabels(labels: string[]) {
@@ -637,9 +736,9 @@ export class ConfusionMatrix implements IAppView {
   }
 
   calcClassSizes(data: any) {
-    if(data[0].length !== 0) {
+    if (data[0].length !== 0) {
       return confMeasures.calcForMultipleClasses(data[0][0].confusionData, confMeasures.ClassSize);
-    } else if(data[1].length !== 0) {
+    } else if (data[1].length !== 0) {
       return confMeasures.calcForMultipleClasses(data[1][0].confusionData, confMeasures.ClassSize);
     }
     return null;

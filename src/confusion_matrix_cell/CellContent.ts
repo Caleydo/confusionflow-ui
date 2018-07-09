@@ -38,7 +38,7 @@ export class SingleEpochCalculator extends ACellContentCalculator {
 
     if (this.removeMainDiagonal) {
       res.forEach((x, i) => {
-        if (i % 11 === 0) {
+        if (i % (AppConstants.CONF_MATRIX_SIZE + 1) === 0) {
           res[i] = res[i].map((x) => 0);
         }
       });
@@ -51,7 +51,7 @@ export class SingleEpochCalculator extends ACellContentCalculator {
     }, 0);
 
     return res.map((x, i) => {
-      if (this.removeMainDiagonal && i % 11 === 0) {
+      if (this.removeMainDiagonal && i % (AppConstants.CONF_MATRIX_SIZE + 1) === 0) {
         return {
           maxVal: 0, counts: [], classLabels: [],
           indexInMultiSelection: [], colorValues: []
@@ -81,7 +81,7 @@ export class MultiEpochCalculator extends ACellContentCalculator {
 
     if (this.removeMainDiagonal) {
       zipped.forEach((x, i) => {
-        if (i % 11 === 0) {
+        if (i % (AppConstants.CONF_MATRIX_SIZE + 1) === 0) {
           zipped[i] = zipped[i].map((x) => x.map((y) => 0));
         }
       });

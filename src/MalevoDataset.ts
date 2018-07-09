@@ -44,5 +44,6 @@ export interface ILoadedMalevoDataset {
   singleEpochData: ILoadedMalevoEpoch;
   multiEpochData: ILoadedMalevoEpoch[];
   labels: string[];
+  labelIds: number[];
   classSizes: number[];
 }
