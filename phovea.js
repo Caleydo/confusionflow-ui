@@ -40,5 +40,11 @@ module.exports = function (registry) {
     'order': 10
   });
 
+  registry.push('malevoView', 'ConfusionMeasuresView', function () {
+    return System.import('./src/detail_view/ConfusionMeasuresView');
+  }, {
+    'name': 'ConfusionMeasuresView'
+  });
+
   // generator-phovea:end
 };

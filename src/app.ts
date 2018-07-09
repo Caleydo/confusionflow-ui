@@ -82,6 +82,13 @@ export class App implements IAppView {
       options: {
         eventName: ''
       }
+    },
+    {
+      view: 'ConfusionMeasuresView',
+      parent: 'metrics-table-wrapper',
+      options: {
+        eventName: ''
+      }
     }
   ];
 
