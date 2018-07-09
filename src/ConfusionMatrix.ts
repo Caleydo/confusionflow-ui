@@ -112,17 +112,17 @@ export class ConfusionMatrix implements IAppView {
     $labelRight.append('div')
       .text(Language.FN);
 
-    $labelRight.append('div')
-      .text(Language.PRECISION);
+    // $labelRight.append('div')
+    //   .text(Language.PRECISION);
 
-    $labelRight.append('div')
-      .text(Language.RECALL);
+    // $labelRight.append('div')
+    //   .text(Language.RECALL);
 
-    $labelRight.append('div')
-      .text(Language.F1_SCORE);
+    // $labelRight.append('div')
+    //   .text(Language.F1_SCORE);
 
-    $labelRight.append('div')
-      .text(Language.CLASS_SIZE);
+    // $labelRight.append('div')
+    //   .text(Language.CLASS_SIZE);
 
     const $labelBottom = this.$node.append('div')
       .classed('malevo-label', true)
@@ -149,15 +149,15 @@ export class ConfusionMatrix implements IAppView {
 
     const $chartRight = this.$node.append('div').classed('chart-right', true);
     this.fnColumn = new ChartColumn($chartRight.append('div'));
-    this.precisionColumn = new ChartColumn($chartRight.append('div'));
-    this.recallColumn = new ChartColumn($chartRight.append('div'));
-    this.f1ScoreColumn = new ChartColumn($chartRight.append('div'));
-    this.classSizeColumn = new ChartColumn($chartRight.append('div'));
+    // this.precisionColumn = new ChartColumn($chartRight.append('div'));
+    // this.recallColumn = new ChartColumn($chartRight.append('div'));
+    // this.f1ScoreColumn = new ChartColumn($chartRight.append('div'));
+    // this.classSizeColumn = new ChartColumn($chartRight.append('div'));
 
     const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
     this.fpColumn = new ChartColumn($chartBottom.append('div'));
 
-    const numRightColumns = 5; // number of additional columns
+    const numRightColumns = 1; // number of additional columns
     this.$node.style('--num-right-columns', numRightColumns);
 
     const numBottomColumns = 1; // number of additional columns
@@ -299,7 +299,9 @@ export class ConfusionMatrix implements IAppView {
 
   private render() {
     const filteredAllDatasets = this.filter(DataStoreLoadedRuns.runs, DataStoreApplicationProperties.selectedClassIndices);
+    this.$node.classed(`grid-${AppConstants.CONF_MATRIX_SIZE}`, false);
     AppConstants.CONF_MATRIX_SIZE = DataStoreApplicationProperties.selectedClassIndices.length;
+    this.$node.classed(`grid-${AppConstants.CONF_MATRIX_SIZE}`, true);
     this.$node.style('--matrix-size', AppConstants.CONF_MATRIX_SIZE);
     this.chooseRenderMode(filteredAllDatasets);
     this.renderCells(filteredAllDatasets);
@@ -435,10 +437,10 @@ export class ConfusionMatrix implements IAppView {
 
     this.fpColumn.$node.selectAll('div').remove();
     this.fnColumn.$node.selectAll('div').remove();
-    this.precisionColumn.$node.selectAll('div').remove();
-    this.recallColumn.$node.selectAll('div').remove();
-    this.f1ScoreColumn.$node.selectAll('div').remove();
-    this.classSizeColumn.$node.selectAll('div').remove();
+    // this.precisionColumn.$node.selectAll('div').remove();
+    // this.recallColumn.$node.selectAll('div').remove();
+    // this.f1ScoreColumn.$node.selectAll('div').remove();
+    // this.classSizeColumn.$node.selectAll('div').remove();
     this.cellsBottomRight.$node.selectAll('div').remove();
 
     if (DataStoreApplicationProperties.renderMode === RenderMode.CLEAR) {
@@ -564,10 +566,10 @@ export class ConfusionMatrix implements IAppView {
     this.renderConfMatrixCells();
 
     this.renderFPFN(data, fpfnRendererProto, singleEpochIndex);
-    this.renderClassSize(datasets, new LabelCellRenderer());
-    this.renderPrecisionColumn(dataPrecision, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
-    this.renderRecallColumn(dataRecall, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
-    this.renderF1ScoreColumn(dataF1, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
+    // this.renderClassSize(datasets, new LabelCellRenderer());
+    // this.renderPrecisionColumn(dataPrecision, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
+    // this.renderRecallColumn(dataRecall, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
+    // this.renderF1ScoreColumn(dataF1, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
     this.renderOverallAccuracyCell(dataOverallAccuracy, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
   }
 
