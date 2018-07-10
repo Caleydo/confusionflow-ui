@@ -10,11 +10,12 @@ import * as confMeasures from './ConfusionMeasures';
 import {ACellRenderer, applyRendererChain, createCellRenderers, HeatmapMultiEpochRenderer, HeatmapSingleEpochRenderer, IMatrixRendererChain, MatrixLineCellRenderer, removeListeners, SingleEpochMarker, VerticalLineRenderer} from './confusion_matrix_cell/ACellRenderer';
 import {ACell, LabelCell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
 import {Line, MatrixHeatCellContent, MultiEpochCalculator, SingleEpochCalculator} from './confusion_matrix_cell/CellContent';
-import {DataStoreApplicationProperties, DataStoreLoadedRuns, DataStoreSelectedRun, dataStoreTimelines, RenderMode} from './DataStore';
+import {DataStoreApplicationProperties, DataStoreLoadedRuns, DataStoreSelectedRun, dataStoreTimelines, RenderMode,
+  DataStoreCellSelection} from './DataStore';
 import {SquareMatrix} from './DataStructures';
 import {Language} from './language';
 import {ILoadedMalevoDataset, ILoadedMalevoEpoch, IMalevoEpochInfo, MalevoDataset} from './MalevoDataset';
-import {zip} from './utils';
+import {simulateClick, zip} from './utils';
 
 
 export interface ICellData {
@@ -278,6 +279,7 @@ export class ConfusionMatrix implements IAppView {
     if (DataStoreLoadedRuns.runs.length > 0) {
       this.addRowAndColumnLabels(filteredAllDatasets[0].labels);
     }
+    this.setInitialCell();
   }
 
   private filter(datasets: ILoadedMalevoDataset[], indexArray: number[]): ILoadedMalevoDataset[] {
@@ -622,6 +624,12 @@ export class ConfusionMatrix implements IAppView {
 
   private setYAxisScaleListener(renderer: ACellRenderer) {
     renderer.addYAxisScaleChangedListener();
+  }
+
+  private setInitialCell() {
+    if(DataStoreCellSelection.getCell() === null) {
+      simulateClick(this.cellsBottomRight.$node.select('.cell').node());
+    }
   }
 }
 

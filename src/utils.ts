@@ -62,3 +62,24 @@ export function zip(rows: any[]): any[][] {
   }
   return rows[0].map((_, c) => rows.map((row) => row[c]));
 }
+
+export function simulateClick(elem /* Must be the element, not d3 selection */) {
+    const evt = document.createEvent('MouseEvents');
+    evt.initMouseEvent(
+        'click', /* type */
+        true, /* canBubble */
+        true, /* cancelable */
+        window, /* view */
+        0, /* detail */
+        0, /* screenX */
+        0, /* screenY */
+        0, /* clientX */
+        0, /* clientY */
+        false, /* ctrlKey */
+        false, /* altKey */
+        false, /* shiftKey */
+        false, /* metaKey */
+        0, /* button */
+        null); /* relatedTarget */
+    elem.dispatchEvent(evt);
+}
