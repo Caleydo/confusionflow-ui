@@ -17,7 +17,7 @@ schemes:
 - "https"
 - "http"
 paths:
-  /run:
+  /runs:
     get:
       tags:
       - "run"
@@ -57,7 +57,7 @@ paths:
           description: "Invalid ID supplied"
         404:
           description: "Run not found"
-  /view:
+  /views:
     get:
       tags:
       - "view"
@@ -119,7 +119,9 @@ definitions:
       hyperparam:
         $ref: "#/definitions/HyperParam"
       epochdata:
-        $ref: "#/definitions/EpochData"
+        type: "array"
+        items:
+          $ref: "#/definitions/EpochData"
   Dataset:
     type: "object"
     properties:
@@ -135,7 +137,7 @@ definitions:
     type: "object"
     properties:
       # TODO: add enum?
-      arch:   #architecture
+      arch:   #architecture 
         type: "string"
       # TODO: add enum?
       optim:  #optimizer
