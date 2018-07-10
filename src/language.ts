@@ -14,8 +14,7 @@ export class Language {
   static F1_SCORE = 'F1 Score';
   static CLASS_SIZE = 'Class Size';
   static CHART_VIEW = 'Charts';
-  static IMAGE_VIEW = 'Images';
-  static SOFTMAX_STAMP_VIEW = 'Softmax Stamps';
+  static CLASS_LABELS = 'Class Labels';
   static EPOCH = 'Epoch';
   static NUMBER = '#';
   static PERCENT = '%';

@@ -570,11 +570,23 @@ export class ConfusionMatrix implements IAppView {
     this.renderConfMatrixCells();
 
     this.renderFPFN(data, fpfnRendererProto, singleEpochIndex);
+
+    // confusion measures view calculation
+    this.renderClassLabels(datasets, labelRendererProto);
     this.renderPrecisionColumn(dataPrecision, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
     this.renderRecallColumn(dataRecall, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
     this.renderF1ScoreColumn(dataF1, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
     this.renderClassSize(datasets, labelRendererProto);
     this.renderOverallAccuracyCell(dataOverallAccuracy, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
+  }
+
+  private renderClassLabels(datasets: ILoadedMalevoDataset[], renderer: IMatrixRendererChain) {
+    const classLabelData = datasets[0].labels;
+    const cells = classLabelData.map((datum) => {
+      return new LabelCell({label: String(datum)});
+    });
+
+    events.fire(AppConstants.EVENT_CONF_MEASURE_COLUMN_ADDED, cells, Language.CLASS_LABELS, renderer);
   }
 
   private renderConfMatrixCells() {
