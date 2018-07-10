@@ -126,9 +126,9 @@ export class MatrixLineCellRenderer extends LineChartRenderer {
     //this.width = (<any>cell.$node[0][0]).clientWidth;
     //this.height = (<any>cell.$node[0][0]).clientHeight;
 
-    const bounds = (<HTMLElement> cell.$node.node()).getBoundingClientRect();
+    const bounds = (<HTMLElement>cell.$node.node()).getBoundingClientRect();
     this.width = (<any>cell.$node.node()).clientWidth;
-    this.height = 40;//(<any>cell.$node.node()).clientHeight;
+    this.height = (<any>cell.$node.node()).clientHeight;
 
     this.$svg
       .attr('viewBox', `0 0 ${this.width} ${this.height}`)
@@ -257,8 +257,7 @@ export class LabelCellRenderer extends ACellRenderer {
   protected render(cell: LabelCell) {
     cell.$node
       .classed('label-cell', true)
-      .text(cell.labelData.label)
-      .style('background-color', 'white');
+      .text(cell.labelData.label);
   }
 
   public addWeightFactorChangedListener() {}
