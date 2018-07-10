@@ -31,7 +31,7 @@
     tbody {
       tr {
         border-bottom: 1px solid $label-border;
-        height: 50px;
+        height: 45px;
 
         td.label-cell {
           text-align: center;
@@ -39,6 +39,17 @@
 
         td:not(.label-cell) {
           position: relative;
+
+          &.selected,
+          &:active,
+          &:focus,
+          &:hover {
+            cursor: pointer;
+            outline: 2px solid $select-color;
+            border: none;
+            z-index: 1;
+            margin: 1px;
+          }
         }
       }
     }

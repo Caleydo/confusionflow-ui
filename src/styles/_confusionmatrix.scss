@@ -229,15 +229,18 @@
 .matrix {
   .cell {
     outline: 1px solid #ccc;
-    &.selected,
-    &:active,
-    &:focus,
-    &:hover {
-      cursor: pointer;
-      outline: 2px solid $select-color;
-      border: none;
-      z-index: 1;
-      margin: 1px;
+
+    &:not(.label-cell) {
+      &.selected,
+      &:active,
+      &:focus,
+      &:hover {
+        cursor: pointer;
+        outline: 2px solid $select-color;
+        border: none;
+        z-index: 1;
+        margin: 1px;
+      }
     }
   }
 }
