@@ -86,6 +86,12 @@ export class AppConstants {
   static EVENT_CLASS_INDICES_CHANGED = 'eventClassIndicesChanged';
 
   /**
+   * Fires when a new confusion measure should be rendered
+   * @type {string}
+   */
+  static EVENT_RENDER_CONF_MEASURE = 'eventRenderConfMeasure';
+
+  /**
    * Represent the different cell types
    * @type {string}
    */

@@ -16,10 +16,3 @@ export class ChartColumn {
     const x = 0;
   }
 }
-
-export class MultiTypeChartColumn {
-  cells: ACell[] = [];
-  constructor(public $node: d3.Selection<any>) {
-    $node.classed('chart', true);
-  }
-}

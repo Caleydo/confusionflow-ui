@@ -72,6 +72,15 @@
           "name": "TimelineView",
           "factory": "create"
         }
+      },
+      {
+        "type": "malevoView",
+        "id": "ConfusionMeasuresView",
+        "module": "ConfusionMeasuresView",
+        "extras": {
+          "name": "ConfusionMeasuresView",
+          "factory": "create"
+        }
       }
     ]
   }

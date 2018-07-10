@@ -13,9 +13,30 @@
 
 .grid {
   display: grid;
-  grid-template-areas: ". . axis-top . ." ". . label-top . label-right" "axis-left label-left matrix . chart-right" ". . . . ." ". label-bottom chart-bottom . chart-bottom-right";
-  grid-template-columns: 20px 45px auto 10px minmax(100px, 300px);
-  grid-template-rows: 20px 45px auto 10px minmax(60px, 1fr);
+  grid-template-areas:
+  ". . axis-top . ."
+  ". . label-top . label-right"
+  "axis-left label-left matrix . chart-right"
+  ". . . . ."
+  ". label-bottom chart-bottom . chart-bottom-right";
+  grid-template-columns: 20px 45px 10fr 10px 1fr;
+  grid-template-rows: 20px 45px 10fr 10px 1fr;
+}
+
+/*
+  Create multiple grid classes with different fractions for the matrix area.
+
+  Reason: Using the calc() function with fraction (fr) and CSS custom properties does not work!
+  ```
+  grid-template-columns: 20px 45px calc(1fr * var(--matrix-size)) 10px calc(1fr * var(--num-right-columns));
+  grid-template-rows: 20px 45px calc(1fr * var(--matrix-size)) 10px calc(1fr * var(--num-bottom-columns));
+  ```
+ */
+@for $i from 1 through 10 {
+  .grid-#{$i} {
+    grid-template-columns: 20px 45px (1fr*$i) 10px 1fr;
+    grid-template-rows: 20px 45px (1fr*$i) 10px 1fr;
+  }
 }
 
 .malevo-label {
@@ -166,10 +187,7 @@
   }
 }
 
-.label-left > .labels {
-  grid-template-rows: repeat(var(--matrix-size), 1fr);
-}
-
+.label-left > .labels,
 .chart-right > .chart {
   grid-template-rows: repeat(var(--matrix-size), 1fr);
 }
@@ -211,15 +229,18 @@
 .matrix {
   .cell {
     outline: 1px solid #ccc;
-    &.selected,
-    &:active,
-    &:focus,
-    &:hover {
-      cursor: pointer;
-      outline: 2px solid $select-color;
-      border: none;
-      z-index: 1;
-      margin: 1px;
+
+    &:not(.label-cell) {
+      &.selected,
+      &:active,
+      &:focus,
+      &:hover {
+        cursor: pointer;
+        outline: 2px solid $select-color;
+        border: none;
+        z-index: 1;
+        margin: 1px;
+      }
     }
   }
 }

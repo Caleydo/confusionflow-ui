@@ -34,7 +34,7 @@ export class DetailChart {
     this.$svg = this.$node
       .append('svg')
       .style('width', '100%')
-      .style('height', '500px')
+      .style('height', '400px')
       .attr('viewbox', `0 0 ${this.width} 500`);
   }
 
