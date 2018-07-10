@@ -145,8 +145,12 @@ export default class ConfusionMeasuresView implements IAppView {
     $trs.enter().append('tr');
 
     const $tds = $trs.selectAll('td').data((d) => d);
-    $tds.enter().append('td').each(function (cell, i) {
-      cell.init(d3.select(this));
+    $tds.enter().append('td');
+
+    $tds.each(function (cell, i) {
+      const $td = d3.select(this);
+      $td.html(''); // remove before adding a new svg
+      cell.init($td);
       applyRendererChain(rendererProtos[i], cell, rendererProtos[i].diagonal);
       cell.render();
       return null;
