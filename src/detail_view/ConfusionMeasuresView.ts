@@ -68,7 +68,13 @@ export default class ConfusionMeasuresView implements IAppView {
     const classSizes = this.renderClassSize(datasets);
 
     return {
-      header: [Language.CLASS_LABELS, Language.PRECISION, Language.RECALL, Language.F1_SCORE, Language.CLASS_SIZE],
+      header: [
+        {label: Language.CLASS_LABELS, width: '12.5%'},
+        {label: Language.PRECISION, width: '25%'},
+        {label: Language.RECALL, width: '25%'},
+        {label: Language.F1_SCORE, width: '25%'},
+        {label: Language.CLASS_SIZE, width: '12.5%'}
+      ],
       rows: zip([labels, precisions, recalls, f1Scores, classSizes]),
       rendererProtos: [labelRendererProto, lineChartRendererProto, lineChartRendererProto, lineChartRendererProto, labelRendererProto]
     };
@@ -130,9 +136,9 @@ export default class ConfusionMeasuresView implements IAppView {
     });
   }
 
-  private renderTable(header: string[], rows: ACell[][], rendererProtos: IMatrixRendererChain[]) {
-    const $header = this.$node.select('thead').selectAll('th').data(header);
-    $header.enter().append('th').text((d) => d);
+  private renderTable(header: {label: string, width: string}[], rows: ACell[][], rendererProtos: IMatrixRendererChain[]) {
+    const $header = this.$node.select('thead tr').selectAll('th').data(header);
+    $header.enter().append('th').style('width', (d) => d.width).text((d) => d.label);
     $header.exit().remove();
 
     const $trs = this.$node.select('tbody').selectAll('tr').data(rows);
