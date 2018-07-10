@@ -1,0 +1,169 @@
+swagger: "2.0"
+info:
+  description: "This is the initial API proposal for the ConfusionFlow REST API"
+  version: "0.0.1"
+  title: "ConfusionFlow"
+  termsOfService: ""
+  contact:
+    email: "gfrogat@gmail.com"
+host: "localhost:8080"
+basePath: "/v2"
+tags:
+- name: "run"
+  description: ""
+- name: "view"
+  description: ""
+schemes:
+- "https"
+- "http"
+paths:
+  /run:
+    get:
+      tags:
+      - "run"
+      summary: "Show all available runs"
+      description: ""
+      operationId: "getRuns"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Run"
+  /run/{runId}:
+    get:
+      tags:
+      - "run"
+      summary: "Get run by ID"
+      description: "Returns a single run"
+      operationId: "getRunById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "runId"
+        in: "path"
+        description: "ID of run to return"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Run"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Run not found"
+  /view:
+    get:
+      tags:
+      - "view"
+      summary: "Show all available views"
+      description: ""
+      operationId: "getViews"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/View"
+  /view/{viewId}:
+    get:
+      tags:
+      - "view"
+      summary: "Get view by ID"
+      description: "Returns a single view"
+      operationId: "getViewById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "viewId"
+        in: "path"
+        description: "ID of view to return"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/View"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "View not found"
+definitions:
+  View:
+    type: "object"
+    properties:
+      viewId:
+        type: "integer"
+        format: "int64"
+      runs:
+        type: "array"
+        items:
+          $ref: "#/definitions/Run"
+  Run:
+    type: "object"
+    properties:
+      runId:
+        type: "integer"
+        format: "int64"
+      dataset:
+        $ref: "#/definitions/Dataset"
+      hyperparam:
+        $ref: "#/definitions/HyperParam"
+      epochdata:
+        $ref: "#/definitions/EpochData"
+  Dataset:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      numclass:
+        type: "integer"
+      classes:
+        type: "array"
+        items:
+          type: "string"
+  HyperParam:
+    type: "object"
+    properties:
+      # TODO: add enum?
+      arch:   #architecture
+        type: "string"
+      # TODO: add enum?
+      optim:  #optimizer
+        type: "string"
+      bs:     #batchsize
+        type: "integer"
+        format: "int64"
+      lr:     #learningrate
+        type: "array"
+        items:
+          type: "number"
+          format: "double"
+      m:      #momentum
+        type: "array"
+        items:
+          type: "number"
+          format: "double"
+  EpochData:
+    type: "object"
+    properties:
+      epochId:
+        type: "integer"
+        format: "int64"
+      # TODO: add enum?
+      fold:
+        type: "string"
+      confmat:
+        type: "array"
+        items:
+          type: "integer"
+          format: "int64"
