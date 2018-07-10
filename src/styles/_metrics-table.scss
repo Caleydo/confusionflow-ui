@@ -17,5 +17,14 @@
 
   table, th, td {
     border: 1px solid black;
-}
+  }
+
+  th {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: left;
+    background-color: #cccccc;
+    color: black;
+    padding-left: 5px;
+  }
 }

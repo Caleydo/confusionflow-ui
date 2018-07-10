@@ -459,6 +459,10 @@ export class ConfusionMatrix implements IAppView {
     let fpfnRendererProto: IMatrixRendererChain = null;
     let confMatrixRendererProto: IMatrixRendererChain = null;
     let precRendererProto: IMatrixRendererChain = null;
+    const labelRendererProto = {
+      diagonal: [{renderer: 'LabelCellRenderer', params: null}], offdiagonal: null,
+      functors: []
+    };
 
     let singleEpochIndex = null;
     if (DataStoreApplicationProperties.renderMode === RenderMode.COMBINED) {
@@ -567,10 +571,10 @@ export class ConfusionMatrix implements IAppView {
 
     this.renderFPFN(data, fpfnRendererProto, singleEpochIndex);
     this.renderPrecisionColumn(dataPrecision, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
-    //this.renderClassSize(datasets, new LabelCellRenderer());
-    //this.renderRecallColumn(dataRecall, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
-    //this.renderF1ScoreColumn(dataF1, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
-    //this.renderOverallAccuracyCell(dataOverallAccuracy, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
+    this.renderRecallColumn(dataRecall, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
+    this.renderF1ScoreColumn(dataF1, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
+    this.renderClassSize(datasets, labelRendererProto);
+    this.renderOverallAccuracyCell(dataOverallAccuracy, precRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
   }
 
   private renderConfMatrixCells() {
@@ -590,7 +594,7 @@ export class ConfusionMatrix implements IAppView {
       return new PanelCell(res, AppConstants.CELL_F1_SCORE);
     });
 
-    events.fire(AppConstants.EVENT_CONF_MEASURE_COLUMN_ADDED, cells, Language.F1_SCORE);
+    events.fire(AppConstants.EVENT_CONF_MEASURE_COLUMN_ADDED, cells, Language.F1_SCORE, renderer);
     /*this.f1ScoreColumn.$node
       .selectAll('div')
       .data(transformedData)
@@ -638,7 +642,7 @@ export class ConfusionMatrix implements IAppView {
       return new PanelCell(res, AppConstants.CELL_RECALL);
     });
 
-    events.fire(AppConstants.EVENT_CONF_MEASURE_COLUMN_ADDED, cells, Language.RECALL);
+    events.fire(AppConstants.EVENT_CONF_MEASURE_COLUMN_ADDED, cells, Language.RECALL, renderer);
     /*this.recallColumn.$node
       .selectAll('div')
       .data(transformedData)
@@ -735,13 +739,13 @@ export class ConfusionMatrix implements IAppView {
       });
   }
 
-  renderClassSize(datasets: ILoadedMalevoDataset[], renderer: ACellRenderer) {
+  renderClassSize(datasets: ILoadedMalevoDataset[], renderer: IMatrixRendererChain) {
     const classSizeData = datasets[0].classSizes;
     const cells = classSizeData.map((datum) => {
       return new LabelCell({label: String(datum)});
     });
 
-    events.fire(AppConstants.EVENT_CONF_MEASURE_COLUMN_ADDED, cells, Language.CLASS_SIZE);
+    events.fire(AppConstants.EVENT_CONF_MEASURE_COLUMN_ADDED, cells, Language.CLASS_SIZE, renderer);
     /*this.classSizeColumn.$node
       .selectAll('div')
       .data(classSizeData)

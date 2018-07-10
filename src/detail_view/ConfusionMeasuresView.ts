@@ -51,10 +51,15 @@ export default class ConfusionMeasuresView implements IAppView {
     events.on(AppConstants.EVENT_CONF_MEASURE_COLUMN_ADDED, (evt, panelCells: PanelCell[], name: string, renderer: IMatrixRendererChain) => {
       this.updateTable(panelCells, name, renderer);
     });
+
+    events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
+      this.$node.html('');
+    });
   }
 
   private updateTable(panelCells: PanelCell[], name: string, renderer: IMatrixRendererChain) {
     if (this.$node.selectAll('tr').size() === 0) {
+      this.$node.append('tr'); // for header row
       panelCells.forEach((cell) => {
         this.$node.append('tr');
       });
@@ -63,9 +68,15 @@ export default class ConfusionMeasuresView implements IAppView {
     this.$node
       .selectAll('tr')
       .each(function (_, index) {
+        if(index === 0) {
+          d3.select(this)
+            .append('th')
+            .text(name);
+          return;
+        }
         const $div = d3.select(this)
           .append('td');
-        const cell = panelCells[index];
+        const cell = panelCells[index-1];
         cell.init($div);
         applyRendererChain(renderer, cell, renderer.diagonal);
         cell.render();
