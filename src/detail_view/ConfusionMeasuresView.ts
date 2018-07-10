@@ -39,10 +39,6 @@ export default class ConfusionMeasuresView implements IAppView {
       const {header, rows, rendererProtos} = this.prepareData(datasets, singleEpochIndex, lineChartRendererProto, labelRendererProto);
       this.renderTable(header, rows, rendererProtos);
     });
-
-    //events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
-    //this.$node.html('');
-    //});
   }
 
   private prepareData(datasets: ILoadedMalevoDataset[], singleEpochIndex: number[], lineChartRendererProto: IMatrixRendererChain, labelRendererProto: IMatrixRendererChain) {

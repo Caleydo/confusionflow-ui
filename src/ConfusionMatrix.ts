@@ -31,13 +31,8 @@ export class ConfusionMatrix implements IAppView {
   private $labelsLeft: d3.Selection<any>;
   private fpColumn: ChartColumn;
   private fnColumn: ChartColumn;
-  private precisionColumn: ChartColumn;
-  private recallColumn: ChartColumn;
-  private f1ScoreColumn: ChartColumn;
-  private classSizeColumn: ChartColumn;
   private $cells = null;
   private cellsBottomRight: ChartColumn;
-  //private $overallAccuracyCell: d3.Selection<any>;
 
   constructor(parent: Element) {
     this.$node = d3.select(parent)
@@ -104,18 +99,6 @@ export class ConfusionMatrix implements IAppView {
     $labelRight.append('div')
       .text(Language.FN);
 
-    // $labelRight.append('div')
-    //   .text(Language.PRECISION);
-
-    // $labelRight.append('div')
-    //   .text(Language.RECALL);
-
-    // $labelRight.append('div')
-    //   .text(Language.F1_SCORE);
-
-    // $labelRight.append('div')
-    //   .text(Language.CLASS_SIZE);
-
     const $labelBottom = this.$node.append('div')
       .classed('malevo-label', true)
       .classed('label-bottom', true)
@@ -141,10 +124,6 @@ export class ConfusionMatrix implements IAppView {
 
     const $chartRight = this.$node.append('div').classed('chart-right', true);
     this.fnColumn = new ChartColumn($chartRight.append('div'));
-    // this.precisionColumn = new ChartColumn($chartRight.append('div'));
-    // this.recallColumn = new ChartColumn($chartRight.append('div'));
-    // this.f1ScoreColumn = new ChartColumn($chartRight.append('div'));
-    // this.classSizeColumn = new ChartColumn($chartRight.append('div'));
 
     const $chartBottom = this.$node.append('div').classed('chart-bottom', true);
     this.fpColumn = new ChartColumn($chartBottom.append('div'));
