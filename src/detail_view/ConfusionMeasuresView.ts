@@ -3,12 +3,37 @@
  */
 import {IAppView} from '../app';
 import * as d3 from 'd3';
+import * as events from 'phovea_core/src/event';
+import {AppConstants} from '../AppConstants';
+import {PanelCell} from '../confusion_matrix_cell/Cell';
+import {applyRendererChain, IMatrixRendererChain} from '../confusion_matrix_cell/ACellRenderer';
 
 export default class ConfusionMeasuresView implements IAppView {
   private $node: d3.Selection<any>;
 
   constructor(parent: Element) {
     this.$node = d3.select(parent).append('table').classed('metrics-table-content', true);
+    /*this.$node.html(`
+     <colgroup>
+     <col span="2" style="background-color:red">
+     <col style="background-color:yellow">
+     </colgroup>
+     <tr>
+     <th>ISBN</th>
+     <th>Title</th>
+     <th>Price</th>
+     </tr>
+     <tr>
+     <td>3476896</td>
+     <td>My first HTML</td>
+     <td>$53</td>
+     </tr>
+     <tr>
+     <td>5869207</td>
+     <td>My first CSS</td>
+     <td>$49</td>
+     </tr>
+     `);*/
   }
 
   /**
@@ -23,6 +48,29 @@ export default class ConfusionMeasuresView implements IAppView {
   }
 
   private attachListener() {
+    events.on(AppConstants.EVENT_CONF_MEASURE_COLUMN_ADDED, (evt, panelCells: PanelCell[], name: string, renderer: IMatrixRendererChain) => {
+      this.updateTable(panelCells, name, renderer);
+    });
+  }
+
+  private updateTable(panelCells: PanelCell[], name: string, renderer: IMatrixRendererChain) {
+    if (this.$node.selectAll('tr').size() === 0) {
+      panelCells.forEach((cell) => {
+        this.$node.append('tr');
+      });
+    }
+
+    this.$node
+      .selectAll('tr')
+      .each(function (_, index) {
+        const $div = d3.select(this)
+          .append('td');
+        const cell = panelCells[index];
+        cell.init($div);
+        applyRendererChain(renderer, cell, renderer.diagonal);
+        cell.render();
+      });
+
 
   }
 }

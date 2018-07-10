@@ -123,8 +123,12 @@ export class MatrixLineCellRenderer extends LineChartRenderer {
     const data: Line[] = [].concat.apply([], cell.data.linecell);
     this.$svg = cell.$node.append('svg').datum(data);
 
-    this.width = (<any>cell.$node[0][0]).clientWidth;
-    this.height = (<any>cell.$node[0][0]).clientHeight;
+    //this.width = (<any>cell.$node[0][0]).clientWidth;
+    //this.height = (<any>cell.$node[0][0]).clientHeight;
+
+    const bounds = (<HTMLElement> cell.$node.node()).getBoundingClientRect();
+    this.width = (<any>cell.$node.node()).clientWidth;
+    this.height = 40;//(<any>cell.$node.node()).clientHeight;
 
     this.$svg
       .attr('viewBox', `0 0 ${this.width} ${this.height}`)
