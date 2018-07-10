@@ -85,7 +85,7 @@ export class App implements IAppView {
     },
     {
       view: 'ConfusionMeasuresView',
-      parent: 'metrics-table-wrapper',
+      parent: 'conf-measure-table-wrapper',
       options: {
         eventName: ''
       }
@@ -99,7 +99,7 @@ export class App implements IAppView {
     $main.append('div').classed('timeline-wrapper', true);
     $main.append('div').classed('toolbar-wrapper', true);
     $main.append('div').classed('conf-matrix-wrapper', true);
-    $main.append('div').classed('metrics-table-wrapper', true);
+    $main.append('div').classed('conf-measure-table-wrapper', true);
     $main.append('div').classed('details-wrapper', true);
   }
 

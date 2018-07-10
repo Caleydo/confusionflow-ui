@@ -18,7 +18,7 @@ export default class ConfusionMeasuresView implements IAppView {
   private $node: d3.Selection<any>;
 
   constructor(parent: Element) {
-    this.$node = d3.select(parent).append('table').classed('metrics-table-content', true);
+    this.$node = d3.select(parent).append('table');
     this.$node.append('thead').append('tr');
     this.$node.append('tbody');
   }
