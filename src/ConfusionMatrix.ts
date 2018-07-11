@@ -506,6 +506,7 @@ export class ConfusionMatrix implements IAppView {
       data = singleEpochContent.map((x) => ({heatcell: x, linecell: null}));
 
       singleEpochIndex = data[0].heatcell.indexInMultiSelection;
+      dataOverallAccuracy = [];
 
       confMatrixRendererProto = {
         offdiagonal: [{renderer: 'HeatmapSingleEpochRenderer', params: [false, false]}],
@@ -517,11 +518,8 @@ export class ConfusionMatrix implements IAppView {
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
       lineChartRendererProto = {
-        diagonal: [{renderer: 'MatrixLineCellRenderer', params: null}, {
-          renderer: 'VerticalLineRenderer',
-          params: [-1, -1]
-        }], offdiagonal: null,
-        functors: []
+        diagonal: [{renderer: 'BarChartRenderer', params: null}], offdiagonal: null,
+        functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
 
     } else if (DataStoreApplicationProperties.renderMode === RenderMode.MULTI) {

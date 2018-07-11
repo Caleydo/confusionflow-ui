@@ -111,7 +111,7 @@ export class DetailChart {
     if (!(cell instanceof MatrixCell) && !(cell instanceof PanelCell)) {
       return;
     }
-    if (cell.data.linecell === null) {
+    if(DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
       return;
     }
 
