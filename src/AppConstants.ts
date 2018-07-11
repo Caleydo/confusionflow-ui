@@ -44,6 +44,11 @@ export class AppConstants {
   static CLEAR_DETAIL_VIEW = 'clearDetailView';
 
   /**
+   * Fires when the detail view should be cleared
+   */
+  static CLEAR_CONF_MEASURES_VIEW = 'clearConfMeasuresView';
+
+  /**
    * Fires when the confusion matrix has to be redrawn
    * @type {string}
    */

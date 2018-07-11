@@ -40,6 +40,10 @@ export default class ConfusionMeasuresView implements IAppView {
       this.renderTable(header, rows, rendererProtos);
       this.updateSelectedCell();
     });
+
+    events.on(AppConstants.CLEAR_CONF_MEASURES_VIEW, () => {
+      this.$node.selectAll('td').html('');
+    });
   }
 
   private prepareData(datasets: ILoadedMalevoDataset[], singleEpochIndex: number[], lineChartRendererProto: IMatrixRendererChain, labelRendererProto: IMatrixRendererChain) {
@@ -197,7 +201,7 @@ export default class ConfusionMeasuresView implements IAppView {
   private updateSelectedCell() {
     const selectedCell = DataStoreCellSelection.getCell();
     if (selectedCell !== null) {
-      if (selectedCell instanceof PanelCell) {
+      if (selectedCell instanceof PanelCell && this.isConfusionMeasuresViewCellType(selectedCell)) {
         const newCell = this.$node.select('tbody')
           .selectAll('tr')
           .filter((d, i) => i === selectedCell.panelRowIndex)
@@ -209,6 +213,10 @@ export default class ConfusionMeasuresView implements IAppView {
     }
   }
 
+  private isConfusionMeasuresViewCellType(cell: PanelCell) {
+    const type = cell.type;
+    return type === AppConstants.CELL_PRECISION || type === AppConstants.CELL_RECALL || type === AppConstants.CELL_F1_SCORE;
+  }
 }
 
 /**

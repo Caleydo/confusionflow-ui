@@ -51,7 +51,7 @@ export class ConfusionMatrix implements IAppView {
   private fpColumn: ChartColumn;
   private fnColumn: ChartColumn;
   private $cells = null;
-  private cellsBottomRight: ChartColumn;
+  private cellsBottomRight: d3.Selection<any>;
 
   constructor(parent: Element) {
     this.$node = d3.select(parent)
@@ -153,8 +153,7 @@ export class ConfusionMatrix implements IAppView {
     const numBottomColumns = 1; // number of additional columns
     this.$node.style('--num-bottom-columns', numBottomColumns);
 
-    const $chartBottomRight = this.$node.append('div').classed('chart-bottom-right', true);
-    this.cellsBottomRight = new ChartColumn($chartBottomRight);
+    this.cellsBottomRight = this.$node.append('div').classed('chart-bottom-right', true);
   }
 
   private attachListeners() {
@@ -224,6 +223,11 @@ export class ConfusionMatrix implements IAppView {
     events.fire(AppConstants.CLEAR_DETAIL_VIEW);
   }
 
+  clearConfusionMeasuresView() {
+    events.fire(AppConstants.CLEAR_CONF_MEASURES_VIEW);
+  }
+
+
   chooseRenderMode(datasets: ILoadedMalevoDataset[]) {
     DataStoreApplicationProperties.renderMode = RenderMode.CLEAR;
 
@@ -283,12 +287,13 @@ export class ConfusionMatrix implements IAppView {
 
     // wait until datasets are loaded
     Promise.all(allPromises).then((allDatasets: ILoadedMalevoDataset[]) => {
+      DataStoreLoadedRuns.runs = allDatasets;
       if (allDatasets.length === 0) {
         this.clear();
+        this.clearConfusionMeasuresView();
         return;
       }
 
-      DataStoreLoadedRuns.runs = allDatasets;
       DataStoreApplicationProperties.selectedClassIndices = allDatasets[0].labelIds; // -> fires event -> listener calls render()
       this.renderClassSelector(allDatasets[0].labelIds, allDatasets[0].labels, DataStoreApplicationProperties.selectedClassIndices);
     });
@@ -439,7 +444,7 @@ export class ConfusionMatrix implements IAppView {
 
     this.fpColumn.$node.selectAll('div').remove();
     this.fnColumn.$node.selectAll('div').remove();
-    this.cellsBottomRight.$node.selectAll('div').remove();
+    this.cellsBottomRight.select('div').remove();
   }
 
   renderCells(datasets: ILoadedMalevoDataset[]) {
@@ -586,16 +591,18 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private renderOverallAccuracyCell(data: number[][], renderer: IMatrixRendererChain, labels: string[], singleEpochIndex: number[], colors: string[]) {
-    const $overallAccuracyCell = this.cellsBottomRight.$node
-      .append('div')
-      .classed('cell', true);
-
     const maxVal = Math.max(...[].concat(...data));
     const res = {
       linecell: data.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: null, color: colors[i]}]),
       heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
     };
     const cell = new PanelCell(res, AppConstants.CELL_OVERALL_ACCURACY_SCORE, -1, -1);
+
+    const $overallAccuracyCell = this.cellsBottomRight
+      .append('div')
+      .classed('cell', true)
+      .datum(cell);
+
     cell.init($overallAccuracyCell);
     applyRendererChain(renderer, cell, renderer.diagonal);
     cell.render();
@@ -686,7 +693,7 @@ export class ConfusionMatrix implements IAppView {
 
   private setInitialCell() {
     if (DataStoreCellSelection.getCell() === null) {
-      simulateClick(this.cellsBottomRight.$node.select('.cell').node());
+      simulateClick(this.cellsBottomRight.select('.cell').node());
     }
   }
 
@@ -697,13 +704,15 @@ export class ConfusionMatrix implements IAppView {
         const newCell = d3.select(this.$cells[0][selectedCell.groundTruthIndex * AppConstants.CONF_MATRIX_SIZE + selectedCell.predictedIndex]).datum();
         DataStoreCellSelection.cellSelected(newCell);
       } else if (selectedCell instanceof PanelCell) {
+        let newCell = null;
         if (selectedCell.type === AppConstants.CELL_FP) {
-          const newCell = d3.select(this.fpColumn.$node.selectAll('.cell')[0][selectedCell.panelColumnIndex]).datum();
-          DataStoreCellSelection.cellSelected(newCell);
+          newCell = d3.select(this.fpColumn.$node.selectAll('.cell')[0][selectedCell.panelColumnIndex]).datum();
         } else if (selectedCell.type === AppConstants.CELL_FN) {
-          const newCell = d3.select(this.fnColumn.$node.selectAll('.cell')[0][selectedCell.panelColumnIndex]).datum();
-          DataStoreCellSelection.cellSelected(newCell);
+          newCell = d3.select(this.fnColumn.$node.selectAll('.cell')[0][selectedCell.panelColumnIndex]).datum();
+        } else if (selectedCell.type === AppConstants.CELL_OVERALL_ACCURACY_SCORE) {
+          newCell = this.cellsBottomRight.select('.cell').datum();
         }
+        DataStoreCellSelection.cellSelected(newCell);
       }
     }
   }
