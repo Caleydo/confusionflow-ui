@@ -13,7 +13,7 @@ import Format = d3.time.Format;
 import {MalevoDataset, IMalevoDatasetCollection, IMalevoEpochInfo, ILoadedMalevoDataset} from './MalevoDataset';
 import {ITable} from 'phovea_core/src/table';
 import * as $ from 'jquery';
-import {DataStoreSelectedRun, dataStoreTimelines} from './DataStore';
+import {DataStoreSelectedRun, dataStoreRuns} from './DataStore';
 import {extractEpochId} from './utils';
 /**
  * Shows a list of available datasets and lets the user choose one.
@@ -82,7 +82,7 @@ class DataSetSelector implements IAppView {
   private updateSelectorColors(selection = this.$node.selectAll('li.select2-selection__choice'), attrFunc = (el: HTMLElement) => el.title) {
     selection[0]
       .forEach((d, i) => {
-        const timeline = dataStoreTimelines.get(attrFunc(d));
+        const timeline = dataStoreRuns.get(attrFunc(d));
         // set background to dataset color with opacity of 0.1
         d3.select(d).style('background-color', timeline.color + '19');
       });
@@ -178,8 +178,8 @@ class DataProvider {
     });
   }
 
-  prepareClassLabels(data: ITable[]): {[key: string]: ITable} {
-    const labelCollection: {[key: string]: ITable} = {};
+  prepareClassLabels(data: ITable[]): { [key: string]: ITable } {
+    const labelCollection: { [key: string]: ITable } = {};
     for (const x of data) {
       const parts = this.getDatasetName(x);
       labelCollection[parts[0]] = x;
