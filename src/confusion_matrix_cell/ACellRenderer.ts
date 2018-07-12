@@ -454,11 +454,9 @@ export class AxisRenderer extends ACellRenderer {
       .domain([0, getYMax(cell, this.data)]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
-    let tickFrequency = 1;
-    const stride = Number(values[1]) - Number(values[0]);
-    if (stride <= 5) {
-      tickFrequency = 4;
-    }
+    const labelWidth = 25; // in pixel
+    const numTicks = this.width / labelWidth;
+    const tickFrequency = Math.ceil(values.length / numTicks);
 
     const ticks = values.filter((x, i) => i % tickFrequency === 0);
     const xAxis = d3.svg.axis()
