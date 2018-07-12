@@ -6,11 +6,11 @@ import {MalevoDataset, IMalevoEpochInfo, ILoadedMalevoDataset} from './MalevoDat
 import * as events from 'phovea_core/src/event';
 import {AppConstants} from './AppConstants';
 import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, min, NumberMatrix} from './DataStructures';
-import {ACell} from './confusion_matrix_cell/Cell';
+import {ACell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
 import * as d3 from 'd3';
 import {extractEpochId} from './utils';
 
-export const dataStoreTimelines: Map<string, DataStoreSelectedRun> = new Map<string, DataStoreSelectedRun>();
+export const dataStoreRuns: Map<string, DataStoreSelectedRun> = new Map<string, DataStoreSelectedRun>();
 
 export class DataStoreLoadedRuns {
   static runs: ILoadedMalevoDataset[];
@@ -53,21 +53,24 @@ export class DataStoreSelectedRun {
     const selectionIndex = DataStoreSelectedRun.getFreeIndex();
     const newRunObject = new DataStoreSelectedRun(ds, selectionIndex);
     DataStoreSelectedRun.setSelectionIndex(selectionIndex, newRunObject);
-    dataStoreTimelines.set(ds.name, newRunObject);
+    dataStoreRuns.set(ds.name, newRunObject);
     DataStoreSelectedRun.updateRuns();
     events.fire(AppConstants.EVENT_DATA_SET_ADDED, ds);
     events.fire(AppConstants.EVENT_REDRAW);
   }
 
   static remove(ds: MalevoDataset) {
-    DataStoreSelectedRun.setSelectionIndex(dataStoreTimelines.get(ds.name).selectionIndex, null);
-    dataStoreTimelines.delete(ds.name);
+    DataStoreSelectedRun.setSelectionIndex(dataStoreRuns.get(ds.name).selectionIndex, null);
+    dataStoreRuns.delete(ds.name);
+    if (dataStoreRuns.size === 0) {
+      DataStoreCellSelection.deselect();
+    }
     events.fire(AppConstants.EVENT_DATA_SET_REMOVED, ds);
     events.fire(AppConstants.EVENT_REDRAW);
   }
 
   static updateRuns() {
-    dataStoreTimelines.forEach((timeline) => {
+    dataStoreRuns.forEach((timeline) => {
       timeline.multiSelected = timeline.selectedDataset.epochInfos.slice(TimelineParameters.minIndex, TimelineParameters.maxIndex + 1);
       timeline.singleSelected = timeline.selectedDataset.epochInfos[TimelineParameters.singleIndex];
     });
@@ -78,6 +81,7 @@ export class TimelineParameters {
   static minIndex = -1;
   static maxIndex = -1;
   static singleIndex = -1;
+
   static setRange(minIndex: number, maxIndex: number) {
     TimelineParameters.minIndex = minIndex;
     TimelineParameters.maxIndex = maxIndex;
@@ -88,9 +92,16 @@ export class TimelineParameters {
  * Stores confusion matrix single cell selection
  */
 export class DataStoreCellSelection {
-  private static cell: ACell = null;
+  private static cell: MatrixCell | PanelCell = null;
 
-  static cellSelected(cell: ACell) {
+  static deselect() {
+    if (DataStoreCellSelection.cell !== null) {
+      DataStoreCellSelection.cell.$node.classed('selected', false);
+      DataStoreCellSelection.cell = null;
+    }
+  }
+
+  static cellSelected(cell: MatrixCell | PanelCell) {
     if (!cell) {
       return;
     }
@@ -102,7 +113,7 @@ export class DataStoreCellSelection {
     events.fire(AppConstants.EVENT_CELL_SELECTED);
   }
 
-  static getCell(): ACell {
+  static getCell(): MatrixCell | PanelCell {
     return DataStoreCellSelection.cell;
   }
 }

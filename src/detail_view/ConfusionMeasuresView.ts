@@ -8,7 +8,7 @@ import {AppConstants} from '../AppConstants';
 import * as confMeasures from '../ConfusionMeasures';
 import {applyRendererChain, IMatrixRendererChain} from '../confusion_matrix_cell/ACellRenderer';
 import {ACell, LabelCell, PanelCell} from '../confusion_matrix_cell/Cell';
-import {DataStoreApplicationProperties, RenderMode} from '../DataStore';
+import {DataStoreApplicationProperties, DataStoreCellSelection, RenderMode} from '../DataStore';
 import {Matrix, max} from '../DataStructures';
 import {Language} from '../language';
 import {ILoadedMalevoDataset} from '../MalevoDataset';
@@ -36,9 +36,22 @@ export default class ConfusionMeasuresView implements IAppView {
 
   private attachListener() {
     events.on(AppConstants.EVENT_RENDER_CONF_MEASURE, (evt, datasets: ILoadedMalevoDataset[], singleEpochIndex: number[], lineChartRendererProto: IMatrixRendererChain, labelRendererProto: IMatrixRendererChain) => {
+      if(DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
+        this.clear();
+        return;
+      }
       const {header, rows, rendererProtos} = this.prepareData(datasets, singleEpochIndex, lineChartRendererProto, labelRendererProto);
       this.renderTable(header, rows, rendererProtos);
+      this.updateSelectedCell();
     });
+
+    events.on(AppConstants.CLEAR_CONF_MEASURES_VIEW, () => {
+      this.clear();
+    });
+  }
+
+  private clear() {
+    this.$node.selectAll('td').html('');
   }
 
   private prepareData(datasets: ILoadedMalevoDataset[], singleEpochIndex: number[], lineChartRendererProto: IMatrixRendererChain, labelRendererProto: IMatrixRendererChain) {
@@ -58,9 +71,10 @@ export default class ConfusionMeasuresView implements IAppView {
     }
 
     const labels = this.renderClassLabels(datasets);
-    const precisions = this.renderPrecisionColumn(dataPrecision, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
-    const recalls = this.renderRecallColumn(dataRecall, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
-    const f1Scores = this.renderF1ScoreColumn(dataF1, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
+    let columnIndex = 1;
+    const precisions = this.renderPrecisionColumn(dataPrecision, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor), columnIndex);
+    const recalls = this.renderRecallColumn(dataRecall, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor), ++columnIndex);
+    const f1Scores = this.renderF1ScoreColumn(dataF1, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor), ++columnIndex);
     const classSizes = this.renderClassSize(datasets);
 
     return {
@@ -83,45 +97,81 @@ export default class ConfusionMeasuresView implements IAppView {
     });
   }
 
-  private renderF1ScoreColumn(data: Matrix<number[]>[], labels: string[], singleEpochIndex: number[], colors: string[]): PanelCell[] {
+  private renderF1ScoreColumn(data: Matrix<number[]>[], labels: string[], singleEpochIndex: number[], colors: string[], columnIndex: number): PanelCell[] {
     const maxVal = Math.max(...data.map((x: Matrix<number[]>) => max(x, (d) => Math.max(...d))));
     let transformedData = data.map((x) => x.to1DArray());
     transformedData = zip(transformedData);
 
     return transformedData.map((datum, index) => {
       const res = {
-        linecell: datum.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: labels[index], color: colors[i]}]),
-        heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
+        linecell: datum.map((x, i) => [{
+          values: x,
+          valuesInPercent: x,
+          max: maxVal,
+          classLabel: labels[index],
+          color: colors[i]
+        }]),
+        heatcell: {
+          indexInMultiSelection: singleEpochIndex,
+          counts: null,
+          maxVal: 0,
+          classLabels: null,
+          colorValues: null
+        }
       };
-      return new PanelCell(res, AppConstants.CELL_F1_SCORE);
+      return new PanelCell(res, AppConstants.CELL_F1_SCORE, columnIndex, index);
     });
   }
 
-  private renderRecallColumn(data: Matrix<number[]>[], labels: string[], singleEpochIndex: number[], colors: string[]): PanelCell[] {
+  private renderRecallColumn(data: Matrix<number[]>[], labels: string[], singleEpochIndex: number[], colors: string[], columnIndex: number): PanelCell[] {
     const maxVal = Math.max(...data.map((x: Matrix<number[]>) => max(x, (d) => Math.max(...d))));
     let transformedData = data.map((x) => x.to1DArray());
     transformedData = zip(transformedData);
 
     return transformedData.map((datum, index) => {
       const res = {
-        linecell: datum.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: labels[index], color: colors[i]}]),
-        heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
+        linecell: datum.map((x, i) => [{
+          values: x,
+          valuesInPercent: x,
+          max: maxVal,
+          classLabel: labels[index],
+          color: colors[i]
+        }]),
+        heatcell: {
+          indexInMultiSelection: singleEpochIndex,
+          counts: null,
+          maxVal: 0,
+          classLabels: null,
+          colorValues: null
+        }
       };
-      return new PanelCell(res, AppConstants.CELL_RECALL);
+      return new PanelCell(res, AppConstants.CELL_RECALL, columnIndex, index);
     });
   }
 
-  private renderPrecisionColumn(data: Matrix<number[]>[], labels: string[], singleEpochIndex: number[], colors: string[]): PanelCell[] {
+  private renderPrecisionColumn(data: Matrix<number[]>[], labels: string[], singleEpochIndex: number[], colors: string[], columnIndex: number): PanelCell[] {
     const maxVal = Math.max(...data.map((x: Matrix<number[]>) => max(x, (d) => Math.max(...d))));
     let transformedData = data.map((x) => x.to1DArray());
     transformedData = zip(transformedData);
 
     return transformedData.map((datum, index) => {
       const res = {
-        linecell: datum.map((x, i) => [{values: x, valuesInPercent: x, max: maxVal, classLabel: labels[index], color: colors[i]}]),
-        heatcell: {indexInMultiSelection: singleEpochIndex, counts: null, maxVal: 0, classLabels: null, colorValues: null}
+        linecell: datum.map((x, i) => [{
+          values: x,
+          valuesInPercent: x,
+          max: maxVal,
+          classLabel: labels[index],
+          color: colors[i]
+        }]),
+        heatcell: {
+          indexInMultiSelection: singleEpochIndex,
+          counts: null,
+          maxVal: 0,
+          classLabels: null,
+          colorValues: null
+        }
       };
-      return new PanelCell(res, AppConstants.CELL_PRECISION);
+      return new PanelCell(res, AppConstants.CELL_PRECISION, columnIndex, index);
     });
   }
 
@@ -132,7 +182,7 @@ export default class ConfusionMeasuresView implements IAppView {
     });
   }
 
-  private renderTable(header: {label: string, width: string}[], rows: ACell[][], rendererProtos: IMatrixRendererChain[]) {
+  private renderTable(header: { label: string, width: string }[], rows: ACell[][], rendererProtos: IMatrixRendererChain[]) {
     const $header = this.$node.select('thead tr').selectAll('th').data(header);
     $header.enter().append('th').style('width', (d) => d.width).text((d) => d.label);
     $header.exit().remove();
@@ -156,6 +206,25 @@ export default class ConfusionMeasuresView implements IAppView {
     $trs.exit().remove();
   }
 
+  private updateSelectedCell() {
+    const selectedCell = DataStoreCellSelection.getCell();
+    if (selectedCell !== null) {
+      if (selectedCell instanceof PanelCell && this.isConfusionMeasuresViewCellType(selectedCell)) {
+        const newCell = this.$node.select('tbody')
+          .selectAll('tr')
+          .filter((d, i) => i === selectedCell.panelRowIndex)
+          .selectAll('td')
+          .filter((d, i) => i === selectedCell.panelColumnIndex).datum();
+        console.assert(selectedCell.panelColumnIndex === newCell.panelColumnIndex && selectedCell.panelRowIndex === newCell.panelRowIndex);
+        DataStoreCellSelection.cellSelected(newCell);
+      }
+    }
+  }
+
+  private isConfusionMeasuresViewCellType(cell: PanelCell) {
+    const type = cell.type;
+    return type === AppConstants.CELL_PRECISION || type === AppConstants.CELL_RECALL || type === AppConstants.CELL_F1_SCORE;
+  }
 }
 
 /**

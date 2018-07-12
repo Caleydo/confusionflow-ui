@@ -5,7 +5,7 @@ import {adaptTextColorToBgColor, extractEpochId} from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 import {Language} from '../language';
-import {DataStoreApplicationProperties, DataStoreCellSelection, dataStoreTimelines} from '../DataStore';
+import {DataStoreApplicationProperties, DataStoreCellSelection, dataStoreRuns} from '../DataStore';
 import {time} from 'd3';
 import {AppConstants} from '../AppConstants';
 import {isUndefined} from 'util';
@@ -26,25 +26,32 @@ export interface IRendererConfig {
 export interface IMatrixRendererChain {
   offdiagonal: IRendererConfig[];
   diagonal: IRendererConfig[]; // also used for 1 dimensional vectors, aka. columns and rows
-  functors: {(renderer: ACellRenderer): void;}[];
+  functors: { (renderer: ACellRenderer): void; }[];
 }
 
 export abstract class ACellRenderer {
   nextRenderer: ACellRenderer = null;
+
   setNextRenderer(renderer: ACellRenderer): ACellRenderer {
     this.nextRenderer = renderer;
     return this.nextRenderer;
   }
+
   renderNext(cell: ACell) {
     this.render(cell);
     if (this.nextRenderer != null) {
       this.nextRenderer.renderNext(cell);
     }
   }
+
   protected abstract render(cell: ACell);
+
   public abstract addWeightFactorChangedListener();
+
   public abstract removeWeightFactorChangedListener();
+
   public abstract addYAxisScaleChangedListener();
+
   public abstract removeYAxisScaleChangedListener();
 }
 
@@ -114,6 +121,7 @@ export class LineChartRenderer extends ACellRenderer {
 
 export class MatrixLineCellRenderer extends LineChartRenderer {
   private $svg: d3.Selection<any>;
+
   constructor() {
     super(0, 0);
   }
@@ -184,10 +192,17 @@ export class VerticalLineRenderer extends ACellRenderer {
     return 0;
   }
 
-  public addWeightFactorChangedListener() {}
-  public removeWeightFactorChangedListener() {}
-  public addYAxisScaleChangedListener() {}
-  public removeYAxisScaleChangedListener() {}
+  public addWeightFactorChangedListener() {
+  }
+
+  public removeWeightFactorChangedListener() {
+  }
+
+  public addYAxisScaleChangedListener() {
+  }
+
+  public removeYAxisScaleChangedListener() {
+  }
 }
 
 export class SingleEpochMarker extends ACellRenderer implements ITransposeRenderer {
@@ -234,8 +249,11 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
     events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
-  public addYAxisScaleChangedListener() {}
-  public removeYAxisScaleChangedListener() {}
+  public addYAxisScaleChangedListener() {
+  }
+
+  public removeYAxisScaleChangedListener() {
+  }
 }
 
 export class BarChartRenderer extends ACellRenderer {
@@ -243,10 +261,17 @@ export class BarChartRenderer extends ACellRenderer {
     cell.$node.text('bar chart here');
   }
 
-  public addWeightFactorChangedListener() {}
-  public removeWeightFactorChangedListener() {}
-  public addYAxisScaleChangedListener() {}
-  public removeYAxisScaleChangedListener() {}
+  public addWeightFactorChangedListener() {
+  }
+
+  public removeWeightFactorChangedListener() {
+  }
+
+  public addYAxisScaleChangedListener() {
+  }
+
+  public removeYAxisScaleChangedListener() {
+  }
 }
 
 export class LabelCellRenderer extends ACellRenderer {
@@ -256,10 +281,17 @@ export class LabelCellRenderer extends ACellRenderer {
       .text(cell.labelData.label);
   }
 
-  public addWeightFactorChangedListener() {}
-  public removeWeightFactorChangedListener() {}
-  public addYAxisScaleChangedListener() {}
-  public removeYAxisScaleChangedListener() {}
+  public addWeightFactorChangedListener() {
+  }
+
+  public removeWeightFactorChangedListener() {
+  }
+
+  public addYAxisScaleChangedListener() {
+  }
+
+  public removeYAxisScaleChangedListener() {
+  }
 }
 
 export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITransposeRenderer {
@@ -336,17 +368,24 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
       });
 
     $subCells.enter().append('div').classed('heat-cell', true)
-      .style('background-color', (datum: {count: number, colorValue: string}) => {
+      .style('background-color', (datum: { count: number, colorValue: string }) => {
         return datum.colorValue;
       })
-      .style('color', (datum: {count: number, colorValue: string}) => adaptTextColorToBgColor(datum.colorValue))
-      .text((datum: {count: number, colorValue: string}) => this.showNumber ? datum.count : '');
+      .style('color', (datum: { count: number, colorValue: string }) => adaptTextColorToBgColor(datum.colorValue))
+      .text((datum: { count: number, colorValue: string }) => this.showNumber ? datum.count : '');
   }
 
-  public addWeightFactorChangedListener() {}
-  public removeWeightFactorChangedListener() {}
-  public addYAxisScaleChangedListener() {}
-  public removeYAxisScaleChangedListener() {}
+  public addWeightFactorChangedListener() {
+  }
+
+  public removeWeightFactorChangedListener() {
+  }
+
+  public addYAxisScaleChangedListener() {
+  }
+
+  public removeYAxisScaleChangedListener() {
+  }
 }
 
 export class AxisRenderer extends ACellRenderer {
@@ -398,7 +437,7 @@ export class AxisRenderer extends ACellRenderer {
       return;
     }
     this.data = [].concat.apply([], cell.data.linecell);
-    const timelineArray = Array.from(dataStoreTimelines.values());
+    const timelineArray = Array.from(dataStoreRuns.values());
     const selectedRangesLength = timelineArray.map((x) => x.multiSelected.length);
     const largest = selectedRangesLength.indexOf(Math.max(...selectedRangesLength));
     const values = timelineArray[largest].multiSelected.filter((x) => x !== null).map((x) => extractEpochId(x).toString());

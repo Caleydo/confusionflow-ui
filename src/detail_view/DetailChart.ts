@@ -50,7 +50,7 @@ export class DetailChart {
       this.render();
     });
 
-    events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
+    events.on(AppConstants.EVENT_CLEAR_DETAIL_CHART, () => {
       this.clear();
     });
   }
@@ -94,7 +94,7 @@ export class DetailChart {
     this.$header.text(text);
   }
 
-  clear() {
+  private clear() {
     if (this.$g !== null) {
       this.$header.html('');
       this.$g.remove();
@@ -103,7 +103,7 @@ export class DetailChart {
     }
   }
 
-  render() {
+  private render() {
     const cell = DataStoreCellSelection.getCell();
     if (!cell) {
       return;
@@ -111,7 +111,7 @@ export class DetailChart {
     if (!(cell instanceof MatrixCell) && !(cell instanceof PanelCell)) {
       return;
     }
-    if (cell.data.linecell === null) {
+    if(DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
       return;
     }
 
@@ -125,7 +125,6 @@ export class DetailChart {
 
     this.cell = new DetailChartCell(cell);
     this.cell.init(this.$svg);
-    this.cell.detachListener();
 
     let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener(), (renderer: ACellRenderer) => renderer.addYAxisScaleChangedListener()];
     if (cell instanceof PanelCell && (cell.hasType([AppConstants.CELL_PRECISION, AppConstants.CELL_RECALL, AppConstants.CELL_F1_SCORE]))) {

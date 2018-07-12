@@ -25,12 +25,10 @@ export abstract class ACell {
 
   protected attachListener() {
     this._$node.on('click', () => {
-      DataStoreCellSelection.cellSelected(this);
+      if (this instanceof MatrixCell || this instanceof PanelCell) {
+        DataStoreCellSelection.cellSelected(this);
+      }
     });
-  }
-
-  public detachListener() {
-    this._$node.on('click', null);
   }
 
   public render() {
@@ -39,22 +37,22 @@ export abstract class ACell {
 }
 
 export class MatrixCell extends ACell {
-  constructor(public data: {linecell: Line[][], heatcell: MatrixHeatCellContent},
-    public predictedLabel: string, public groundTruthLabel: string,
-    public predictedIndex: number, public groundTruthIndex: number) {
+  constructor(public data: { linecell: Line[][], heatcell: MatrixHeatCellContent },
+              public predictedLabel: string, public groundTruthLabel: string,
+              public predictedIndex: number, public groundTruthIndex: number) {
     super();
   }
 }
 
 export class LabelCell extends ACell {
-  constructor(public labelData: {label: string}) {
+  constructor(public labelData: { label: string }) {
     super();
   }
 }
 
 export class PanelCell extends ACell {
-  constructor(public data: {linecell: Line[][], heatcell: MatrixHeatCellContent},
-    public type: string) {
+  constructor(public data: { linecell: Line[][], heatcell: MatrixHeatCellContent },
+              public type: string, public panelColumnIndex: number, public panelRowIndex: number) {
     super();
   }
 
@@ -64,7 +62,8 @@ export class PanelCell extends ACell {
 }
 
 export class DetailChartCell extends ACell {
-  public data: {linecell: Line[][], heatcell: MatrixHeatCellContent};
+  public data: { linecell: Line[][], heatcell: MatrixHeatCellContent };
+
   constructor(public child: MatrixCell | PanelCell) {
     super();
     this.data = child.data;

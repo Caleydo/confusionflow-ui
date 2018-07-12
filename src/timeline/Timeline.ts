@@ -6,7 +6,7 @@ import {MalevoDataset, IMalevoEpochInfo} from '../MalevoDataset';
 import * as d3 from 'd3';
 import {AppConstants} from '../AppConstants';
 import {extractEpochId} from '../utils';
-import {dataStoreTimelines, DataStoreSelectedRun, TimelineParameters, DataStoreCellSelection} from '../DataStore';
+import {dataStoreRuns, DataStoreSelectedRun, TimelineParameters, DataStoreCellSelection} from '../DataStore';
 import * as events from 'phovea_core/src/event';
 import {MatrixCell, PanelCell} from "../confusion_matrix_cell/Cell";
 
@@ -110,7 +110,7 @@ export class Timeline {
       .attr('transform', 'translate(0,' + this.globalOffsetV + ')')
       .append('text')
       .classed('tml-label', true)
-      .style('fill', dataStoreTimelines.get(this.datasetName).color)
+      .style('fill', dataStoreRuns.get(this.datasetName).color)
       .text(datasetName);
   }
 
