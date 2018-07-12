@@ -218,8 +218,9 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
-  clearConfusionMeasuresView() {
+  clearDetailView() {
     events.fire(AppConstants.CLEAR_CONF_MEASURES_VIEW);
+    events.fire(AppConstants.EVENT_CLEAR_DETAIL_CHART);
   }
 
 
@@ -285,7 +286,7 @@ export class ConfusionMatrix implements IAppView {
       DataStoreLoadedRuns.runs = allDatasets;
       if (allDatasets.length === 0) {
         this.clear();
-        this.clearConfusionMeasuresView();
+        this.clearDetailView();
         return;
       }
 

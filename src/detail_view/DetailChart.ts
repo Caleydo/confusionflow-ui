@@ -49,6 +49,10 @@ export class DetailChart {
       this.clear();
       this.render();
     });
+
+    events.on(AppConstants.EVENT_CLEAR_DETAIL_CHART, () => {
+      this.clear();
+    });
   }
 
   createHeaderText = () => {
@@ -90,7 +94,7 @@ export class DetailChart {
     this.$header.text(text);
   }
 
-  clear() {
+  private clear() {
     if (this.$g !== null) {
       this.$header.html('');
       this.$g.remove();
@@ -99,7 +103,7 @@ export class DetailChart {
     }
   }
 
-  render() {
+  private render() {
     const cell = DataStoreCellSelection.getCell();
     if (!cell) {
       return;

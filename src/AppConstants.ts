@@ -56,6 +56,8 @@ export class AppConstants {
    */
   static EVENT_CELL_SELECTED = 'eventCellSelected';
 
+  static EVENT_CLEAR_DETAIL_CHART = 'eventClarDetailChart';
+
   /**
    * Fires when the slider value changes
    * @type {string}
