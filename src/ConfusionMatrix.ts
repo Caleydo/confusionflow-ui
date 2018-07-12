@@ -311,6 +311,7 @@ export class ConfusionMatrix implements IAppView {
       this.addRowAndColumnLabels(filteredAllDatasets[0].labels);
     }
     this.setInitialCell();
+    this.setInitialToolbarStates();
   }
 
   private filter(datasets: ILoadedMalevoDataset[], indexArray: number[]): ILoadedMalevoDataset[] {
@@ -693,6 +694,10 @@ export class ConfusionMatrix implements IAppView {
     if (DataStoreCellSelection.getCell() === null) {
       simulateClick(this.cellsBottomRight.select('.cell').node());
     }
+  }
+
+  private setInitialToolbarStates() {
+    events.fire(AppConstants.EVENT_UPDATE_TOOLBAR_STATE);
   }
 
   private updateSelectedCell() {

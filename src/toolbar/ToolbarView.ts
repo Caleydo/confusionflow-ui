@@ -5,6 +5,7 @@ import {AppConstants} from '../AppConstants';
 import * as events from 'phovea_core/src/event';
 import * as plugins from 'phovea_core/src/plugin';
 import {DataStoreApplicationProperties} from '../DataStore';
+import {simulateClick} from "../utils";
 
 export class ToolbarView implements IAppView {
 
@@ -27,9 +28,23 @@ export class ToolbarView implements IAppView {
   }
 
   private attachListeners() {
-    events.on(AppConstants.EVENT_REDRAW, () => {
-      this.setStateToHeatmap();
-      this.setStateToRelative();
+    events.on(AppConstants.EVENT_UPDATE_TOOLBAR_STATE, () => {
+      if(DataStoreApplicationProperties.switchCellRenderer) {
+        simulateClick(this.$node.select('.line-chart').node());
+      } else {
+        simulateClick(this.$node.select('.heatmap').node());
+      }
+
+      if(DataStoreApplicationProperties.switchToAbsolute) {
+        simulateClick(this.$node.select('button.absolute').node());
+      } else {
+        simulateClick(this.$node.select('button.relative').node());
+      }
+
+      events.fire(AppConstants.EVENT_CELL_RENDERER_TRANSPOSED, DataStoreApplicationProperties.transposeCellRenderer);
+
+      this.$node.select('div.y-scale-slider').select('input').property('value', 1 - DataStoreApplicationProperties.weightFactor);
+
     });
   }
 
@@ -62,20 +77,12 @@ export class ToolbarView implements IAppView {
       `);
 
     $div.select('button.absolute').on('click', () => {
-      if (DataStoreApplicationProperties.switchToAbsolute === true) {
-        return false;
-      }
-
       DataStoreApplicationProperties.switchToAbsolute = true;
       $div.selectAll('.active').classed('active', false);
       $div.select('button.absolute').classed('active', true);
     });
 
     $div.select('button.relative').on('click', () => {
-      if (DataStoreApplicationProperties.switchToAbsolute === false) {
-        return;
-      }
-
       this.setStateToRelative();
     });
   }
@@ -103,10 +110,6 @@ export class ToolbarView implements IAppView {
       `);
 
     $div.select('button.line-chart').on('click', () => {
-      if (DataStoreApplicationProperties.switchCellRenderer === true) {
-        return false;
-      }
-
       DataStoreApplicationProperties.switchCellRenderer = true;
       $div.selectAll('.active').classed('active', false);
       $div.select('button.line-chart').classed('active', true);
@@ -114,10 +117,6 @@ export class ToolbarView implements IAppView {
     });
 
     $div.select('button.heatmap').on('click', () => {
-      if (DataStoreApplicationProperties.switchCellRenderer === false) {
-        return;
-      }
-
       this.setStateToHeatmap();
     });
   }
@@ -133,7 +132,7 @@ export class ToolbarView implements IAppView {
     const $div = this.$node.append('div')
       .classed('toolbar-transpose-cell', true)
       .html(`
-        <button class="btn btn-default line-chart" title="Change direction of epochs">
+        <button class="btn btn-default transpose-cell-renderer" title="Change direction of epochs">
           <i class="fa fa-long-arrow-right"></i>
           <span>epochs</span>
         </button>

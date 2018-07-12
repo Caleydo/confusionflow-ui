@@ -46,6 +46,7 @@ export default class TimelineView implements IAppView {
 
     events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds: MalevoDataset) => {
       if (dataStoreRuns.size === 0) {
+        this.timeline.node().remove();
         this.timeline = null;
         this.updateSvg(0, 0);
       }

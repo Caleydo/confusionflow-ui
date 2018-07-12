@@ -97,6 +97,12 @@ export class AppConstants {
   static EVENT_RENDER_CONF_MEASURE = 'eventRenderConfMeasure';
 
   /**
+   * Fires when the cell renderer is changed
+   * @type {string}
+   */
+  static EVENT_UPDATE_TOOLBAR_STATE = 'eventSwitchCellRenderer';
+
+  /**
    * Represent the different cell types
    * @type {string}
    */

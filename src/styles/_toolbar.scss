@@ -41,6 +41,10 @@ input[type=range][orient=vertical] {
   > div {
     margin-bottom: 10px;
   }
+
+  button.active {
+    pointer-events: none;
+  }
 }
 
 .toolbar-switch-cell-vis .btn {
