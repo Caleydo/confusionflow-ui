@@ -2,11 +2,13 @@
  * Created by Martin on 04.01.2018.
  */
 
+import {MalevoDataset, IMalevoEpochInfo} from '../MalevoDataset';
 import * as d3 from 'd3';
 import {AppConstants} from '../AppConstants';
+import {extractEpochId} from '../utils';
 import {dataStoreRuns, DataStoreSelectedRun, TimelineParameters, DataStoreCellSelection} from '../DataStore';
 import * as events from 'phovea_core/src/event';
-import {MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
+import {MatrixCell, PanelCell} from "../confusion_matrix_cell/Cell";
 
 class SingleEpochSelector {
   public $node: d3.Selection<any>;
@@ -38,7 +40,6 @@ export class TimelineData {
   constructor(epochs: IMalevoEpochInfo[]) {
     this.build(epochs);
   }
-
   datapoints: DataPoint[] = [];
 
   build(epochs: IMalevoEpochInfo[]) {
@@ -355,7 +356,7 @@ export class Timeline {
       TimelineParameters.singleIndex = this.singleEpochSelector.curPos;
       const cell = <MatrixCell | PanelCell> DataStoreCellSelection.getCell();
       // update index of selected cell so that detail view is updated properly
-      if (cell !== null) {
+      if(cell !== null) {
         const index = this.data.datapoints
           .slice(0, this.singleEpochSelector.curPos)
           .filter((y) => y.exists).length;

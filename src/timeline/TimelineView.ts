@@ -41,14 +41,15 @@ export default class TimelineView implements IAppView {
         this.timeline.data = tmData;
         this.timeline.render(this.$node, marginLabelTimeline, 0);
         this.updateSvg(1, this.timeline.getWidth());
+        this.width = this.timeline.getWidth();
       }
     });
 
     events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds: MalevoDataset) => {
       if (dataStoreRuns.size === 0) {
         this.timeline.node().remove();
+        this.updateSvg(0, this.width);
         this.timeline = null;
-        this.updateSvg(0, 0);
       }
     });
   }
