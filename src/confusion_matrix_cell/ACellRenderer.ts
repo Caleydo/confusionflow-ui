@@ -230,11 +230,12 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
 
     const data: Line[] = [].concat.apply([], cell.data.linecell);
     const largest = getLargestLine(data).values.length;
-    const res = width / largest;
+    let res = width / largest;
 
     const firstHCPart = d3.select(cell.$node.selectAll('div.heat-cell')[0][0]); // select first part of heat cell
     let bg = firstHCPart.style('background');
     const position = (this.isTransposed) ? `0px ${res * singleEpochIndex}px` : `${res * singleEpochIndex}px 0px`;
+    res = res < 1 ? 1 : res;
     const size = (this.isTransposed) ? `2px ${res}px ` : `${res}px 2px`;
     const str = `linear-gradient(to right, rgb(0, 0, 0), rgb(0, 0, 0)) ${position} / ${size} no-repeat,`;
     bg = str + bg;
@@ -250,9 +251,11 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
   }
 
   public addYAxisScaleChangedListener() {
+    events.on(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
   }
 
   public removeYAxisScaleChangedListener() {
+    events.off(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
   }
 }
 
