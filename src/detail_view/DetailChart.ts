@@ -49,10 +49,6 @@ export class DetailChart {
       this.clear();
       this.render();
     });
-
-    events.on(AppConstants.CLEAR_DETAIL_VIEW, () => {
-      this.clear();
-    });
   }
 
   createHeaderText = () => {

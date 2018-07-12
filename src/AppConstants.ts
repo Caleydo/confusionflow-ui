@@ -38,10 +38,6 @@ export class AppConstants {
    */
   static EVENT_DATA_SET_REMOVED = 'eventDataSetRemoved';
 
-  /**
-   * Fires when the detail view should be cleared
-   */
-  static CLEAR_DETAIL_VIEW = 'clearDetailView';
 
   /**
    * Fires when the detail view should be cleared

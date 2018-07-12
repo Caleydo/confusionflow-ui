@@ -158,7 +158,6 @@ export class ConfusionMatrix implements IAppView {
 
   private attachListeners() {
     events.on(AppConstants.EVENT_REDRAW, (evt) => {
-      this.clearDetailView();
       this.updateViews();
     });
 
@@ -217,10 +216,6 @@ export class ConfusionMatrix implements IAppView {
     events.on(AppConstants.EVENT_CLASS_INDICES_CHANGED, (evt) => {
       this.render();
     });
-  }
-
-  clearDetailView() {
-    events.fire(AppConstants.CLEAR_DETAIL_VIEW);
   }
 
   clearConfusionMeasuresView() {
