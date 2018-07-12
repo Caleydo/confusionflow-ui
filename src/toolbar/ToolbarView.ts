@@ -33,6 +33,7 @@ export class ToolbarView implements IAppView {
         simulateClick(this.$node.select('.line-chart').node());
       } else {
         simulateClick(this.$node.select('.heatmap').node());
+        this.updateTransposeState(this.$node.select('div.toolbar-transpose-cell'));
       }
 
       if(DataStoreApplicationProperties.switchToAbsolute) {
@@ -40,8 +41,6 @@ export class ToolbarView implements IAppView {
       } else {
         simulateClick(this.$node.select('button.relative').node());
       }
-
-      events.fire(AppConstants.EVENT_CELL_RENDERER_TRANSPOSED, DataStoreApplicationProperties.transposeCellRenderer);
 
       this.$node.select('div.y-scale-slider').select('input').property('value', 1 - DataStoreApplicationProperties.weightFactor);
 
@@ -140,12 +139,16 @@ export class ToolbarView implements IAppView {
       .select('button')
       .on('click', () => {
         DataStoreApplicationProperties.toggleTransposeCellRenderer();
-        $div.select('i.fa')
-          .classed('fa-long-arrow-right', DataStoreApplicationProperties.transposeCellRenderer === false)
-          .classed('fa-long-arrow-down', DataStoreApplicationProperties.transposeCellRenderer === true);
-        this.$node.select('.toolbar-switch-cell-vis > button.heatmap i.fa')
-          .classed('fa-rotate-90', DataStoreApplicationProperties.transposeCellRenderer);
+        this.updateTransposeState($div);
       });
+  }
+
+  private updateTransposeState($div: d3.Selection<any>) {
+    $div.select('i.fa')
+        .classed('fa-long-arrow-right', DataStoreApplicationProperties.transposeCellRenderer === false)
+        .classed('fa-long-arrow-down', DataStoreApplicationProperties.transposeCellRenderer === true);
+      this.$node.select('.toolbar-switch-cell-vis > button.heatmap i.fa')
+        .classed('fa-rotate-90', DataStoreApplicationProperties.transposeCellRenderer);
   }
 
   private addYScaleSlider() {
