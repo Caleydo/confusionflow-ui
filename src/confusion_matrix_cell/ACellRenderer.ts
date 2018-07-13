@@ -264,7 +264,11 @@ export class BarChartRenderer extends ACellRenderer {
     const width = (<any>cell.$node.node()).clientWidth;
     const height = (<any>cell.$node.node()).clientHeight;
 
-    const x = d3.scale.ordinal().rangeRoundBands([0, width], 0.1);
+    //const x = d3.scale.ordinal().rangeRoundBands([0, width], 0.1);
+    const xScaleRange = data.counts.length * ((width / 2) / AppConstants.MAX_DATASET_COUNT);
+    const x = d3.scale.ordinal()
+    .rangeRoundBands([width / 2 - xScaleRange, width / 2 + xScaleRange], 0.2);
+
     const y = d3.scale.linear().rangeRound([height, 0]);
 
     const $svg = cell.$node.append('svg');

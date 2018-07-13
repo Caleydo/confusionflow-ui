@@ -112,14 +112,6 @@ export class AppConstants {
   static CELL_OVERALL_ACCURACY_SCORE = 'overallPrecisionScore';
   static CELL_CLASS_SIZE = 'cellClassSize';
 
-  /**
-   * Initial size of a heatmap cells for the softmax stampx
-   * @type {number}
-   */
-  static SOFTMAX_HEATMAP_CELL_SIZE = 5;
-
-  static SOFTMAX_MAXIMAL_HEATMAP_LABEL_SIZE = 70;
-
   // Specifies how many dataset can be selected in the dataset selector at most
   static MAX_DATASET_COUNT = 4;
 
