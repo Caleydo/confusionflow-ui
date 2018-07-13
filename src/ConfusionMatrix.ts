@@ -463,6 +463,10 @@ export class ConfusionMatrix implements IAppView {
       diagonal: [{renderer: 'LabelCellRenderer', params: null}], offdiagonal: null,
       functors: []
     };
+    const classSizeRendererProto = {
+      diagonal: [{renderer: 'BarChartRenderer', params: null}], offdiagonal: null,
+      functors: []
+    };
 
     let singleEpochIndex = null;
     if (DataStoreApplicationProperties.renderMode === RenderMode.COMBINED) {
@@ -497,7 +501,6 @@ export class ConfusionMatrix implements IAppView {
         }], offdiagonal: null,
         functors: []
       };
-
     } else if (DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
       singleEpochContent = new SingleEpochCalculator().calculate(datasets);
       data = singleEpochContent.map((x) => ({heatcell: x, linecell: null}));
@@ -578,7 +581,7 @@ export class ConfusionMatrix implements IAppView {
     this.renderOverallAccuracyCell(dataOverallAccuracy, lineChartRendererProto, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor));
 
     this.updateSelectedCell();
-    events.fire(AppConstants.EVENT_RENDER_CONF_MEASURE, datasets, singleEpochIndex, lineChartRendererProto, labelRendererProto);
+    events.fire(AppConstants.EVENT_RENDER_CONF_MEASURE, datasets, singleEpochIndex, lineChartRendererProto, labelRendererProto, classSizeRendererProto);
   }
 
   private renderConfMatrixCells() {

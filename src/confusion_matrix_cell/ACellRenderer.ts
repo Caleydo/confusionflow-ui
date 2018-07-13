@@ -213,7 +213,6 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
   }
 
   private update = () => {
-    //const data: Line[] = [].concat.apply([], this.cell.data.linecell);
     this.render(this.cell);
   }
 
@@ -258,19 +257,57 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
 
 export class BarChartRenderer extends ACellRenderer {
   protected render(cell: MatrixCell | PanelCell) {
-    cell.$node.text('bar chart here');
+    if (cell.data.heatcell === null) {
+      return;
+    }
+    const data = cell.data.heatcell;
+    const width = (<any>cell.$node.node()).clientWidth;
+    const height = (<any>cell.$node.node()).clientHeight;
+
+    const x = d3.scale.ordinal().rangeRoundBands([0, width], 0.1);
+    const y = d3.scale.linear().rangeRound([height, 0]);
+
+    const $svg = cell.$node.append('svg');
+    $svg
+      .attr('viewBox', `0 0 ${width} ${height}`)
+      .classed('linechart', true);
+
+    const g = $svg.append("g")
+      .attr("transform", "translate(" + 0 + "," + 0 + ")");
+
+
+    x.domain(data.counts.map(function(d, i) { return i.toString(); }));
+    y.domain([0, d3.max(data.counts, function(d) { return d; })]);
+
+    g.selectAll(".bar")
+      .data(data.counts)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d, i) { return x(i.toString()); })
+        .attr("y", function(d) { return y(d); })
+        .attr("width", x.rangeBand())
+        .attr("height", function(d) { return height - y(d); })
+        .style('fill', (d, i) => data.colorValues[i]);
+  }
+
+  private update = () => {
+
   }
 
   public addWeightFactorChangedListener() {
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   public removeWeightFactorChangedListener() {
+    events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   public addYAxisScaleChangedListener() {
+    events.on(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
   }
 
   public removeYAxisScaleChangedListener() {
+    events.off(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
   }
 }
 

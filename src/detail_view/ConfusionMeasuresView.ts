@@ -35,12 +35,13 @@ export default class ConfusionMeasuresView implements IAppView {
   }
 
   private attachListener() {
-    events.on(AppConstants.EVENT_RENDER_CONF_MEASURE, (evt, datasets: ILoadedMalevoDataset[], singleEpochIndex: number[], lineChartRendererProto: IMatrixRendererChain, labelRendererProto: IMatrixRendererChain) => {
+    events.on(AppConstants.EVENT_RENDER_CONF_MEASURE, (evt, datasets: ILoadedMalevoDataset[], singleEpochIndex: number[], lineChartRendererProto: IMatrixRendererChain,
+                                                       labelRendererProto: IMatrixRendererChain, classSizeRendererProto: IMatrixRendererChain) => {
       if(DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
         this.clear();
         return;
       }
-      const {header, rows, rendererProtos} = this.prepareData(datasets, singleEpochIndex, lineChartRendererProto, labelRendererProto);
+      const {header, rows, rendererProtos} = this.prepareData(datasets, singleEpochIndex, lineChartRendererProto, labelRendererProto, classSizeRendererProto);
       this.renderTable(header, rows, rendererProtos);
       this.updateSelectedCell();
     });
@@ -54,7 +55,8 @@ export default class ConfusionMeasuresView implements IAppView {
     this.$node.selectAll('td').html('');
   }
 
-  private prepareData(datasets: ILoadedMalevoDataset[], singleEpochIndex: number[], lineChartRendererProto: IMatrixRendererChain, labelRendererProto: IMatrixRendererChain) {
+  private prepareData(datasets: ILoadedMalevoDataset[], singleEpochIndex: number[], lineChartRendererProto: IMatrixRendererChain,
+                      labelRendererProto: IMatrixRendererChain, classSizeRendererProto: IMatrixRendererChain) {
     let dataPrecision = null;
     let dataRecall = null;
     let dataF1 = null;
@@ -75,7 +77,7 @@ export default class ConfusionMeasuresView implements IAppView {
     const precisions = this.renderPrecisionColumn(dataPrecision, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor), columnIndex);
     const recalls = this.renderRecallColumn(dataRecall, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor), ++columnIndex);
     const f1Scores = this.renderF1ScoreColumn(dataF1, datasets[0].labels, singleEpochIndex, datasets.map((x) => x.datasetColor), ++columnIndex);
-    const classSizes = this.renderClassSize(datasets);
+    const classSizes = this.renderClassSize(datasets, datasets.map((x) => x.datasetColor), ++columnIndex);
 
     return {
       header: [
@@ -86,7 +88,7 @@ export default class ConfusionMeasuresView implements IAppView {
         {label: Language.CLASS_SIZE, width: '12.5%'}
       ],
       rows: zip([labels, precisions, recalls, f1Scores, classSizes]),
-      rendererProtos: [labelRendererProto, lineChartRendererProto, lineChartRendererProto, lineChartRendererProto, labelRendererProto]
+      rendererProtos: [labelRendererProto, lineChartRendererProto, lineChartRendererProto, lineChartRendererProto, classSizeRendererProto]
     };
   }
 
@@ -175,10 +177,21 @@ export default class ConfusionMeasuresView implements IAppView {
     });
   }
 
-  private renderClassSize(datasets: ILoadedMalevoDataset[]): LabelCell[] {
-    const classSizeData = datasets[0].classSizes;
-    return classSizeData.map((datum) => {
-      return new LabelCell({label: String(datum)});
+  private renderClassSize(datasets: ILoadedMalevoDataset[],  colors: string[], columnIndex: number): PanelCell[] {
+    let transformedData = datasets.map((x) => x.classSizes);
+    transformedData = zip(transformedData);
+    return transformedData.map((x, index) => {
+      const res = {
+        linecell: null,
+        heatcell: {
+          indexInMultiSelection: null,
+          counts: x,
+          maxVal: 0,
+          classLabels: null,
+          colorValues: colors
+        }
+      };
+      return new PanelCell(res, AppConstants.CELL_CLASS_SIZE, columnIndex, index);
     });
   }
 
