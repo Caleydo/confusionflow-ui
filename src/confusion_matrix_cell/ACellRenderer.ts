@@ -234,8 +234,16 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
 
     const firstHCPart = d3.select(cell.$node.selectAll('div.heat-cell')[0][0]); // select first part of heat cell
     let bg = firstHCPart.style('background');
-    const position = (this.isTransposed) ? `0px ${res * singleEpochIndex}px` : `${res * singleEpochIndex}px 0px`;
-    res = res < 1 ? 1 : res;
+    let position = null;
+    const markerMinSize = 1;
+    // when marker is smaller 1 and last epoch is selected, shift marker to the left
+    if (res < markerMinSize && largest - markerMinSize === singleEpochIndex) {
+      position = res * largest - markerMinSize;
+    } else {
+      position = res * singleEpochIndex;
+    }
+    position = (this.isTransposed) ? `0px ${position}px` : `${position}px 0px`;
+    res = res < markerMinSize ? markerMinSize : res;
     const size = (this.isTransposed) ? `2px ${res}px ` : `${res}px 2px`;
     const str = `linear-gradient(to right, rgb(0, 0, 0), rgb(0, 0, 0)) ${position} / ${size} no-repeat,`;
     bg = str + bg;
