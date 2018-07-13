@@ -229,11 +229,20 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
 
     const data: Line[] = [].concat.apply([], cell.data.linecell);
     const largest = getLargestLine(data).values.length;
-    const res = width / largest;
+    let res = width / largest;
 
     const firstHCPart = d3.select(cell.$node.selectAll('div.heat-cell')[0][0]); // select first part of heat cell
     let bg = firstHCPart.style('background');
-    const position = (this.isTransposed) ? `0px ${res * singleEpochIndex}px` : `${res * singleEpochIndex}px 0px`;
+    let position = null;
+    const markerMinSize = 1;
+    // when marker is smaller 1 and last epoch is selected, shift marker to the left
+    if (res < markerMinSize && largest - markerMinSize === singleEpochIndex) {
+      position = res * largest - markerMinSize;
+    } else {
+      position = res * singleEpochIndex;
+    }
+    position = (this.isTransposed) ? `0px ${position}px` : `${position}px 0px`;
+    res = res < markerMinSize ? markerMinSize : res;
     const size = (this.isTransposed) ? `2px ${res}px ` : `${res}px 2px`;
     const str = `linear-gradient(to right, rgb(0, 0, 0), rgb(0, 0, 0)) ${position} / ${size} no-repeat,`;
     bg = str + bg;
@@ -249,9 +258,11 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
   }
 
   public addYAxisScaleChangedListener() {
+    events.on(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
   }
 
   public removeYAxisScaleChangedListener() {
+    events.off(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
   }
 }
 
@@ -508,11 +519,9 @@ export class AxisRenderer extends ACellRenderer {
       .domain([0, getYMax(cell, this.data)]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
-    let tickFrequency = 1;
-    const stride = Number(values[1]) - Number(values[0]);
-    if (stride <= 5) {
-      tickFrequency = 4;
-    }
+    const labelWidth = 25; // in pixel
+    const numTicks = this.width / labelWidth;
+    const tickFrequency = Math.ceil(values.length / numTicks);
 
     const ticks = values.filter((x, i) => i % tickFrequency === 0);
     const xAxis = d3.svg.axis()
