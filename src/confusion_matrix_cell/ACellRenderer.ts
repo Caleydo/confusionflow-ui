@@ -256,42 +256,58 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
 }
 
 export class BarChartRenderer extends ACellRenderer {
+
+  constructor(protected width: number, protected height: number, protected $g: d3.Selection<any>) {
+    super();
+  }
+
   protected render(cell: MatrixCell | PanelCell) {
     if (cell.data.heatcell === null) {
       return;
     }
     const data = cell.data.heatcell;
-    const width = (<any>cell.$node.node()).clientWidth;
-    const height = (<any>cell.$node.node()).clientHeight;
+    const width = this.width === -1 ? (<any>cell.$node.node()).clientWidth : this.width;
+    const height = this.height === -1 ? (<any>cell.$node.node()).clientHeight : this.height;
 
     //const x = d3.scale.ordinal().rangeRoundBands([0, width], 0.1);
     const xScaleRange = data.counts.length * ((width / 2) / AppConstants.MAX_DATASET_COUNT);
     const x = d3.scale.ordinal()
-    .rangeRoundBands([width / 2 - xScaleRange, width / 2 + xScaleRange], 0.2);
+      .rangeRoundBands([width / 2 - xScaleRange, width / 2 + xScaleRange], 0.2);
 
     const y = d3.scale.linear().rangeRound([height, 0]);
 
-    const $svg = cell.$node.append('svg');
-    $svg
-      .attr('viewBox', `0 0 ${width} ${height}`)
-      .classed('linechart', true);
 
-    const g = $svg.append("g")
-      .attr("transform", "translate(" + 0 + "," + 0 + ")");
+    x.domain(data.counts.map(function (d, i) {
+      return i.toString();
+    }));
+    y.domain([0, d3.max(data.counts, function (d) {
+      return d;
+    })]);
 
+    if (this.$g === null) {
+      const $svg = cell.$node.append('svg');
+      $svg
+        .attr('viewBox', `0 0 ${width} ${height}`);
 
-    x.domain(data.counts.map(function(d, i) { return i.toString(); }));
-    y.domain([0, d3.max(data.counts, function(d) { return d; })]);
+      this.$g = $svg.append("g")
+        .attr("transform", "translate(" + 0 + "," + 0 + ")");
+    }
 
-    g.selectAll(".bar")
+    this.$g.selectAll(".bar")
       .data(data.counts)
       .enter().append("rect")
-        .attr("class", "bar")
-        .attr("x", function(d, i) { return x(i.toString()); })
-        .attr("y", function(d) { return y(d); })
-        .attr("width", x.rangeBand())
-        .attr("height", function(d) { return height - y(d); })
-        .style('fill', (d, i) => data.colorValues[i]);
+      .attr("class", "bar")
+      .attr("x", function (d, i) {
+        return x(i.toString());
+      })
+      .attr("y", function (d) {
+        return y(d);
+      })
+      .attr("width", x.rangeBand())
+      .attr("height", function (d) {
+        return height - y(d);
+      })
+      .style('fill', (d, i) => data.colorValues[i]);
   }
 
   private update = () => {
@@ -591,7 +607,7 @@ function rendererFactory(proto: IRendererConfig) {
     case 'MatrixLineCellRenderer':
       return new MatrixLineCellRenderer();
     case 'BarChartRenderer':
-      return new BarChartRenderer();
+      return new BarChartRenderer(proto.params[0], proto.params[1], proto.params[2]);
     default:
       return null;
   }

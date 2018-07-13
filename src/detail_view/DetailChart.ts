@@ -126,13 +126,26 @@ export class DetailChart {
     this.cell = new DetailChartCell(cell);
     this.cell.init(this.$svg);
 
-    let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener(), (renderer: ACellRenderer) => renderer.addYAxisScaleChangedListener()];
-    if (cell instanceof PanelCell && (cell.hasType([AppConstants.CELL_PRECISION, AppConstants.CELL_RECALL, AppConstants.CELL_F1_SCORE]))) {
-      wfc = [];
+    let confMatrixRendererProto: IMatrixRendererChain = null;
+    if(cell instanceof PanelCell && cell.hasType([AppConstants.CELL_CLASS_SIZE])) {
+      confMatrixRendererProto = {
+        diagonal: [{renderer: 'BarChartRenderer', params: [this.width, this.height, this.$g]}, {renderer: 'AxisRenderer', params: [this.width, this.height]}],offdiagonal: null, functors: []
+      };
+    } else {
+      let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener(), (renderer: ACellRenderer) => renderer.addYAxisScaleChangedListener()];
+      if (cell instanceof PanelCell && (cell.hasType([AppConstants.CELL_PRECISION, AppConstants.CELL_RECALL, AppConstants.CELL_F1_SCORE]))) {
+        wfc = [];
+      }
+      confMatrixRendererProto = {
+        diagonal: [{renderer: 'LineChartRenderer', params: [this.width, this.height]}, {
+          renderer: 'AxisRenderer',
+          params: [this.width, this.height]
+        }, {
+          renderer: 'VerticalLineRenderer',
+          params: [this.width, this.height]
+        }], offdiagonal: null, functors: wfc
+      };
     }
-
-    const confMatrixRendererProto: IMatrixRendererChain = {diagonal: [{renderer: 'LineChartRenderer', params:[this.width, this.height]}, {renderer: 'AxisRenderer', params:[this.width, this.height]}, {renderer: 'VerticalLineRenderer',
-      params:[this.width, this.height]}], offdiagonal: null, functors: wfc};
 
     applyRendererChain(confMatrixRendererProto , this.cell, confMatrixRendererProto.diagonal);
     this.cell.render();

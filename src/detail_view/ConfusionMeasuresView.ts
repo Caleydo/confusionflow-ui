@@ -236,7 +236,7 @@ export default class ConfusionMeasuresView implements IAppView {
 
   private isConfusionMeasuresViewCellType(cell: PanelCell) {
     const type = cell.type;
-    return type === AppConstants.CELL_PRECISION || type === AppConstants.CELL_RECALL || type === AppConstants.CELL_F1_SCORE;
+    return type === AppConstants.CELL_PRECISION || type === AppConstants.CELL_RECALL || type === AppConstants.CELL_F1_SCORE || type === AppConstants.CELL_CLASS_SIZE;
   }
 }
 

@@ -464,7 +464,7 @@ export class ConfusionMatrix implements IAppView {
       functors: []
     };
     const classSizeRendererProto = {
-      diagonal: [{renderer: 'BarChartRenderer', params: null}], offdiagonal: null,
+      diagonal: [{renderer: 'BarChartRenderer', params: [-1, -1, null]}], offdiagonal: null,
       functors: []
     };
 
@@ -514,11 +514,11 @@ export class ConfusionMatrix implements IAppView {
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
       fpfnRendererProto = {
-        diagonal: [{renderer: 'BarChartRenderer', params: null}], offdiagonal: null,
+        diagonal: [{renderer: 'BarChartRenderer', params: [-1, -1, null]}], offdiagonal: null,
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
       lineChartRendererProto = {
-        diagonal: [{renderer: 'BarChartRenderer', params: null}], offdiagonal: null,
+        diagonal: [{renderer: 'BarChartRenderer',  params: [-1, -1, null]}], offdiagonal: null,
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
 
