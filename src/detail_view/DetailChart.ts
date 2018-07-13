@@ -89,6 +89,8 @@ export class DetailChart {
         text += cell.data.linecell[0][0].classLabel;
       } else if (cell.type === AppConstants.CELL_OVERALL_ACCURACY_SCORE) {
         text = Language.OVERALL_ACCURACY;
+      } else if(cell.type === AppConstants.CELL_CLASS_SIZE) {
+        text = Language.CLASS_SIZE;
       }
     }
     this.$header.text(text);
@@ -129,7 +131,7 @@ export class DetailChart {
     let confMatrixRendererProto: IMatrixRendererChain = null;
     if(cell instanceof PanelCell && cell.hasType([AppConstants.CELL_CLASS_SIZE])) {
       confMatrixRendererProto = {
-        diagonal: [{renderer: 'BarChartRenderer', params: [this.width, this.height, this.$g]}, {renderer: 'AxisRenderer', params: [this.width, this.height]}],offdiagonal: null, functors: []
+        diagonal: [{renderer: 'BarChartRenderer', params: [this.width, this.height, this.$g]}, {renderer: 'BarAxisRenderer', params: [this.width, this.height]}],offdiagonal: null, functors: []
       };
     } else {
       let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener(), (renderer: ACellRenderer) => renderer.addYAxisScaleChangedListener()];

@@ -535,34 +535,66 @@ export class AxisRenderer extends ACellRenderer {
     this.$g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
       .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
-      .text(this.getYLabelText());
+      .text(getYLabelText());
 
     this.$g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
       .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance / 2)) + ')')  // centre below axis
       .text(Language.EPOCH);
   }
+}
 
-  getYLabelText() {
-    let text = '';
-    const cell = DataStoreCellSelection.getCell();
-    if (cell instanceof MatrixCell) {
-      const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
-      text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
-    } else if (cell instanceof PanelCell) {
-      if (cell.type === AppConstants.CELL_FP) {
-        text = Language.FP_RATE;
-      } else if (cell.type === AppConstants.CELL_FN) {
-        text = Language.FN_RATE;
-      } else if (cell.type === AppConstants.CELL_PRECISION) {
-        text = Language.PRECISION;
-      } else if (cell.type === AppConstants.CELL_RECALL) {
-        text = Language.RECALL;
-      } else if (cell.type === AppConstants.CELL_F1_SCORE) {
-        text = Language.F1_SCORE;
-      }
-    }
-    return text;
+export class BarAxisRenderer extends ACellRenderer {
+  constructor(private width: number, private height: number) {
+    super();
+  }
+
+  protected render(cell: MatrixCell | PanelCell) {
+    const $g = cell.$node.select('g');
+    const data = cell.data.heatcell;
+
+    const xScaleRange = data.counts.length * ((this.width / 2) / AppConstants.MAX_DATASET_COUNT);
+    const x = d3.scale.ordinal()
+      .rangeRoundBands([this.width / 2 - xScaleRange, this.width / 2 + xScaleRange], 0.2);
+
+    const y = d3.scale.linear().rangeRound([this.height, 0]).domain([0, Math.max(...data.counts)]);
+
+    const xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom");
+
+    const yAxis = d3.svg.axis()
+      .scale(y)
+      .orient("left");
+
+    $g.append("g")
+      .attr("class", "chart-axis-x")
+      .attr("transform", "translate(0," + this.height + ")")
+      .call(xAxis);
+
+    $g.append("g")
+      .attr("class", "chart-axis-y")
+      .call(yAxis);
+
+    const axisDistance = 100;
+
+    // now add titles to the axes
+    $g.append('text')
+      .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
+      .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
+      .text(getYLabelText());
+  }
+
+  public addWeightFactorChangedListener() {
+  }
+
+  public removeWeightFactorChangedListener() {
+  }
+
+  public addYAxisScaleChangedListener() {
+  }
+
+  public removeYAxisScaleChangedListener() {
   }
 }
 
@@ -600,6 +632,8 @@ function rendererFactory(proto: IRendererConfig) {
       return new LineChartRenderer(proto.params[0], proto.params[1]);
     case 'AxisRenderer':
       return new AxisRenderer(proto.params[0], proto.params[1]);
+    case 'BarAxisRenderer':
+      return new BarAxisRenderer(proto.params[0], proto.params[1]);
     case 'VerticalLineRenderer':
       return new VerticalLineRenderer(proto.params[0], proto.params[1]);
     case 'LabelCellRenderer':
@@ -637,4 +671,28 @@ function getYMax(cell: ACell, data: Line[]) {
   }
   return DataStoreApplicationProperties.switchToAbsolute ? getLargestLine(data).max : maxScale;
 }
+
+function getYLabelText() {
+    let text = '';
+    const cell = DataStoreCellSelection.getCell();
+    if (cell instanceof MatrixCell) {
+      const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
+      text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
+    } else if (cell instanceof PanelCell) {
+      if (cell.type === AppConstants.CELL_FP) {
+        text = Language.FP_RATE;
+      } else if (cell.type === AppConstants.CELL_FN) {
+        text = Language.FN_RATE;
+      } else if (cell.type === AppConstants.CELL_PRECISION) {
+        text = Language.PRECISION;
+      } else if (cell.type === AppConstants.CELL_RECALL) {
+        text = Language.RECALL;
+      } else if (cell.type === AppConstants.CELL_F1_SCORE) {
+        text = Language.F1_SCORE;
+      } else if(cell.type === AppConstants.CELL_CLASS_SIZE) {
+        text = Language.CLASS_SIZE;
+      }
+    }
+    return text;
+  }
 
