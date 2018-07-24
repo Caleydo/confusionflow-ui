@@ -596,7 +596,7 @@ export class BarAxisRenderer extends ACellRenderer {
     $g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
       .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance / 3)) + ')')  // centre below axis
-      .text(Language.DATASETS);
+      .text(Language.RUNS);
   }
 
   public addWeightFactorChangedListener() {
