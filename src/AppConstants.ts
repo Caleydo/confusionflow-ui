@@ -38,10 +38,11 @@ export class AppConstants {
    */
   static EVENT_DATA_SET_REMOVED = 'eventDataSetRemoved';
 
+
   /**
    * Fires when the detail view should be cleared
    */
-  static CLEAR_DETAIL_VIEW = 'clearDetailView';
+  static CLEAR_CONF_MEASURES_VIEW = 'clearConfMeasuresView';
 
   /**
    * Fires when the confusion matrix has to be redrawn
@@ -54,6 +55,8 @@ export class AppConstants {
    * @type {string}
    */
   static EVENT_CELL_SELECTED = 'eventCellSelected';
+
+  static EVENT_CLEAR_DETAIL_CHART = 'eventClarDetailChart';
 
   /**
    * Fires when the slider value changes
@@ -80,6 +83,24 @@ export class AppConstants {
   static EVENT_SWITCH_SCALE_TO_ABSOLUTE = 'eventSwitchScaleToAbsolute';
 
   /**
+   * Fires when the selected class indicies are changed
+   * @type {string}
+   */
+  static EVENT_CLASS_INDICES_CHANGED = 'eventClassIndicesChanged';
+
+  /**
+   * Fires when a new confusion measure should be rendered
+   * @type {string}
+   */
+  static EVENT_RENDER_CONF_MEASURE = 'eventRenderConfMeasure';
+
+  /**
+   * Fires when the cell renderer is changed
+   * @type {string}
+   */
+  static EVENT_UPDATE_TOOLBAR_STATE = 'eventSwitchCellRenderer';
+
+  /**
    * Represent the different cell types
    * @type {string}
    */
@@ -88,6 +109,7 @@ export class AppConstants {
   static CELL_PRECISION = 'cellPrecision';
   static CELL_RECALL = 'cellRecall';
   static CELL_F1_SCORE = 'cellF1Score';
+  static CELL_OVERALL_ACCURACY_SCORE = 'overallPrecisionScore';
 
   /**
    * Initial size of a heatmap cells for the softmax stampx
@@ -103,7 +125,7 @@ export class AppConstants {
   /**
    * Number of rows and columns of the confusion matrix
    */
-  static readonly CONF_MATRIX_SIZE = 10;
+  static CONF_MATRIX_SIZE = 10;
 
   /**
    * Size of timeline components

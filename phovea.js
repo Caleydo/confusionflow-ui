@@ -26,43 +26,25 @@ module.exports = function (registry) {
     'name': 'TimelineView'
   });
 
-  registry.push('malevoView', 'DetailView', function () {
-    return System.import('./src/detail_view/DetailView');
-  }, {
-    'name': 'DetailView'
-  });
-
   registry.push('malevoView', 'ToolbarView', function () {
     return System.import('./src/toolbar/ToolbarView');
   }, {
     'name': 'ToolbarView'
   });
 
-  registry.push('malevoView', 'DetailChartTab', function () {
-    return System.import('./src/detail_view/DetailChartTab');
+  registry.push('malevoView', 'DetailChart', function () {
+    return System.import('./src/detail_view/DetailChart');
   }, {
-    'name': 'DetailChartTab',
+    'name': 'DetailChart',
     'isDetailWindow': true,
     'order': 10
   });
 
-  /*
-  registry.push('malevoView', 'DetailImageTab', function () {
-    return System.import('./src/detail_view/DetailImageTab');
+  registry.push('malevoView', 'ConfusionMeasuresView', function () {
+    return System.import('./src/detail_view/ConfusionMeasuresView');
   }, {
-    'name': 'DetailImageTab',
-    'isDetailWindow': true,
-    'order': 20
+    'name': 'ConfusionMeasuresView'
   });
-
-  registry.push('malevoView', 'SoftmaxStampTab', function () {
-    return System.import('./src/detail_view/SoftmaxStampTab');
-  }, {
-    'name': 'SoftmaxStampTab',
-    'isDetailWindow': true,
-    'order': 30
-  });
-  */
 
   // generator-phovea:end
 };

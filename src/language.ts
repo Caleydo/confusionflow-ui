@@ -14,8 +14,7 @@ export class Language {
   static F1_SCORE = 'F1 Score';
   static CLASS_SIZE = 'Class Size';
   static CHART_VIEW = 'Charts';
-  static IMAGE_VIEW = 'Images';
-  static SOFTMAX_STAMP_VIEW = 'Softmax Stamps';
+  static CLASS_LABELS = 'Class Labels';
   static EPOCH = 'Epoch';
   static NUMBER = '#';
   static PERCENT = '%';
@@ -23,9 +22,11 @@ export class Language {
   static PRECISION_Y_LABEL = 'Precision [%]';
   static RECALL_Y_LABEL = 'Recall [%]';
   static F1_SCORE_Y_LABEL = 'F1 Score [%]';
-  static OVERALL_PRECISION = 'Overall Precision';
+  static OVERALL_ACCURACY = 'Overall Accuracy';
   static FP_RATE = 'False Positive Rate';
   static FN_RATE = 'False Negative Rate';
   static FOR_CLASS = 'for class';
   static PREDICTED_AS = 'predicted as';
+  static SELECT_CLASSES = 'Select classes';
+  static APPLY = 'Apply';
 }

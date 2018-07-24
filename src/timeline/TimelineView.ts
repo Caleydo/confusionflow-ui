@@ -7,6 +7,7 @@ import {AppConstants} from '../AppConstants';
 import {MalevoDataset} from '../MalevoDataset';
 import {IAppView} from '../app';
 import {Timeline, TimelineData} from './Timeline';
+import {dataStoreRuns} from '../DataStore';
 
 export default class TimelineView implements IAppView {
   private readonly $node: d3.Selection<any>;
@@ -14,6 +15,7 @@ export default class TimelineView implements IAppView {
   private readonly padding = 10;
 
   private timeline: Timeline = null;
+
   constructor(parent: Element) {
     this.width = parent.clientWidth;
     this.$node = d3.select(parent)
@@ -32,19 +34,23 @@ export default class TimelineView implements IAppView {
 
   private attachListener() {
     events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds: MalevoDataset) => {
-      if(this.timeline === null) {
+      if (this.timeline === null) {
         const marginLabelTimeline = 10; // 10 pixel margin between label and timeline
         const tmData = new TimelineData(ds.epochInfos);
         this.timeline = new Timeline(ds.name, this.$node);
         this.timeline.data = tmData;
         this.timeline.render(this.$node, marginLabelTimeline, 0);
         this.updateSvg(1, this.timeline.getWidth());
+        this.width = this.timeline.getWidth();
       }
     });
 
     events.on(AppConstants.EVENT_DATA_SET_REMOVED, (evt, ds: MalevoDataset) => {
-      this.timeline = null;
-      this.updateSvg(0, 0);
+      if (dataStoreRuns.size === 0) {
+        this.timeline.node().remove();
+        this.updateSvg(0, this.width);
+        this.timeline = null;
+      }
     });
   }
 

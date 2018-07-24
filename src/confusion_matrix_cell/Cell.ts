@@ -20,12 +20,14 @@ export abstract class ACell {
 
   init($node: d3.Selection<any>) {
     this._$node = $node;
-    this.attachListener($node);
+    this.attachListener();
   }
 
-  protected attachListener($node: d3.Selection<any>) {
-    $node.on('click', () => {
-      DataStoreCellSelection.cellSelected(this);
+  protected attachListener() {
+    this._$node.on('click', () => {
+      if (this instanceof MatrixCell || this instanceof PanelCell) {
+        DataStoreCellSelection.cellSelected(this);
+      }
     });
   }
 
@@ -35,22 +37,35 @@ export abstract class ACell {
 }
 
 export class MatrixCell extends ACell {
-  constructor(public data: {linecell: Line[][], heatcell: MatrixHeatCellContent},
-    public predictedLabel: string, public groundTruthLabel: string,
-    public predictedIndex: number, public groundTruthIndex: number) {
+  constructor(public data: { linecell: Line[][], heatcell: MatrixHeatCellContent },
+              public predictedLabel: string, public groundTruthLabel: string,
+              public predictedIndex: number, public groundTruthIndex: number) {
     super();
   }
 }
 
 export class LabelCell extends ACell {
-  constructor(public labelData: {label: string}) {
+  constructor(public labelData: { label: string }) {
     super();
   }
 }
 
 export class PanelCell extends ACell {
-  constructor(public data: {linecell: Line[][], heatcell: MatrixHeatCellContent},
-    public type: string) {
+  constructor(public data: { linecell: Line[][], heatcell: MatrixHeatCellContent },
+              public type: string, public panelColumnIndex: number, public panelRowIndex: number) {
     super();
+  }
+
+  hasType(types: string[]) {
+    return types.includes(this.type);
+  }
+}
+
+export class DetailChartCell extends ACell {
+  public data: { linecell: Line[][], heatcell: MatrixHeatCellContent };
+
+  constructor(public child: MatrixCell | PanelCell) {
+    super();
+    this.data = child.data;
   }
 }

@@ -1,11 +1,11 @@
 import * as events from 'phovea_core/src/event';
 import {Line, MatrixHeatCellContent} from './CellContent';
-import {ACell, LabelCell, MatrixCell, PanelCell} from './Cell';
+import {ACell, DetailChartCell, LabelCell, MatrixCell, PanelCell} from './Cell';
 import {adaptTextColorToBgColor, extractEpochId} from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
 import {Language} from '../language';
-import {DataStoreApplicationProperties, DataStoreCellSelection, dataStoreTimelines} from '../DataStore';
+import {DataStoreApplicationProperties, DataStoreCellSelection, dataStoreRuns} from '../DataStore';
 import {time} from 'd3';
 import {AppConstants} from '../AppConstants';
 import {isUndefined} from 'util';
@@ -26,25 +26,32 @@ export interface IRendererConfig {
 export interface IMatrixRendererChain {
   offdiagonal: IRendererConfig[];
   diagonal: IRendererConfig[]; // also used for 1 dimensional vectors, aka. columns and rows
-  functors: {(renderer: ACellRenderer): void;}[];
+  functors: { (renderer: ACellRenderer): void; }[];
 }
 
 export abstract class ACellRenderer {
   nextRenderer: ACellRenderer = null;
+
   setNextRenderer(renderer: ACellRenderer): ACellRenderer {
     this.nextRenderer = renderer;
     return this.nextRenderer;
   }
+
   renderNext(cell: ACell) {
     this.render(cell);
     if (this.nextRenderer != null) {
       this.nextRenderer.renderNext(cell);
     }
   }
+
   protected abstract render(cell: ACell);
+
   public abstract addWeightFactorChangedListener();
+
   public abstract removeWeightFactorChangedListener();
+
   public abstract addYAxisScaleChangedListener();
+
   public abstract removeYAxisScaleChangedListener();
 }
 
@@ -62,7 +69,7 @@ export class LineChartRenderer extends ACellRenderer {
 
   protected renderLine(data: Line[], $node: d3.Selection<any>) {
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactorChart).domain([0, getYMax(data)]).rangeRound([this.height, 0]);
+    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([this.height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -114,6 +121,7 @@ export class LineChartRenderer extends ACellRenderer {
 
 export class MatrixLineCellRenderer extends LineChartRenderer {
   private $svg: d3.Selection<any>;
+
   constructor() {
     super(0, 0);
   }
@@ -123,8 +131,8 @@ export class MatrixLineCellRenderer extends LineChartRenderer {
     const data: Line[] = [].concat.apply([], cell.data.linecell);
     this.$svg = cell.$node.append('svg').datum(data);
 
-    this.width = (<any>cell.$node[0][0]).clientWidth;
-    this.height = (<any>cell.$node[0][0]).clientHeight;
+    this.width = (<any>cell.$node.node()).clientWidth;
+    this.height = (<any>cell.$node.node()).clientHeight;
 
     this.$svg
       .attr('viewBox', `0 0 ${this.width} ${this.height}`)
@@ -184,18 +192,33 @@ export class VerticalLineRenderer extends ACellRenderer {
     return 0;
   }
 
-  public addWeightFactorChangedListener() {}
-  public removeWeightFactorChangedListener() {}
-  public addYAxisScaleChangedListener() {}
-  public removeYAxisScaleChangedListener() {}
+  public addWeightFactorChangedListener() {
+  }
+
+  public removeWeightFactorChangedListener() {
+  }
+
+  public addYAxisScaleChangedListener() {
+  }
+
+  public removeYAxisScaleChangedListener() {
+  }
 }
 
 export class SingleEpochMarker extends ACellRenderer implements ITransposeRenderer {
+  protected cell: MatrixCell | PanelCell;
+
   constructor(public isTransposed = false) {
     super();
   }
 
+  private update = () => {
+    //const data: Line[] = [].concat.apply([], this.cell.data.linecell);
+    this.render(this.cell);
+  }
+
   protected render(cell: MatrixCell | PanelCell) {
+    this.cell = cell;
     if (cell.data.heatcell === null) {
       return;
     }
@@ -207,21 +230,41 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
 
     const data: Line[] = [].concat.apply([], cell.data.linecell);
     const largest = getLargestLine(data).values.length;
-    const res = width / largest;
+    let res = width / largest;
 
     const firstHCPart = d3.select(cell.$node.selectAll('div.heat-cell')[0][0]); // select first part of heat cell
     let bg = firstHCPart.style('background');
-    const position = (this.isTransposed) ? `0px ${res * singleEpochIndex}px` : `${res * singleEpochIndex}px 0px`;
+    let position = null;
+    const markerMinSize = 1;
+    // when marker is smaller 1 and last epoch is selected, shift marker to the left
+    if (res < markerMinSize && largest - markerMinSize === singleEpochIndex) {
+      position = res * largest - markerMinSize;
+    } else {
+      position = res * singleEpochIndex;
+    }
+    position = (this.isTransposed) ? `0px ${position}px` : `${position}px 0px`;
+    res = res < markerMinSize ? markerMinSize : res;
     const size = (this.isTransposed) ? `2px ${res}px ` : `${res}px 2px`;
     const str = `linear-gradient(to right, rgb(0, 0, 0), rgb(0, 0, 0)) ${position} / ${size} no-repeat,`;
     bg = str + bg;
     firstHCPart.style('background', bg);
   }
 
-  public addWeightFactorChangedListener() {}
-  public removeWeightFactorChangedListener() {}
-  public addYAxisScaleChangedListener() {}
-  public removeYAxisScaleChangedListener() {}
+  public addWeightFactorChangedListener() {
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
+  }
+
+  public removeWeightFactorChangedListener() {
+    events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
+  }
+
+  public addYAxisScaleChangedListener() {
+    events.on(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
+  }
+
+  public removeYAxisScaleChangedListener() {
+    events.off(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
+  }
 }
 
 export class BarChartRenderer extends ACellRenderer {
@@ -229,24 +272,37 @@ export class BarChartRenderer extends ACellRenderer {
     cell.$node.text('bar chart here');
   }
 
-  public addWeightFactorChangedListener() {}
-  public removeWeightFactorChangedListener() {}
-  public addYAxisScaleChangedListener() {}
-  public removeYAxisScaleChangedListener() {}
+  public addWeightFactorChangedListener() {
+  }
+
+  public removeWeightFactorChangedListener() {
+  }
+
+  public addYAxisScaleChangedListener() {
+  }
+
+  public removeYAxisScaleChangedListener() {
+  }
 }
 
 export class LabelCellRenderer extends ACellRenderer {
   protected render(cell: LabelCell) {
     cell.$node
       .classed('label-cell', true)
-      .text(cell.labelData.label)
-      .style('background-color', 'white');
+      .text(cell.labelData.label);
   }
 
-  public addWeightFactorChangedListener() {}
-  public removeWeightFactorChangedListener() {}
-  public addYAxisScaleChangedListener() {}
-  public removeYAxisScaleChangedListener() {}
+  public addWeightFactorChangedListener() {
+  }
+
+  public removeWeightFactorChangedListener() {
+  }
+
+  public addYAxisScaleChangedListener() {
+  }
+
+  public removeYAxisScaleChangedListener() {
+  }
 }
 
 export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITransposeRenderer {
@@ -323,17 +379,24 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
       });
 
     $subCells.enter().append('div').classed('heat-cell', true)
-      .style('background-color', (datum: {count: number, colorValue: string}) => {
+      .style('background-color', (datum: { count: number, colorValue: string }) => {
         return datum.colorValue;
       })
-      .style('color', (datum: {count: number, colorValue: string}) => adaptTextColorToBgColor(datum.colorValue))
-      .text((datum: {count: number, colorValue: string}) => this.showNumber ? datum.count : '');
+      .style('color', (datum: { count: number, colorValue: string }) => adaptTextColorToBgColor(datum.colorValue))
+      .text((datum: { count: number, colorValue: string }) => this.showNumber ? datum.count : '');
   }
 
-  public addWeightFactorChangedListener() {}
-  public removeWeightFactorChangedListener() {}
-  public addYAxisScaleChangedListener() {}
-  public removeYAxisScaleChangedListener() {}
+  public addWeightFactorChangedListener() {
+  }
+
+  public removeWeightFactorChangedListener() {
+  }
+
+  public addYAxisScaleChangedListener() {
+  }
+
+  public removeYAxisScaleChangedListener() {
+  }
 }
 
 export class AxisRenderer extends ACellRenderer {
@@ -341,10 +404,11 @@ export class AxisRenderer extends ACellRenderer {
   private yAxis: any;
   private y: any;
   private $g: d3.Selection<any> = null;
+  private cell: MatrixCell | PanelCell;
 
   private update = () => {
     if (this.$g !== null) {
-      this.updateYAxis(DataStoreApplicationProperties.weightFactorChart);
+      this.updateYAxis(DataStoreApplicationProperties.weightFactor);
     }
   }
 
@@ -372,21 +436,22 @@ export class AxisRenderer extends ACellRenderer {
   }
 
   private updateYAxis(value: number) {
-    this.y.exponent(value).domain([0, getYMax(this.data)]).range([this.height, 0]);
+    this.y.exponent(value).domain([0, getYMax(this.cell, this.data)]).range([this.height, 0]);
     this.yAxis.scale(this.y);
     this.$g.select('.chart-axis-y').call(this.yAxis);
   }
 
   protected render(cell: MatrixCell | PanelCell) {
     this.$g = cell.$node.select('g');
+    this.cell = cell;
     if (this.$g === null) {
       return;
     }
     this.data = [].concat.apply([], cell.data.linecell);
-    const timelineArray = Array.from(dataStoreTimelines.values());
+    const timelineArray = Array.from(dataStoreRuns.values());
     const selectedRangesLength = timelineArray.map((x) => x.multiSelected.length);
     const largest = selectedRangesLength.indexOf(Math.max(...selectedRangesLength));
-    const values = timelineArray[largest].multiSelected.map((x) => extractEpochId(x).toString());
+    const values = timelineArray[largest].multiSelected.filter((x) => x !== null).map((x) => extractEpochId(x).toString());
 
     const x = d3.scale.ordinal()
       .domain(values)
@@ -394,13 +459,12 @@ export class AxisRenderer extends ACellRenderer {
 
     const y = d3.scale.linear()
       .rangeRound([this.height, 0])
-      .domain([0, getYMax(this.data)]);
+      .domain([0, getYMax(cell, this.data)]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
-    let tickFrequency = 1;
-    if (selectedRangesLength[largest] > 20) {
-      tickFrequency = 10;
-    }
+    const labelWidth = 25; // in pixel
+    const numTicks = this.width / labelWidth;
+    const tickFrequency = Math.ceil(values.length / numTicks);
 
     const ticks = values.filter((x, i) => i % tickFrequency === 0);
     const xAxis = d3.svg.axis()
@@ -412,7 +476,7 @@ export class AxisRenderer extends ACellRenderer {
       .attr('transform', 'translate(0,' + this.height + ')')
       .call(xAxis);
 
-    this.updateYAxis(DataStoreApplicationProperties.weightFactorChart);
+    this.updateYAxis(DataStoreApplicationProperties.weightFactor);
 
     this.$g.append('g')
       .attr('class', 'chart-axis-y')
@@ -427,7 +491,7 @@ export class AxisRenderer extends ACellRenderer {
 
     this.$g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-      .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance)) + ')')  // centre below axis
+      .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance / 2)) + ')')  // centre below axis
       .text(Language.EPOCH);
   }
 
@@ -516,7 +580,13 @@ export function removeListeners(renderChain: ACellRenderer, funct: ((r: ACellRen
   }
 }
 
-function getYMax(data: Line[]) {
-  return DataStoreApplicationProperties.switchToAbsolute ? getLargestLine(data).max : 1;
+function getYMax(cell: ACell, data: Line[]) {
+  const maxScale = 1;
+
+  // cell types with no absolute values always have a max value of 1
+  if (cell instanceof DetailChartCell && cell.child instanceof PanelCell && cell.child.hasType([AppConstants.CELL_PRECISION, AppConstants.CELL_RECALL, AppConstants.CELL_F1_SCORE])) {
+    return maxScale;
+  }
+  return DataStoreApplicationProperties.switchToAbsolute ? getLargestLine(data).max : maxScale;
 }
 

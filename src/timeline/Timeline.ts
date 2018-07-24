@@ -6,8 +6,9 @@ import {MalevoDataset, IMalevoEpochInfo} from '../MalevoDataset';
 import * as d3 from 'd3';
 import {AppConstants} from '../AppConstants';
 import {extractEpochId} from '../utils';
-import {dataStoreTimelines, DataStoreSelectedRun, TimelineParameters} from '../DataStore';
+import {dataStoreRuns, DataStoreSelectedRun, TimelineParameters, DataStoreCellSelection} from '../DataStore';
 import * as events from 'phovea_core/src/event';
+import {MatrixCell, PanelCell} from "../confusion_matrix_cell/Cell";
 
 class SingleEpochSelector {
   public $node: d3.Selection<any>;
@@ -109,7 +110,7 @@ export class Timeline {
       .attr('transform', 'translate(0,' + this.globalOffsetV + ')')
       .append('text')
       .classed('tml-label', true)
-      .style('fill', dataStoreTimelines.get(this.datasetName).color)
+      .style('fill', dataStoreRuns.get(this.datasetName).color)
       .text(datasetName);
   }
 
@@ -353,6 +354,14 @@ export class Timeline {
     if (!this.singleEpochSelector.hidden) {
       console.assert(this.data.datapoints[this.singleEpochSelector.curPos].exists);
       TimelineParameters.singleIndex = this.singleEpochSelector.curPos;
+      const cell = <MatrixCell | PanelCell> DataStoreCellSelection.getCell();
+      // update index of selected cell so that detail view is updated properly
+      if(cell !== null) {
+        const index = this.data.datapoints
+          .slice(0, this.singleEpochSelector.curPos)
+          .filter((y) => y.exists).length;
+        cell.data.heatcell.indexInMultiSelection[0] = index;
+      }
     } else {
       TimelineParameters.singleIndex = -1;
     }

@@ -3,7 +3,7 @@
  */
 import * as d3 from 'd3';
 import {ACellRenderer, MatrixLineCellRenderer} from './confusion_matrix_cell/ACellRenderer';
-import {Line, MatrixHeatCellContent} from './confusion_matrix_cell/CellContent';
+import {ACell} from './confusion_matrix_cell/Cell';
 import {ICellData} from './ConfusionMatrix';
 
 export class ChartColumn {
