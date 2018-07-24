@@ -564,7 +564,7 @@ export class BarAxisRenderer extends ACellRenderer {
 
     const xScaleRange = data.counts.length * ((this.width / 2) / AppConstants.MAX_DATASET_COUNT);
     const x = d3.scale.ordinal()
-      .rangeRoundBands([this.width / 2 - xScaleRange, this.width / 2 + xScaleRange], 0.2);
+      .rangeRoundBands([0, this.width], 0.2);
 
     const y = d3.scale.linear().rangeRound([this.height, 0]).domain([0, Math.max(...data.counts)]);
 
@@ -592,6 +592,11 @@ export class BarAxisRenderer extends ACellRenderer {
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
       .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
       .text(getYLabelText());
+
+    $g.append('text')
+      .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
+      .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance / 3)) + ')')  // centre below axis
+      .text(Language.DATASETS);
   }
 
   public addWeightFactorChangedListener() {
