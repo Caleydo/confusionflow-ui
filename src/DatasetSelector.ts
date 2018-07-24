@@ -109,9 +109,11 @@ class DataSetSelector implements IAppView {
 
         // set initial dataset
         if(Object.keys(data).length > 0) {
-          const x = data[Object.keys(data)[0]];
-          $('#dataset-selector').select2(this.select2Options).val(x.name).trigger('change');
-          DataStoreSelectedRun.add(x);
+          const names = Object.keys(data).map((k) => data[k].name);
+          $('#dataset-selector').select2(this.select2Options).val(names).trigger('change');
+          Object.keys(data).forEach((k: string) => {
+            DataStoreSelectedRun.add(data[k]);
+          });
           this.updateSelectorColors();
         }
         return this;
