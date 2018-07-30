@@ -213,7 +213,6 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
   }
 
   private update = () => {
-    //const data: Line[] = [].concat.apply([], this.cell.data.linecell);
     this.render(this.cell);
   }
 
@@ -268,20 +267,78 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
 }
 
 export class BarChartRenderer extends ACellRenderer {
+
+  constructor(protected width: number, protected height: number, protected $g: d3.Selection<any>) {
+    super();
+  }
+
   protected render(cell: MatrixCell | PanelCell) {
-    cell.$node.text('bar chart here');
+    if (cell.data.heatcell === null) {
+      return;
+    }
+    const data = cell.data.heatcell;
+    const width = this.width === -1 ? (<any>cell.$node.node()).clientWidth : this.width;
+    const height = this.height === -1 ? (<any>cell.$node.node()).clientHeight : this.height;
+
+    //const x = d3.scale.ordinal().rangeRoundBands([0, width], 0.1);
+    const xScaleRange = data.counts.length * ((width / 2) / AppConstants.MAX_DATASET_COUNT);
+    const x = d3.scale.ordinal()
+      .rangeRoundBands([width / 2 - xScaleRange, width / 2 + xScaleRange], 0.2);
+
+    const y = d3.scale.linear().rangeRound([height, 0]);
+
+
+    x.domain(data.counts.map(function (d, i) {
+      return i.toString();
+    }));
+    y.domain([0, d3.max(data.counts, function (d) {
+      return d;
+    })]);
+
+    if (this.$g === null) {
+      const $svg = cell.$node.append('svg');
+      $svg
+        .attr('viewBox', `0 0 ${width} ${height}`);
+
+      this.$g = $svg.append("g")
+        .attr("transform", "translate(" + 0 + "," + 0 + ")");
+    }
+
+    this.$g.selectAll(".bar")
+      .data(data.counts)
+      .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function (d, i) {
+        return x(i.toString());
+      })
+      .attr("y", function (d) {
+        return y(d);
+      })
+      .attr("width", x.rangeBand())
+      .attr("height", function (d) {
+        return height - y(d);
+      })
+      .style('fill', (d, i) => data.colorValues[i]);
+  }
+
+  private update = () => {
+
   }
 
   public addWeightFactorChangedListener() {
+    events.on(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   public removeWeightFactorChangedListener() {
+    events.off(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.update);
   }
 
   public addYAxisScaleChangedListener() {
+    events.on(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
   }
 
   public removeYAxisScaleChangedListener() {
+    events.off(AppConstants.EVENT_SWITCH_SCALE_TO_ABSOLUTE, this.update);
   }
 }
 
@@ -487,34 +544,71 @@ export class AxisRenderer extends ACellRenderer {
     this.$g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
       .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
-      .text(this.getYLabelText());
+      .text(getYLabelText());
 
     this.$g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
       .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance / 2)) + ')')  // centre below axis
       .text(Language.EPOCH);
   }
+}
 
-  getYLabelText() {
-    let text = '';
-    const cell = DataStoreCellSelection.getCell();
-    if (cell instanceof MatrixCell) {
-      const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
-      text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
-    } else if (cell instanceof PanelCell) {
-      if (cell.type === AppConstants.CELL_FP) {
-        text = Language.FP_RATE;
-      } else if (cell.type === AppConstants.CELL_FN) {
-        text = Language.FN_RATE;
-      } else if (cell.type === AppConstants.CELL_PRECISION) {
-        text = Language.PRECISION;
-      } else if (cell.type === AppConstants.CELL_RECALL) {
-        text = Language.RECALL;
-      } else if (cell.type === AppConstants.CELL_F1_SCORE) {
-        text = Language.F1_SCORE;
-      }
-    }
-    return text;
+export class BarAxisRenderer extends ACellRenderer {
+  constructor(private width: number, private height: number) {
+    super();
+  }
+
+  protected render(cell: MatrixCell | PanelCell) {
+    const $g = cell.$node.select('g');
+    const data = cell.data.heatcell;
+
+    const xScaleRange = data.counts.length * ((this.width / 2) / AppConstants.MAX_DATASET_COUNT);
+    const x = d3.scale.ordinal()
+      .rangeRoundBands([0, this.width], 0.2);
+
+    const y = d3.scale.linear().rangeRound([this.height, 0]).domain([0, Math.max(...data.counts)]);
+
+    const xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom");
+
+    const yAxis = d3.svg.axis()
+      .scale(y)
+      .orient("left");
+
+    $g.append("g")
+      .attr("class", "chart-axis-x")
+      .attr("transform", "translate(0," + this.height + ")")
+      .call(xAxis);
+
+    $g.append("g")
+      .attr("class", "chart-axis-y")
+      .call(yAxis);
+
+    const axisDistance = 100;
+
+    // now add titles to the axes
+    $g.append('text')
+      .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
+      .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
+      .text(getYLabelText());
+
+    $g.append('text')
+      .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
+      .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance / 3)) + ')')  // centre below axis
+      .text(Language.RUNS);
+  }
+
+  public addWeightFactorChangedListener() {
+  }
+
+  public removeWeightFactorChangedListener() {
+  }
+
+  public addYAxisScaleChangedListener() {
+  }
+
+  public removeYAxisScaleChangedListener() {
   }
 }
 
@@ -552,6 +646,8 @@ function rendererFactory(proto: IRendererConfig) {
       return new LineChartRenderer(proto.params[0], proto.params[1]);
     case 'AxisRenderer':
       return new AxisRenderer(proto.params[0], proto.params[1]);
+    case 'BarAxisRenderer':
+      return new BarAxisRenderer(proto.params[0], proto.params[1]);
     case 'VerticalLineRenderer':
       return new VerticalLineRenderer(proto.params[0], proto.params[1]);
     case 'LabelCellRenderer':
@@ -559,7 +655,7 @@ function rendererFactory(proto: IRendererConfig) {
     case 'MatrixLineCellRenderer':
       return new MatrixLineCellRenderer();
     case 'BarChartRenderer':
-      return new BarChartRenderer();
+      return new BarChartRenderer(proto.params[0], proto.params[1], proto.params[2]);
     default:
       return null;
   }
@@ -589,4 +685,28 @@ function getYMax(cell: ACell, data: Line[]) {
   }
   return DataStoreApplicationProperties.switchToAbsolute ? getLargestLine(data).max : maxScale;
 }
+
+function getYLabelText() {
+    let text = '';
+    const cell = DataStoreCellSelection.getCell();
+    if (cell instanceof MatrixCell) {
+      const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
+      text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
+    } else if (cell instanceof PanelCell) {
+      if (cell.type === AppConstants.CELL_FP) {
+        text = Language.FP_RATE;
+      } else if (cell.type === AppConstants.CELL_FN) {
+        text = Language.FN_RATE;
+      } else if (cell.type === AppConstants.CELL_PRECISION) {
+        text = Language.PRECISION;
+      } else if (cell.type === AppConstants.CELL_RECALL) {
+        text = Language.RECALL;
+      } else if (cell.type === AppConstants.CELL_F1_SCORE) {
+        text = Language.F1_SCORE;
+      } else if(cell.type === AppConstants.CELL_CLASS_SIZE) {
+        text = Language.CLASS_SIZE;
+      }
+    }
+    return text;
+  }
 
