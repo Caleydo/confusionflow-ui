@@ -16,6 +16,7 @@ export class Language {
   static CHART_VIEW = 'Charts';
   static CLASS_LABELS = 'Class Labels';
   static EPOCH = 'Epoch';
+  static RUNS = 'Runs';
   static NUMBER = '#';
   static PERCENT = '%';
   static CONFUSION_Y_LABEL = 'of Confused Instances';
