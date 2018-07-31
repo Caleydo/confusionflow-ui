@@ -69,7 +69,7 @@ export class LineChartRenderer extends ACellRenderer {
 
   protected renderLine(data: Line[], $node: d3.Selection<any>) {
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([this.height, 0]);
+    const y = d3.scale.pow().exponent(1).domain([0, getYMax(this.cell, data)]).rangeRound([this.height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -493,7 +493,7 @@ export class AxisRenderer extends ACellRenderer {
   }
 
   private updateYAxis(value: number) {
-    this.y.exponent(value).domain([0, getYMax(this.cell, this.data)]).range([this.height, 0]);
+    this.y.exponent(1).domain([0, getYMax(this.cell, this.data)]).range([this.height, 0]);
     this.yAxis.scale(this.y);
     this.$g.select('.chart-axis-y').call(this.yAxis);
   }
