@@ -15,6 +15,8 @@ import {ITable} from 'phovea_core/src/table';
 import * as $ from 'jquery';
 import {DataStoreSelectedRun, dataStoreRuns} from './DataStore';
 import {extractEpochId} from './utils';
+import * as events from 'phovea_core/src/event';
+
 /**
  * Shows a list of available datasets and lets the user choose one.
  * The selection is broadcasted as event throughout the application.
@@ -46,7 +48,19 @@ class DataSetSelector implements IAppView {
    */
   init() {
     this.build();
+    this.attachListeners();
     return this.update(); // return the promise
+  }
+
+  private attachListeners() {
+    events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds: MalevoDataset) => {
+      const a0 = this.$node.selectAll('li.select2-selection__choice');
+      const res = a0.attr('title', function(d){ return d === ds.name})
+      if(res.length !== 1) {
+        throw new Error(res.length + 'datasets were found: But exactly 1 dataset is allowed');
+      }
+      res.classed('loading', true);
+    });
   }
 
   /**
