@@ -53,13 +53,8 @@ class DataSetSelector implements IAppView {
   }
 
   private attachListeners() {
-    events.on(AppConstants.EVENT_DATA_SET_ADDED, (evt, ds: MalevoDataset) => {
-      const a0 = this.$node.selectAll('li.select2-selection__choice');
-      const res = a0.attr('title', function(d){ return d === ds.name})
-      if(res.length !== 1) {
-        throw new Error(res.length + 'datasets were found: But exactly 1 dataset is allowed');
-      }
-      res.classed('loading', true);
+    events.on(AppConstants.EVENT_LOADING_COMPLETE, (evt, ds: MalevoDataset) => {
+     this.updateLoadingState();
     });
   }
 
@@ -85,11 +80,27 @@ class DataSetSelector implements IAppView {
         const dataset = d3.select(evt.params.data.element).data()[0];
         DataStoreSelectedRun.add(dataset);
         that.updateSelectorColors();
+        that.updateLoadingState();
       })
       .on('select2:unselect', (evt) => {
         const dataset = d3.select(evt.params.data.element).data()[0];
         DataStoreSelectedRun.remove(dataset);
         that.updateSelectorColors();
+        that.updateLoadingState();
+      });
+  }
+
+  private updateLoadingState() {
+    this.$node.selectAll('li.select2-selection__choice')
+      .each(function() {
+        const d = d3.select(this);
+        const dataset = dataStoreRuns.get(d.attr('title'));
+        if(dataset.isLoading) {
+          d.style('--blinking-color', dataset.color);
+          d.classed('loading', true);
+        } else {
+          d.classed('loading', false);
+        }
       });
   }
 
@@ -131,6 +142,7 @@ class DataSetSelector implements IAppView {
           $('#dataset-selector').select2(this.select2Options).val(x.name).trigger('change');
           DataStoreSelectedRun.add(x);
           this.updateSelectorColors();
+          this.updateLoadingState();
         }
         return this;
       });

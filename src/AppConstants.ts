@@ -101,6 +101,12 @@ export class AppConstants {
   static EVENT_UPDATE_TOOLBAR_STATE = 'eventSwitchCellRenderer';
 
   /**
+   * Fires when the dataset has finished loading
+   * @type {string}
+   */
+  static EVENT_LOADING_COMPLETE = 'eventLoadingComplete';
+
+  /**
    * Represent the different cell types
    * @type {string}
    */

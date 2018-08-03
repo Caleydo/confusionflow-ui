@@ -45,13 +45,13 @@ export class DataStoreSelectedRun {
     return colors;
   }
 
-  constructor(public selectedDataset: MalevoDataset = null, public selectionIndex: number) {
+  constructor(public selectedDataset: MalevoDataset = null, public selectionIndex: number, public isLoading: boolean) {
     this.color = DataStoreSelectedRun.getColors()[selectionIndex];
   }
 
   static add(ds: MalevoDataset) {
     const selectionIndex = DataStoreSelectedRun.getFreeIndex();
-    const newRunObject = new DataStoreSelectedRun(ds, selectionIndex);
+    const newRunObject = new DataStoreSelectedRun(ds, selectionIndex, true);
     DataStoreSelectedRun.setSelectionIndex(selectionIndex, newRunObject);
     dataStoreRuns.set(ds.name, newRunObject);
     DataStoreSelectedRun.updateRuns();
