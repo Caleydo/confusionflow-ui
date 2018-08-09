@@ -290,7 +290,11 @@ export class ConfusionMatrix implements IAppView {
         return;
       }
 
-      DataStoreApplicationProperties.selectedClassIndices = allDatasets[0].labelIds; // -> fires event -> listener calls render()
+      if(DataStoreApplicationProperties.selectedClassIndices.length === 0) {
+        DataStoreApplicationProperties.selectedClassIndices = allDatasets[0].labelIds; // -> fires event -> listener calls render()
+      } else {
+        this.render();
+      }
       this.renderClassSelector(allDatasets[0].labelIds, allDatasets[0].labels, DataStoreApplicationProperties.selectedClassIndices);
     });
   }
