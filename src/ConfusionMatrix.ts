@@ -85,24 +85,22 @@ export class ConfusionMatrix implements IAppView {
 
           <div class="dropdown-menu" aria-labelledby="classSelectorLabel">
             <div class="checkbox select-all"><label><input type="checkbox" value="all">Select all</label></div>
-            <form action="#" method="GET">
-              <div class="form-group"></div>
-              <div class="form-footer">
-                <p class="text-warning hidden">Select at least 2 classes</p>
-                <button type="submit" class="btn btn-sm btn-primary">${Language.APPLY}</button>
-              </div>
-            </form>
+            <div class="form-group"></div>
+            <div class="form-footer">
+              <p class="text-warning hidden">Select at least 2 classes</p>
+              <button type="button" class="btn btn-sm btn-primary">${Language.APPLY}</button>
+            </div>
           </div>
         </div>
       `);
 
     this.$classSelector = $axisTop.select('.dropdown-menu');
 
-    this.$classSelector.select('form').on('submit', () => {
-      (<any>d3.event).stopPropagation(); // prevent sending the form
+    this.$classSelector.select('button').on('click', () => {
       $($axisTop.select('#classSelectorLabel').node()).dropdown('toggle');
       const classIds = this.$classSelector.selectAll('div.form-group input[type="checkbox"]:checked')[0].map((d: HTMLInputElement) => +d.value);
       DataStoreApplicationProperties.selectedClassIndices = classIds;
+      return false;
     });
 
     this.$node.append('div')
@@ -294,8 +292,12 @@ export class ConfusionMatrix implements IAppView {
         return;
       }
 
-      DataStoreApplicationProperties.selectedClassIndices = allDatasets[0].labelIds; // -> fires event -> listener calls render()
-      setTimeout(this.renderClassSelector(allDatasets[0].labelIds, allDatasets[0].labels, DataStoreApplicationProperties.selectedClassIndices), 0);
+      if(DataStoreApplicationProperties.selectedClassIndices.length === 0) {
+        DataStoreApplicationProperties.selectedClassIndices = allDatasets[0].labelIds; // -> fires event -> listener calls render()
+      } else {
+        this.render();
+      }
+      this.renderClassSelector(allDatasets[0].labelIds, allDatasets[0].labels, DataStoreApplicationProperties.selectedClassIndices);
     });
   }
 
@@ -375,7 +377,7 @@ export class ConfusionMatrix implements IAppView {
 
     this.$classSelector.select('.select-all input').on('change', () => {
       const isSelectAll = this.$classSelector.select('.select-all input').property('checked');
-      this.$classSelector.select('form').selectAll('input[type="checkbox"]').property('checked', isSelectAll);
+      this.$classSelector.select('div.form-group').selectAll('input[type="checkbox"]').property('checked', isSelectAll);
       this.$classSelector.select('.form-footer button').property('disabled', (isSelectAll === false));
       this.$classSelector.select('.form-footer p').classed('hidden', (isSelectAll === true));
     });
@@ -391,6 +393,7 @@ export class ConfusionMatrix implements IAppView {
         const numSelected = this.$classSelector.selectAll('div.form-group input[type="checkbox"]:checked')[0].length;
         this.$classSelector.select('.form-footer button').property('disabled', (numSelected < 2));
         this.$classSelector.select('.form-footer p').classed('hidden', (numSelected >= 2));
+        this.$classSelector.select('.select-all input').property('checked', numSelected === labelIds.length);
       });
     $labels.exit().remove();
   }
