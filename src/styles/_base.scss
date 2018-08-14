@@ -66,3 +66,16 @@ b,
 .select2-container--default .select2-results__option--highlighted[aria-selected] {
   background-color: #5897fb !important; // override the dataset background color set via style attribute
 }
+
+/**
+ * Animation for loading
+ * @usage: `animation: color_change 1s ease-out infinite alternate;`
+ */
+@keyframes color_change {
+  from { background-color: transparent; }
+  to { background-color: var(--blinking-color); }
+}
+
+.loading {
+  animation: color_change 1s ease-out infinite alternate;
+}

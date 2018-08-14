@@ -262,11 +262,15 @@ export class ConfusionMatrix implements IAppView {
       loadDataPromises.push(this.loadEpochs([value.singleSelected], value.selectedDataset));
       loadDataPromises.push(value.selectedDataset.classLabels.data());
       loadDataPromises.push(Promise.resolve(value.color));
+      loadDataPromises.push(value.selectedDataset.name);
 
       return Promise.all(loadDataPromises)
         .then((d: any[]): ILoadedMalevoDataset => { // [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]
           const labels: string[] = d[2].map((x) => x[1]);
           const labelIds: number[] = d[2].map((x) => x[0]);
+
+          dataStoreRuns.get(d[4]).isLoading = false;
+          events.fire(AppConstants.EVENT_LOADING_COMPLETE);
 
           return {
             multiEpochData: <ILoadedMalevoEpoch[]>d[0],

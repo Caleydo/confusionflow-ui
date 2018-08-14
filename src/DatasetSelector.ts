@@ -15,6 +15,8 @@ import {ITable} from 'phovea_core/src/table';
 import * as $ from 'jquery';
 import {DataStoreSelectedRun, dataStoreRuns} from './DataStore';
 import {extractEpochId} from './utils';
+import * as events from 'phovea_core/src/event';
+
 /**
  * Shows a list of available datasets and lets the user choose one.
  * The selection is broadcasted as event throughout the application.
@@ -46,7 +48,14 @@ class DataSetSelector implements IAppView {
    */
   init() {
     this.build();
+    this.attachListeners();
     return this.update(); // return the promise
+  }
+
+  private attachListeners() {
+    events.on(AppConstants.EVENT_LOADING_COMPLETE, (evt, ds: MalevoDataset) => {
+     this.updateLoadingState();
+    });
   }
 
   /**
@@ -71,11 +80,27 @@ class DataSetSelector implements IAppView {
         const dataset = d3.select(evt.params.data.element).data()[0];
         DataStoreSelectedRun.add(dataset);
         that.updateSelectorColors();
+        that.updateLoadingState();
       })
       .on('select2:unselect', (evt) => {
         const dataset = d3.select(evt.params.data.element).data()[0];
         DataStoreSelectedRun.remove(dataset);
         that.updateSelectorColors();
+        that.updateLoadingState();
+      });
+  }
+
+  private updateLoadingState() {
+    this.$node.selectAll('li.select2-selection__choice')
+      .each(function() {
+        const d = d3.select(this);
+        const dataset = dataStoreRuns.get(d.attr('title'));
+        if(dataset.isLoading) {
+          d.style('--blinking-color', dataset.color);
+          d.classed('loading', true);
+        } else {
+          d.classed('loading', false);
+        }
       });
   }
 
@@ -117,6 +142,7 @@ class DataSetSelector implements IAppView {
           $('#dataset-selector').select2(this.select2Options).val(x.name).trigger('change');
           DataStoreSelectedRun.add(x);
           this.updateSelectorColors();
+          this.updateLoadingState();
         }
         return this;
       });
