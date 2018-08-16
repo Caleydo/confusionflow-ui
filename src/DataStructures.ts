@@ -2,6 +2,10 @@
  * Created by Martin on 27.01.2018.
  */
 
+/**
+ * Custom matrix implementation
+ * Represents a general purpose matrix
+ */
 export class Matrix<U> implements Iterable<U> {
   values: U[][] = [];
   private id: string;
@@ -74,6 +78,9 @@ export class Matrix<U> implements Iterable<U> {
   }
 }
 
+/**
+ * Represents a square matrix
+ */
 export class SquareMatrix<U> extends Matrix<U> {
   constructor(private readonly ORDER) {
     super(ORDER, ORDER);

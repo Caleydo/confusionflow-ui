@@ -7,6 +7,9 @@ import {zip} from '../utils';
  * Created by Martin on 19.03.2018.
  */
 
+/**
+ * Represents the content of a confusion matrix cell
+ */
 export class MatrixHeatCellContent {
   maxVal: number;
   counts: number[];

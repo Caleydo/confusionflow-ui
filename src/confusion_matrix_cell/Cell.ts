@@ -3,7 +3,7 @@ import {DataStoreCellSelection} from '../DataStore';
 import {ACellRenderer} from './ACellRenderer';
 
 /**
- * Created by Martin on 19.03.2018.
+ * Represents a cell in the confusin matrix
  */
 export abstract class ACell {
   private _$node: d3.Selection<any>;

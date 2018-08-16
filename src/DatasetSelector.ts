@@ -51,6 +51,7 @@ class DataSetSelector implements IAppView {
 
   /**
    * Build the basic DOM elements and binds the change function
+   * Uses select2 in order to create and remove runs
    */
   private build() {
     this.$node.html(`
@@ -79,6 +80,11 @@ class DataSetSelector implements IAppView {
       });
   }
 
+  /**
+   * Sets the color to a new added run
+   * @param selection
+   * @param attrFunc
+   */
   private updateSelectorColors(selection = this.$node.selectAll('li.select2-selection__choice'), attrFunc = (el: HTMLElement) => el.title) {
     selection[0]
       .forEach((d, i) => {
@@ -124,6 +130,10 @@ class DataSetSelector implements IAppView {
 
 }
 
+/**
+ * Loads the descriptors from the server
+ * and creates the malevo data structures
+ */
 class DataProvider {
   /**
    * Loads the data and retruns a promise
@@ -152,6 +162,10 @@ class DataProvider {
     });
   }
 
+  /**
+   * Extracts the epoch id from the descriptor and returns a sorting criteria
+   * @param dsc
+   */
   private fillMissingEpochs(dsc: IMalevoDatasetCollection) {
     function sortNumber(a: IMalevoEpochInfo, b: IMalevoEpochInfo) {
       if (a === null && b === null) {
@@ -178,6 +192,11 @@ class DataProvider {
     });
   }
 
+  /**
+   * Returns a collection of available labels
+   * @param data
+   * @returns {{[p: string]: ITable}}
+   */
   prepareClassLabels(data: ITable[]): { [key: string]: ITable } {
     const labelCollection: { [key: string]: ITable } = {};
     for (const x of data) {
@@ -187,6 +206,11 @@ class DataProvider {
     return labelCollection;
   }
 
+  /**
+   * Creates a new malevo dataset if it doesn't exist so far
+   * @param data
+   * @returns {IMalevoDatasetCollection}
+   */
   prepareEpochData(data: INumericalMatrix[]): IMalevoDatasetCollection {
     const getOrCreateMalevoDataset = (dsc: IMalevoDatasetCollection, datasetName: string) => {
       if (!dsc[datasetName]) {
@@ -199,6 +223,12 @@ class DataProvider {
       return dsc[datasetName];
     };
 
+    /**
+     * Returns a new epoch info if it doesn't exist for this dataset
+     * @param dataset
+     * @param epochName
+     * @returns {IMalevoEpochInfo}
+     */
     const getOrCreateEpochInfo = (dataset: MalevoDataset, epochName: string) => {
       let epochInfo = dataset.epochInfos.find((x) => x.name === epochName);
       if (!epochInfo) {
