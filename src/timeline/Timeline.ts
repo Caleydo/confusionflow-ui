@@ -58,6 +58,9 @@ class DataPoint {
   }
 }
 
+/**
+ * Represents the timeline
+ */
 export class Timeline {
   private $node: d3.Selection<any> = null;
   private $label: d3.Selection<any> = null;
@@ -83,6 +86,11 @@ export class Timeline {
     this.createLabel(this.datasetName);
   }
 
+  /**
+   * Is called when the user changes the timeline
+   * Updates the position of the single epoch selector
+   * @param src
+   */
   private eventTimelineChanged(src: Timeline) {
     // synchronizes single epoch marker
     if (this.singleEpochSelector === null || src === this) {
@@ -126,6 +134,13 @@ export class Timeline {
     return this.$node;
   }
 
+  /**
+   * The actual render method
+   * Initially renders the timeline and sets appropriate events
+   * @param $parent
+   * @param offsetH
+   * @param offsetV
+   */
   render($parent, offsetH: number, offsetV: number) {
     this.build($parent);
     this.$node.attr('transform', `translate(${this.MARGIN_LEFT}, ${offsetV})`);
@@ -187,6 +202,12 @@ export class Timeline {
     }
   }
 
+  /**
+   * Is called when the user sets the brush
+   * @param brush
+   * @param x
+   * @param width
+   */
   setBrush(brush: any, x: any, width: number) {
     brush.extent([0, width]);
     this.brushmove(x, brush);

@@ -17,7 +17,8 @@ export class DataStoreLoadedRuns {
 }
 
 /**
- * Stores the selected datasets
+ * Stores the selected runs
+ * for a single epoch and for an epoch range
  */
 export class DataStoreSelectedRun {
   singleSelected: IMalevoEpochInfo = null;
@@ -26,6 +27,10 @@ export class DataStoreSelectedRun {
   static runIndexArray = Array(AppConstants.MAX_DATASET_COUNT).fill(null);
   color: string;
 
+  /**
+   * Returns an index that is currently not in use
+   * @returns {number}
+   */
   static getFreeIndex() {
     const index = DataStoreSelectedRun.runIndexArray.findIndex((x) => x === null);
     console.assert(index >= 0 && index < AppConstants.MAX_DATASET_COUNT);
@@ -36,6 +41,10 @@ export class DataStoreSelectedRun {
     DataStoreSelectedRun.runIndexArray[index] = run;
   }
 
+  /**
+   * Initializes colors for each run
+   * @returns {Array}
+   */
   static getColors(): string[] {
     const colorScale = d3.scale.category10();
     const colors = [];
@@ -49,6 +58,11 @@ export class DataStoreSelectedRun {
     this.color = DataStoreSelectedRun.getColors()[selectionIndex];
   }
 
+  /**
+   * Creates a new run object, saves it in the collection
+   * and fires the necessary events
+   * @param ds
+   */
   static add(ds: MalevoDataset) {
     const selectionIndex = DataStoreSelectedRun.getFreeIndex();
     const newRunObject = new DataStoreSelectedRun(ds, selectionIndex, true);
@@ -59,6 +73,11 @@ export class DataStoreSelectedRun {
     events.fire(AppConstants.EVENT_REDRAW);
   }
 
+  /**
+   * Is called when a run has to be removed
+   * This method is the counterpart to add()
+   * @param ds
+   */
   static remove(ds: MalevoDataset) {
     DataStoreSelectedRun.setSelectionIndex(dataStoreRuns.get(ds.name).selectionIndex, null);
     dataStoreRuns.delete(ds.name);
@@ -69,6 +88,9 @@ export class DataStoreSelectedRun {
     events.fire(AppConstants.EVENT_REDRAW);
   }
 
+  /**
+   * Is called when the timeline is altered or when a new run is added
+   */
   static updateRuns() {
     dataStoreRuns.forEach((timeline) => {
       timeline.multiSelected = timeline.selectedDataset.epochInfos.slice(TimelineParameters.minIndex, TimelineParameters.maxIndex + 1);
@@ -77,6 +99,9 @@ export class DataStoreSelectedRun {
   }
 }
 
+/**
+ * Stores the state of the timeline
+ */
 export class TimelineParameters {
   static minIndex = -1;
   static maxIndex = -1;
@@ -94,6 +119,9 @@ export class TimelineParameters {
 export class DataStoreCellSelection {
   private static cell: MatrixCell | PanelCell = null;
 
+  /**
+   * Is called when a run is removed
+   */
   static deselect() {
     if (DataStoreCellSelection.cell !== null) {
       DataStoreCellSelection.cell.$node.classed('selected', false);
@@ -101,6 +129,10 @@ export class DataStoreCellSelection {
     }
   }
 
+  /**
+   * is called when a cell is selected
+   * @param cell
+   */
   static cellSelected(cell: MatrixCell | PanelCell) {
     if (!cell) {
       return;

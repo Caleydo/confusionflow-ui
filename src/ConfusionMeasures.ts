@@ -1,5 +1,7 @@
-// measures are from https://en.wikipedia.org/wiki/Confusion_matrix
 import {NumberMatrix, Matrix, matrixSum, SquareMatrix, IClassEvolution} from './DataStructures';
+
+// Implements functions for confusion measures for 1 epoch and for multiple epochs
+// Measures are from https://en.wikipedia.org/wiki/Confusion_matrix
 
 export function ClassSize(matrix: NumberMatrix, index: number): number {
   if(index >= matrix.order()) {
@@ -69,6 +71,13 @@ export function F1(matrix: NumberMatrix, index: number): number {
   return 2 * ((PPV(matrix, index) * TPR(matrix, index)) / denom);
 }
 
+/**
+ * Calculates confusion measures for multiple classes
+ * Each class is mapped to one row in the matrix
+ * @param matrix
+ * @param funct
+ * @returns {Array}
+ */
 export function calcForMultipleClasses(matrix: NumberMatrix, funct: (matrix: NumberMatrix, index: number) => number): number[] {
   const result = [];
   for(let i = 0; i < matrix.order(); i++) {
@@ -77,6 +86,12 @@ export function calcForMultipleClasses(matrix: NumberMatrix, funct: (matrix: Num
   return result;
 }
 
+/**
+ * Calculates confusion measures for multiple epochs
+ * @param matrices
+ * @param funct
+ * @returns {Matrix<number[]>}
+ */
 export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMatrix, index: number) => number): Matrix<number[]> {
   const order = matrices[0].order();
 

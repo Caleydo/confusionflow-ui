@@ -41,6 +41,7 @@ export interface ICellData {
   heatcell: MatrixHeatCellContent;
 }
 
+/** Represents the confusion matrix plus its surrounding cells (FP/FN cells) and class filter */
 export class ConfusionMatrix implements IAppView {
   private readonly $node: d3.Selection<any>;
   private $matrixWrapper: d3.Selection<any>;
@@ -71,6 +72,9 @@ export class ConfusionMatrix implements IAppView {
     return Promise.resolve(this);
   }
 
+  /** Is called on initialization. Set the class selector dropdown
+   * and sets the cell fields of the Malevo instance
+   */
   private setupLayout() {
     const $axisTop = this.$node.append('div')
       .classed('cfm-axis', true)
@@ -153,12 +157,13 @@ export class ConfusionMatrix implements IAppView {
 
     this.cellsBottomRight = this.$node.append('div').classed('chart-bottom-right', true);
   }
-
   private attachListeners() {
+    // is called when the user changes the timeline
     events.on(AppConstants.EVENT_REDRAW, (evt) => {
       this.updateViews();
     });
 
+    // is called when the user clicks on the transpose button
     events.on(AppConstants.EVENT_CELL_RENDERER_TRANSPOSED, (evt, isTransposed) => {
       this.$matrixWrapper.classed('transpose-cells', isTransposed);
 
@@ -175,10 +180,18 @@ export class ConfusionMatrix implements IAppView {
       this.renderConfMatrixCells();
     });
 
+    // is called when the user switches from line charts to heamaps vis or vice versa
     events.on(AppConstants.EVENT_CELL_RENDERER_CHANGED, (evt, switched) => {
       if (this.$cells == null) {
         return;
       }
+
+      /** for each cell iterate over its renderers
+       * if the current renderer is a heatmap renderer and the switch button was pushed
+       * then remove all listeners from this cell, create a new line cell renderer, install new
+       * new listeners and set subsequent renderers
+       * for the current renderer is a line cell renderer do the same but the other way round
+       */
       this.$cells.each((c) => {
         let currentMatrixRenderer = (<any>c.renderer);
         while (currentMatrixRenderer !== null) {
@@ -221,7 +234,7 @@ export class ConfusionMatrix implements IAppView {
     events.fire(AppConstants.EVENT_CLEAR_DETAIL_CHART);
   }
 
-
+  // is called to elicit the render mode
   chooseRenderMode(datasets: ILoadedMalevoDataset[]) {
     DataStoreApplicationProperties.renderMode = RenderMode.CLEAR;
 
@@ -254,8 +267,13 @@ export class ConfusionMatrix implements IAppView {
 
   }
 
+  /*
+   * Core method of this class: load the data from the server and renders them
+   */
   updateViews() {
     const dataStoreTimelineArray = Array.from(dataStoreRuns.values()).sort((a, b) => a.selectionIndex - b.selectionIndex);
+    // load the data range that is selected in the timeline + class labels; the color is part of the client is not save
+    // at the server
     const allPromises: Promise<ILoadedMalevoDataset>[] = dataStoreTimelineArray.map((value: DataStoreSelectedRun) => {
       const loadDataPromises = [];
       loadDataPromises.push(this.loadEpochs(value.multiSelected, value.selectedDataset));
@@ -264,14 +282,17 @@ export class ConfusionMatrix implements IAppView {
       loadDataPromises.push(Promise.resolve(value.color));
       loadDataPromises.push(value.selectedDataset.name);
 
+      // when a runs is loaded...
       return Promise.all(loadDataPromises)
         .then((d: any[]): ILoadedMalevoDataset => { // [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]
+          // set labels and its ids
           const labels: string[] = d[2].map((x) => x[1]);
           const labelIds: number[] = d[2].map((x) => x[0]);
 
           dataStoreRuns.get(d[4]).isLoading = false;
           events.fire(AppConstants.EVENT_LOADING_COMPLETE);
 
+          // create a run object and return it
           return {
             multiEpochData: <ILoadedMalevoEpoch[]>d[0],
             singleEpochData: <ILoadedMalevoEpoch>d[1][0],
@@ -292,7 +313,7 @@ export class ConfusionMatrix implements IAppView {
         return;
       }
 
-      if(DataStoreApplicationProperties.selectedClassIndices.length === 0) {
+      if (DataStoreApplicationProperties.selectedClassIndices.length === 0) {
         DataStoreApplicationProperties.selectedClassIndices = allDatasets[0].labelIds; // -> fires event -> listener calls render()
       } else {
         this.render();
@@ -301,6 +322,11 @@ export class ConfusionMatrix implements IAppView {
     });
   }
 
+  /*
+   * The actual render method for the confusion matrix:
+   * load the runs and the selected classes
+   * and render the cells
+   */
   private render() {
     const filteredAllDatasets = this.filter(DataStoreLoadedRuns.runs, DataStoreApplicationProperties.selectedClassIndices);
     this.$node.classed(`grid-${AppConstants.CONF_MATRIX_SIZE}`, false);
@@ -490,7 +516,7 @@ export class ConfusionMatrix implements IAppView {
           renderer: 'HeatmapMultiEpochRenderer',
           params: [DataStoreApplicationProperties.transposeCellRenderer]
         },
-          {renderer: 'SingleEpochMarker', params: [DataStoreApplicationProperties.transposeCellRenderer]}],
+        {renderer: 'SingleEpochMarker', params: [DataStoreApplicationProperties.transposeCellRenderer]}],
         diagonal: [{renderer: 'LabelCellRenderer', params: null}],
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
@@ -525,7 +551,7 @@ export class ConfusionMatrix implements IAppView {
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
       lineChartRendererProto = {
-        diagonal: [{renderer: 'BarChartRenderer',  params: [-1, -1, null]}], offdiagonal: null,
+        diagonal: [{renderer: 'BarChartRenderer', params: [-1, -1, null]}], offdiagonal: null,
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
 

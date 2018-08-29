@@ -29,14 +29,27 @@ export interface IMatrixRendererChain {
   functors: { (renderer: ACellRenderer): void; }[];
 }
 
+/**
+ * Represents an abstract cell renderer that renders the conf matrix cells
+ * Uses the decorator pattern to chain renderers
+ */
 export abstract class ACellRenderer {
   nextRenderer: ACellRenderer = null;
 
+  /**
+   * Sets the next renderer in the chain
+   * @param renderer
+   * @returns {ACellRenderer}
+   */
   setNextRenderer(renderer: ACellRenderer): ACellRenderer {
     this.nextRenderer = renderer;
     return this.nextRenderer;
   }
 
+  /**
+   * Renders the next renderer in the chain
+   * @param cell
+   */
   renderNext(cell: ACell) {
     this.render(cell);
     if (this.nextRenderer != null) {
@@ -46,6 +59,9 @@ export abstract class ACellRenderer {
 
   protected abstract render(cell: ACell);
 
+  /**
+   * Adds listeners to the renderers
+   */
   public abstract addWeightFactorChangedListener();
 
   public abstract removeWeightFactorChangedListener();

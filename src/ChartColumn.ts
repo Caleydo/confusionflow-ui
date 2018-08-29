@@ -6,6 +6,9 @@ import {ACellRenderer, MatrixLineCellRenderer} from './confusion_matrix_cell/ACe
 import {ACell} from './confusion_matrix_cell/Cell';
 import {ICellData} from './ConfusionMatrix';
 
+/**
+ * Represents a column/row along the confusion matrix
+ */
 export class ChartColumn {
   private curRenderer = null;
   constructor(public $node: d3.Selection<any>) {
