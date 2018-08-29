@@ -289,9 +289,9 @@ export class ConfusionMatrix implements IAppView {
           const labels: string[] = d[2].map((x) => x[1]);
           const labelIds: number[] = d[2].map((x) => x[0]);
 
-          //dataStoreRuns.get(d[4]).isLoading = false;
-          //events.fire(AppConstants.EVENT_LOADING_COMPLETE);
-        
+          dataStoreRuns.get(d[4]).isLoading = false;
+          events.fire(AppConstants.EVENT_LOADING_COMPLETE);
+
           // create a run object and return it
           return {
             multiEpochData: <ILoadedMalevoEpoch[]>d[0],
@@ -313,7 +313,7 @@ export class ConfusionMatrix implements IAppView {
         return;
       }
 
-      if(DataStoreApplicationProperties.selectedClassIndices.length === 0) {
+      if (DataStoreApplicationProperties.selectedClassIndices.length === 0) {
         DataStoreApplicationProperties.selectedClassIndices = allDatasets[0].labelIds; // -> fires event -> listener calls render()
       } else {
         this.render();
@@ -516,7 +516,7 @@ export class ConfusionMatrix implements IAppView {
           renderer: 'HeatmapMultiEpochRenderer',
           params: [DataStoreApplicationProperties.transposeCellRenderer]
         },
-          {renderer: 'SingleEpochMarker', params: [DataStoreApplicationProperties.transposeCellRenderer]}],
+        {renderer: 'SingleEpochMarker', params: [DataStoreApplicationProperties.transposeCellRenderer]}],
         diagonal: [{renderer: 'LabelCellRenderer', params: null}],
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
@@ -551,7 +551,7 @@ export class ConfusionMatrix implements IAppView {
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
       lineChartRendererProto = {
-        diagonal: [{renderer: 'BarChartRenderer',  params: [-1, -1, null]}], offdiagonal: null,
+        diagonal: [{renderer: 'BarChartRenderer', params: [-1, -1, null]}], offdiagonal: null,
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
 
