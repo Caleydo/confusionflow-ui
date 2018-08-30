@@ -88,14 +88,16 @@
     "webpack-dev-server": "2.4.2"
   },
   "dependencies": {
-    "phovea_core": "^2.0.0",
-    "phovea_ui": "^2.0.0",
     "@types/d3": "3.5.36",
+    "@types/jquery": "2.0.33",
+    "@types/select2": "4.0.30",
     "d3": "3.5.17",
     "d3-shape": "1.2.0",
-    "@types/jquery": "2.0.33",
+    "es6-promise": "^4.2.4",
     "jquery": "3.1.1",
-    "@types/select2": "4.0.30",
+    "phovea_core": "^2.0.0",
+    "phovea_ui": "^2.0.0",
+    "portable-fetch": "^3.0.0",
     "select2": "4.0.3"
   }
 }
