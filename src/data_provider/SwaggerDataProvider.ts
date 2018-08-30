@@ -24,7 +24,6 @@ export class SwaggerDataProvider implements IDataProvider {
 
     for (const r of runs) {
       const run = await this.runApi.getRunById(r.runId);
-      console.log(run);
       run.folds.forEach((_, i) => {
         const ds = new MalevoDatasetProxy(run, i);
         dsc[ds.name] = ds;
