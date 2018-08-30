@@ -1,7 +1,7 @@
-import { PhoveaDataProvider } from './PhoveaDataProvider';
+import { SwaggerDataProvider } from './SwaggerDataProvider';
 
 export * from './api';
 
 export function dataProviderFactory() {
-  return new PhoveaDataProvider();
+  return new SwaggerDataProvider();
 }
