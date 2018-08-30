@@ -1,88 +1,54 @@
 {
-  "name": "malevo",
-  "description": "",
+  "name": "confusionflow",
+  "description": "Visualizing the evolution of confusion matrices",
   "homepage": "https://phovea.caleydo.org",
   "version": "1.0.0-SNAPSHOT",
   "author": {
-    "name": "Martin Ennemoser",
-    "email": "martin.ennemoser@jku.at",
-    "url": ""
+    "name": "The Caleydo Team",
+    "email": "contact@caleydo.org",
+    "url": "http://caleydo.org"
   },
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/phovea/malevo/issues"
+    "url": "https://github.com/Caleydo/malevo/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/caleydo/malevo.git"
+    "url": "https://github.com/Caleydo/malevo.git"
   },
   "private": true,
   "scripts": {
-    "predist": "echo hybrid",
+    "predist": "npm run build && npm run docs",
     "predocker": "npm run build",
     "docker": "docker build -t malevo -f deploy/Dockerfile .",
-    "check": "flake8 --exclude=.git,venv,deploy,docs,__pycache__,node_modules",
-    "pretest": "echo hybrid",
-    "test": "npm run test:web && npm run test:python",
-    "docs": "npm run docs:web && npm run docs:python",
-    "prebuild": "echo hybrid",
-    "build": "npm run build:web && npm run build:python",
-    "dist": "npm run dist:web && npm run dist:python",
     "compile": "tsc",
     "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
-    "posttest": "echo hybrid",
+    "docs": "typedoc --options typedoc.json src/**.ts",
+    "prebuild": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test",
+    "pretest": "npm run compile",
+    "test": "test ! -d tests || karma start",
+    "posttest": "npm run lint",
     "test:watch": "karma start --autoWatch=true --singleRun=false",
     "build:dev": "webpack",
+    "build": "webpack --env prod",
     "start": "webpack-dev-server --inline",
     "start:hot": "webpack-dev-server --inline --hot",
     "watch": "webpack --watch",
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
-    "docs:web": "typedoc --options typedoc.json src/**.ts",
-    "docs:python": "sphinx-apidoc -o docs -f ./malevo && sphinx-build ./docs build/docs",
-    "pretest:web": "npm run compile",
-    "pretest:python": "npm run check",
-    "posttest:web": "npm run lint",
-    "test:web": "test ! -d tests || karma start",
-    "test:python": "test ! -d tests || python setup.py test",
-    "prebuild:python": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test:python",
-    "prebuild:web": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test:web",
-    "build:python": "rm -rf build/source && find . -name '*.pyc' -delete && node buildPython.js && cp -r ./malevo build/source/",
-    "build:web": "webpack --env prod",
-    "predist:web": "npm run build:web && npm run docs:web",
-    "predist:python": "npm run build:python && npm run docs:python",
-    "dist:web": "mkdirp dist && cd build && tar cvzf ../dist/malevo.tar.gz *",
-    "dist:python": "python setup.py bdist_egg"
+    "dist": "mkdirp dist && cd build && tar cvzf ../dist/malevo.tar.gz *"
   },
   "files": [
     "src",
     "index.js",
     "phovea.js",
     "phovea_registry.js",
-    "build",
-    "malevo",
-    "__init__.py",
-    "__main__.py",
-    "requirements.txt",
-    "requirements_dev.txt",
-    "docker_packages.txt"
+    "build"
   ],
   "engines": {
     "npm": ">= 3",
     "node": ">= 6"
-  },
-  "dependencies": {
-    "phovea_core": "^2.0.0",
-    "phovea_vis": "^2.0.0",
-    "phovea_ui": "^2.0.0",
-    "@types/d3": "3.5.36",
-    "d3": "3.5.17",
-    "d3-shape": "1.2.0",
-    "@types/jquery": "2.0.33",
-    "jquery": "3.1.1",
-    "@types/select2": "4.0.30",
-    "select2": "4.0.3"
   },
   "devDependencies": {
     "@types/jasmine": "2.5.41",
@@ -120,5 +86,16 @@
     "url-loader": "0.5.7",
     "webpack": "2.2.1",
     "webpack-dev-server": "2.4.2"
+  },
+  "dependencies": {
+    "phovea_core": "^2.0.0",
+    "phovea_ui": "^2.0.0",
+    "@types/d3": "3.5.36",
+    "d3": "3.5.17",
+    "d3-shape": "1.2.0",
+    "@types/jquery": "2.0.33",
+    "jquery": "3.1.1",
+    "@types/select2": "4.0.30",
+    "select2": "4.0.3"
   }
 }

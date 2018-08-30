@@ -1,13 +1,13 @@
-Malevo [![Phovea][phovea-image]][phovea-url] [![NPM version][npm-image]][npm-url] [![Build Status][circleci-image]][circleci-url] [![Dependency Status][daviddm-image]][daviddm-url]
+ConfusionFlow [![Phovea][phovea-image]][phovea-url] [![NPM version][npm-image]][npm-url] [![Build Status][circleci-image]][circleci-url] [![Dependency Status][daviddm-image]][daviddm-url]
 =====================
 
-
+Visualizing the evolution of confusion matrices.
 
 Installation
 ------------
 
 ```
-git clone https://github.com/caleydo/malevo.git
+git clone https://github.com/Caleydo/malevo.git
 cd malevo
 npm install
 ```
@@ -26,6 +26,12 @@ Building
 npm run build
 ```
 
+Launching
+---------
+
+```
+npm start
+```
 
 
 ***
