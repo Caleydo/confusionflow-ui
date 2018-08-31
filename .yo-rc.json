@@ -1,49 +1,28 @@
 {
   "generator-phovea": {
-    "type": "app-slib",
-    "modules": [
-      "phovea_core",
-      "phovea_vis",
-      "phovea_ui",
-      "phovea_server"
-    ],
+    "type": "app",
+    "app": "ConfusionFlow",
+    "clientOnly": true,
+    "entries": {
+      "app": "./src/index.ts"
+    },
     "libraries": [
       "d3",
-      "jquery",
       "select2"
+    ],
+    "modules": [
+      "phovea_core",
+      "phovea_ui"
     ],
     "libraryAliases": {
       "d3": "d3/d3"
     },
     "libraryExternals": [
       "d3",
-      "jquery",
       "select2",
+      "jquery",
       "font-awesome"
     ],
-    "name": "malevo",
-    "author": "Martin Ennemoser",
-    "today": "Fri, 22 Dec 2017 14:45:05 GMT",
-    "githubAccount": "phovea",
-    "sextensions": [
-      {
-        "type": "namespace",
-        "id": "malevo",
-        "module": "malevo",
-        "extras": {
-          "namespace": "/api/malevo"
-        }
-      }
-    ],
-    "app": "malevo",
-    "clientOnly": false,
-    "entries": {
-      "app": "./src/index.ts"
-    },
-    "unknown": {
-      "requirements": [],
-      "dockerPackages": []
-    },
     "ignores": [],
     "extensions": [
       {
@@ -82,6 +61,10 @@
           "factory": "create"
         }
       }
-    ]
+    ],
+    "name": "confusionflow",
+    "author": "The Caleydo Team",
+    "today": "Thu, 30 Aug 2018 08:24:39 GMT",
+    "githubAccount": "Caleydo"
   }
 }
