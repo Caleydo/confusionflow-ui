@@ -12,7 +12,7 @@ import { IDataProvider } from './api';
 
 
 const API_CONFIGURATION: Configuration = new Configuration({
-  basePath: 'http://localhost:5000'
+  basePath: '/api'
 });
 
 const runApi = new RunApi(API_CONFIGURATION);
