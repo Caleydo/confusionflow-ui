@@ -102,6 +102,11 @@ export class MalevoDatasetProxy extends MalevoDataset {
 }
 
 /**
+ * Cache loaded run data to avoid multiple API requests for folds of the same run
+ */
+const runWithEpochDataCache = new Map<string, Run>();
+
+/**
  * Postpones loading the run data with the epoch data until the matrix data is requested
  */
 export class LazyMalevoDatasetProxy extends MalevoDatasetProxy {
@@ -159,10 +164,19 @@ export class LazyMalevoDatasetProxy extends MalevoDatasetProxy {
    * and cache the promise to avoid multiple network requests
    */
   private loadRunWithEpochData(): Promise<Run> {
-    if (this.runDataPromise) {
+    if (runWithEpochDataCache.has(this.run.runId)) {
+      // check run cache first
+      return Promise.resolve(runWithEpochDataCache.get(this.run.runId));
+    } else if (this.runDataPromise) {
+      // check for promise, i.e., if some one else is already loading
       return this.runDataPromise;
     }
-    this.runDataPromise = runApi.getRunById(this.run.runId);
+    this.runDataPromise = runApi.getRunById(this.run.runId)
+      .then((run) => {
+        // add run to cache to avoid requests for a different fold
+        runWithEpochDataCache.set(run.runId, run);
+        return run;
+      });
     return this.runDataPromise;
   }
 
@@ -176,6 +190,7 @@ export class LazyMalevoDatasetProxy extends MalevoDatasetProxy {
   }
 
 }
+
 
 /**
  * Converts an input 1D array to an 2D array, by wrapping it after a specific number of items
