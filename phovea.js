@@ -5,21 +5,46 @@
  **************************************************************************** */
 
 //register all extensions in the registry following the given pattern
-module.exports = function(registry) {
+module.exports = function (registry) {
   //registry.push('extension-type', 'extension-id', function() { return System.import('./src/extension_impl'); }, {});
   // generator-phovea:begin
-  registry.push('malevoView', 'HeatMap', function() { return System.import('./src/heatmap_adapter'); }, {
-    'name': 'Heat Map'
+  registry.push('malevoView', 'ConfusionMatrix', function () {
+    return System.import('./src/ConfusionMatrix');
+  }, {
+    'name': 'Confusion Matrix'
   });
 
-  registry.push('malevoView', 'DataSetSelector', function() { return System.import('./src/data_set_selector'); }, {
+  registry.push('malevoView', 'DataSetSelector', function () {
+    return System.import('./src/DatasetSelector');
+  }, {
     'name': 'Data Set Selector'
   });
 
-  registry.push('malevoView', 'Timeline', function() { return System.import('./src/timeline'); }, {
-    'name': 'Timeline'
+  registry.push('malevoView', 'TimelineView', function () {
+    return System.import('./src/timeline/TimelineView');
+  }, {
+    'name': 'TimelineView'
+  });
+
+  registry.push('malevoView', 'ToolbarView', function () {
+    return System.import('./src/toolbar/ToolbarView');
+  }, {
+    'name': 'ToolbarView'
+  });
+
+  registry.push('malevoView', 'DetailChart', function () {
+    return System.import('./src/detail_view/DetailChart');
+  }, {
+    'name': 'DetailChart',
+    'isDetailWindow': true,
+    'order': 10
+  });
+
+  registry.push('malevoView', 'ConfusionMeasuresView', function () {
+    return System.import('./src/detail_view/ConfusionMeasuresView');
+  }, {
+    'name': 'ConfusionMeasuresView'
   });
 
   // generator-phovea:end
 };
-

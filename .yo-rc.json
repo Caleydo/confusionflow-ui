@@ -28,10 +28,10 @@
     "sextensions": [
       {
         "type": "namespace",
-        "id": "malevo_api",
-        "module": "malevo_api",
+        "id": "malevo",
+        "module": "malevo",
         "extras": {
-          "namespace": "/api/malevo_api"
+          "namespace": "/api/malevo"
         }
       }
     ],
@@ -46,12 +46,12 @@
     },
     "ignores": [],
     "extensions": [
-       {
+      {
         "type": "malevoView",
-        "id": "HeatMap",
-        "module": "heatmap_adapter",
+        "id": "ConfusionMatrix",
+        "module": "ConfusionMatrix",
         "extras": {
-          "name": "Heat Map",
+          "name": "Confusion Matrix",
           "factory": "create"
         }
       },
@@ -66,10 +66,19 @@
       },
       {
         "type": "malevoView",
-        "id": "Timeline",
+        "id": "TimelineView",
         "module": "timeline",
         "extras": {
-          "name": "Timeline",
+          "name": "TimelineView",
+          "factory": "create"
+        }
+      },
+      {
+        "type": "malevoView",
+        "id": "ConfusionMeasuresView",
+        "module": "ConfusionMeasuresView",
+        "extras": {
+          "name": "ConfusionMeasuresView",
           "factory": "create"
         }
       }

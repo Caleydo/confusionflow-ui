@@ -5,8 +5,7 @@
 import * as plugins from 'phovea_core/src/plugin';
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
-import {AppConstants} from './app_constants';
-import Timeline from './timeline';
+import {AppConstants} from './AppConstants';
 
 /**
  * Interface for all Views
@@ -18,7 +17,7 @@ export interface IAppView {
    * that is resolved as soon the view is completely initialized.
    * @returns {Promise<IAppView>}
    */
-  init():Promise<IAppView>;
+  init(): Promise<IAppView>;
 
 }
 
@@ -50,33 +49,58 @@ export class App implements IAppView {
 
   private $node;
 
-  private views:IAppViewDesc[] = [
-     {
+  private views: IAppViewDesc[] = [
+    {
       view: 'DataSetSelector',
       parent: 'selector',
       options: {}
     },
     {
-      view: 'HeatMap',
-      parent: 'comparison',
+      view: 'ConfusionMatrix',
+      parent: 'conf-matrix-wrapper',
       options: {
         eventName: ''
       }
     },
     {
-      view: 'Timeline',
-      parent: 'selector-timepoint',
+      view: 'TimelineView',
+      parent: 'timeline-wrapper',
+      options: {
+        eventName: ''
+      }
+    },
+    {
+      view: 'DetailChart',
+      parent: 'details-wrapper',
+      options: {
+        eventName: ''
+      }
+    },
+    {
+      view: 'ToolbarView',
+      parent: 'toolbar-wrapper',
+      options: {
+        eventName: ''
+      }
+    },
+    {
+      view: 'ConfusionMeasuresView',
+      parent: 'conf-measure-table-wrapper',
       options: {
         eventName: ''
       }
     }
   ];
 
-  constructor(parent:Element) {
+  constructor(parent: Element) {
     this.$node = d3.select(parent);
 
-    this.$node.append('div').classed('selector-timepoint', true);
-    this.$node.append('div').classed('comparison', true);
+    const $main = this.$node.append('main').classed('main-wrapper', true);
+    $main.append('div').classed('timeline-wrapper', true);
+    $main.append('div').classed('toolbar-wrapper', true);
+    $main.append('div').classed('conf-matrix-wrapper', true);
+    $main.append('div').classed('conf-measure-table-wrapper', true);
+    $main.append('div').classed('details-wrapper', true);
   }
 
   /**
@@ -100,8 +124,6 @@ export class App implements IAppView {
    * @returns {Promise<App>}
    */
   private build() {
-    this.setBusy(true); // show loading indicator before loading
-
     // wrap view ids from package.json as plugin and load the necessary files
     const pluginPromises = this.views
       .map((d) => plugins.get(AppConstants.VIEW, d.view))
@@ -126,25 +148,11 @@ export class App implements IAppView {
       })
       .then((viewInstances) => {
         // loading and initialization has finished -> hide loading indicator
-        this.setBusy(false);
         return this;
       });
-
     return buildPromise;
   }
 
-  /**
-   * Show or hide the application loading indicator
-   * @param isBusy
-   */
-  setBusy(isBusy) {
-    this.$node.select('.leftMetaBox').classed('invisibleClass', isBusy);
-    this.$node.select('.rightMetaBox').classed('invisibleClass', isBusy);
-    this.$node.select('.detailview').classed('invisibleClass', isBusy);
-    this.$node.select('.histogram_2d').classed('invisibleClass', isBusy);
-
-    this.$node.select('.busy').classed('hidden', !isBusy);
-  }
 
 }
 
@@ -153,6 +161,6 @@ export class App implements IAppView {
  * @param parent
  * @returns {App}
  */
-export function create(parent:Element) {
+export function create(parent: Element) {
   return new App(parent);
 }

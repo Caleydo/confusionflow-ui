@@ -1,58 +1,41 @@
-.timeline {
-  display: flex;
-  justify-content: flex-start;
-  position: relative;
-  padding: 20px;
+@import "vars";
 
-  .selection {
-    position: absolute;
-    top: 20px;
-    height: 25px;
-    border: 2px red solid;
-    border-radius: 5px;
-    visibility: hidden;
-  }
+.timeline-view {
+  .timeline {
+    .tml-label {
+      font-size: 15px;
+      cursor: default;
+      user-select: none;
+    }
 
-  .epochs {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-right: 20px;
+    .axis .domain {
+      fill: none;
+      stroke: black;
+    }
 
-    .point {
-      border-radius: 50%;
-      background-color: #c5c5c5;
-      width: 25px;
-      height: 25px;
-      border-width: 2px;
-      border-style: solid;
-      border-color: black;
-      position: relative;
+    .axis line {
+      fill: none;
+      stroke: black;
+      stroke-width: 1px;
+      //shape-rendering: crispEdges; // does not work very well: see https://github.com/d3/d3/issues/2175
+    }
 
-      &:before {
-        content: '';
-        display: block;
-        position: absolute;
-        border-top: 2px solid black;
-        width: 300%;
-        top: 50%;
-        left: 100%;
-        z-index: -1;
-        user-select: none;
+    .brush {
+      >.extent {
+        stroke: #fff;
+        stroke-opacity: .6;
+        stroke-width: 2px;
+        fill-opacity: .1;
+        shape-rendering: crispEdges;
       }
     }
 
-    &.single-selected .point {
-        background-color: black;
-    }
-
-    &:last-child .point:before {
-      display: none;
-    }
-
-    .label {
-      margin-top: 5px;
-      color: black;
+    .single-epoch-selector {
+      fill: $select-color
     }
   }
+}
+
+.timeline:not(:last-child) .axis .tick text {
+  display: none;
 }
