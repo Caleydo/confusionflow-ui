@@ -38,7 +38,7 @@ This repository is part of **[Phovea](http://phovea.caleydo.org/)**, a platform 
 [phovea-url]: https://phovea.caleydo.org
 [npm-image]: https://badge.fury.io/js/malevo.svg
 [npm-url]: https://npmjs.org/package/malevo
-[circleci-image]: https://circleci.com/gh/Caleydo/malevo/tree/develop.svg?style=svg
-[circleci-url]: https://circleci.com/gh/Caleydo/malevo/tree/develop
+[circleci-image]: https://circleci.com/gh/Caleydo/malevo/tree/master.svg?style=svg
+[circleci-url]: https://circleci.com/gh/Caleydo/malevo/tree/master
 [daviddm-image]: https://david-dm.org/Caleydo/malevo/status.svg
 [daviddm-url]: https://david-dm.org/Caleydo/malevo
