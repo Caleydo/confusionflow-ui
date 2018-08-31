@@ -23,12 +23,13 @@ export class SwaggerDataProvider implements IDataProvider {
     const runs = await runApi.getRuns();
     const dsc = {};
 
-    for (const run of runs) {
+    runs.forEach((run) => {
+      // list each fold as malevo dataset
       run.folds.forEach((_, i) => {
         const ds = new LazyMalevoDatasetProxy(run, i, 195); // TODO get dynamic number from API call
         dsc[ds.name] = ds;
       });
-    }
+    });
 
     return dsc;
   }
@@ -138,6 +139,11 @@ export class LazyMalevoDatasetProxy extends MalevoDatasetProxy {
     });
   }
 
+  /**
+   * Create a phovea matrix that loads the data on demand
+   * @param epochId epoch id
+   * @param numClass size of the confusion matrix
+   */
   private createLazyConfMatrix(epochId: number, numClass: number): INumericalMatrix {
     const desc = mixin(createDefaultMatrixDesc(), {
       size: [numClass, numClass],
