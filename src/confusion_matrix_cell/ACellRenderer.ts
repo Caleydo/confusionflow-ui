@@ -142,13 +142,18 @@ export class MatrixLineCellRenderer extends LineChartRenderer {
     super(0, 0);
   }
 
+  // TODO: fix reflow issues
   protected render(cell: MatrixCell | PanelCell) {
     this.cell = cell;
     const data: Line[] = [].concat.apply([], cell.data.linecell);
-    this.$svg = cell.$node.append('svg').datum(data);
 
-    this.width = (<any>cell.$node.node()).clientWidth;
-    this.height = (<any>cell.$node.node()).clientHeight;
+    // not sure whether this helps
+    const node = <any>cell.$node.node();
+    this.width = node.clientWidth;
+    this.height = node.clientHeight;
+
+    this.$svg = cell.$node.append('svg')
+      .datum(data);
 
     this.$svg
       .attr('viewBox', `0 0 ${this.width} ${this.height}`)
@@ -166,6 +171,7 @@ export class VerticalLineRenderer extends ACellRenderer {
     super();
   }
 
+  // TODO: fix reflow issues
   protected render(cell: MatrixCell | PanelCell) {
     if (cell.data.heatcell === null) {
       return;
@@ -174,21 +180,29 @@ export class VerticalLineRenderer extends ACellRenderer {
     if (isUndefined(singleEpochIndex) || singleEpochIndex === null) {
       return;
     }
+    const node = (<any>cell.$node[0][0]);
     const data: Line[] = [].concat.apply([], cell.data.linecell);
     // we don't want to render empty cells
     if (data.length === 1 && data[0].values.length === 0) {
       return;
     }
-    const $g = cell.$node.select('g');
-    const width = this.width > -1 ? this.width : (<any>cell.$node[0][0]).clientWidth;
-    const height = this.height > -1 ? this.height : (<any>cell.$node[0][0]).clientHeight;
+
+    // TODO: refactor SingleEpochMarker functionality out
+    /*
+    const width = this.width > -1 ? this.width : node.clientWidth;
+    const height = this.height > -1 ? this.height : node.clientHeight;
     const x = d3.scale.linear().rangeRound([0, width]);
-    const y = d3.scale.linear().rangeRound([height, 0]);
+    // not used
+    //const y = d3.scale.linear().rangeRound([height, 0]);
 
     x.domain([0, getLargestLine(data).values.length - 1]);
+
+    const $g = cell.$node.select('g');
+
     if (singleEpochIndex > -1) {
       this.addDashedLines($g, x, singleEpochIndex, width, height);
     }
+    */
   }
 
   private addDashedLines($g: d3.Selection<any>, x: any, singleEpochIndex: number, width: number, height: number) {

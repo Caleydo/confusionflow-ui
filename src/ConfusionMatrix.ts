@@ -211,9 +211,12 @@ export class ConfusionMatrix implements IAppView {
             c.renderer = new HeatmapMultiEpochRenderer(DataStoreApplicationProperties.transposeCellRenderer);
             this.setWeightUpdateListener(c.renderer);
             this.setYAxisScaleListener(c.renderer);
+            // TODO: improve SingeEpochMarker
+            /*
             if (DataStoreApplicationProperties.renderMode === RenderMode.COMBINED) {
               c.renderer.setNextRenderer(new SingleEpochMarker(DataStoreApplicationProperties.transposeCellRenderer));
             }
+            */
             this.$node.select('div .cfm-transpose-cell').style('display', 'initial');
             break;
           }
@@ -516,7 +519,11 @@ export class ConfusionMatrix implements IAppView {
           renderer: 'HeatmapMultiEpochRenderer',
           params: [DataStoreApplicationProperties.transposeCellRenderer]
         },
-        {renderer: 'SingleEpochMarker', params: [DataStoreApplicationProperties.transposeCellRenderer]}],
+        // TODO: improve SingleEpochMarker
+        /*
+        {renderer: 'SingleEpochMarker', params: [DataStoreApplicationProperties.transposeCellRenderer]}
+        */
+        ],
         diagonal: [{renderer: 'LabelCellRenderer', params: null}],
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
