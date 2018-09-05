@@ -181,11 +181,11 @@ export interface Fold {
      */
     description?: string;
     /**
-     * 
-     * @type {DatasetpropertiesdatasetId}
+     * #/definitions/Dataset/properties/datasetId
+     * @type {string}
      * @memberof Fold
      */
-    dataset?: DatasetpropertiesdatasetId;
+    dataset?: string;
     /**
      * 
      * @type {number}
@@ -219,17 +219,17 @@ export interface FoldLog {
      */
     description?: string;
     /**
-     * 
-     * @type {RunpropertiesrunId}
+     * #/definitions/Run/properties/runId
+     * @type {string}
      * @memberof FoldLog
      */
-    runId?: RunpropertiesrunId;
+    runId?: string;
     /**
-     * 
-     * @type {FoldpropertiesfoldId}
+     * #/definitions/Fold/properties/foldId
+     * @type {string}
      * @memberof FoldLog
      */
-    foldId?: FoldpropertiesfoldId;
+    foldId?: string;
     /**
      * 
      * @type {number}
@@ -315,11 +315,11 @@ export interface Run {
      */
     runId?: string;
     /**
-     * 
-     * @type {FoldpropertiesfoldId}
+     * #/definitions/Fold/properties/foldId
+     * @type {string}
      * @memberof Run
      */
-    trainfoldId?: FoldpropertiesfoldId;
+    trainfoldId?: string;
     /**
      * 
      * @type {HyperParam}
@@ -348,10 +348,10 @@ export interface View {
     viewId?: string;
     /**
      * 
-     * @type {Array&lt;RunpropertiesrunId&gt;}
+     * @type {Array&lt;string&gt;}
      * @memberof View
      */
-    runs?: Array<RunpropertiesrunId>;
+    runs?: Array<string>;
 }
 
 
