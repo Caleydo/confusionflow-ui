@@ -232,12 +232,6 @@ export interface FoldLog {
     foldId?: FoldpropertiesfoldId;
     /**
      * 
-     * @type {FoldLogDatapropertiesfoldlogdataId}
-     * @memberof FoldLog
-     */
-    foldlogdataId?: FoldLogDatapropertiesfoldlogdataId;
-    /**
-     * 
      * @type {number}
      * @memberof FoldLog
      */
@@ -255,13 +249,7 @@ export interface FoldLogData {
      * @type {string}
      * @memberof FoldLogData
      */
-    foldlogdataId?: string;
-    /**
-     * 
-     * @type {FoldLogpropertiesfoldlogId}
-     * @memberof FoldLogData
-     */
-    foldlogId?: FoldLogpropertiesfoldlogId;
+    foldlogId?: string;
     /**
      * 
      * @type {number}
@@ -569,6 +557,35 @@ export const FoldlogApiFetchParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * Returns data for a single foldlog
+         * @summary Get FoldLogData by ID
+         * @param {string} foldlogId ID of foldlog to return data
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getFoldLogDataById(foldlogId: string, options: any = {}): FetchArgs {
+            // verify required parameter 'foldlogId' is not null or undefined
+            if (foldlogId === null || foldlogId === undefined) {
+                throw new RequiredError('foldlogId','Required parameter foldlogId was null or undefined when calling getFoldLogDataById.');
+            }
+            const localVarPath = `/foldlog/{foldlogId}/data`
+                .replace(`{${"foldlogId"}}`, encodeURIComponent(String(foldlogId)));
+            const localVarUrlObj = url.parse(localVarPath, true);
+            const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarUrlObj.query = Object.assign({}, localVarUrlObj.query, localVarQueryParameter, options.query);
+            // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+            delete localVarUrlObj.search;
+            localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
+
+            return {
+                url: url.format(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -587,6 +604,25 @@ export const FoldlogApiFp = function(configuration?: Configuration) {
          */
         getFoldLogById(foldlogId: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<FoldLog> {
             const localVarFetchArgs = FoldlogApiFetchParamCreator(configuration).getFoldLogById(foldlogId, options);
+            return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
+                return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
+                    if (response.status >= 200 && response.status < 300) {
+                        return response.json();
+                    } else {
+                        throw response;
+                    }
+                });
+            };
+        },
+        /**
+         * Returns data for a single foldlog
+         * @summary Get FoldLogData by ID
+         * @param {string} foldlogId ID of foldlog to return data
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getFoldLogDataById(foldlogId: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<FoldLogData> {
+            const localVarFetchArgs = FoldlogApiFetchParamCreator(configuration).getFoldLogDataById(foldlogId, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
                     if (response.status >= 200 && response.status < 300) {
@@ -616,6 +652,16 @@ export const FoldlogApiFactory = function (configuration?: Configuration, fetch?
         getFoldLogById(foldlogId: string, options?: any) {
             return FoldlogApiFp(configuration).getFoldLogById(foldlogId, options)(fetch, basePath);
         },
+        /**
+         * Returns data for a single foldlog
+         * @summary Get FoldLogData by ID
+         * @param {string} foldlogId ID of foldlog to return data
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getFoldLogDataById(foldlogId: string, options?: any) {
+            return FoldlogApiFp(configuration).getFoldLogDataById(foldlogId, options)(fetch, basePath);
+        },
     };
 };
 
@@ -638,110 +684,16 @@ export class FoldlogApi extends BaseAPI {
         return FoldlogApiFp(this.configuration).getFoldLogById(foldlogId, options)(this.fetch, this.basePath);
     }
 
-}
-
-/**
- * FoldlogdataApi - fetch parameter creator
- * @export
- */
-export const FoldlogdataApiFetchParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * Returns a single foldlogdata
-         * @summary Get FoldLogData by ID
-         * @param {string} foldlogdataId ID of foldlogdata to return
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getFoldLogDataById(foldlogdataId: string, options: any = {}): FetchArgs {
-            // verify required parameter 'foldlogdataId' is not null or undefined
-            if (foldlogdataId === null || foldlogdataId === undefined) {
-                throw new RequiredError('foldlogdataId','Required parameter foldlogdataId was null or undefined when calling getFoldLogDataById.');
-            }
-            const localVarPath = `/foldlogdata/{foldlogdataId}`
-                .replace(`{${"foldlogdataId"}}`, encodeURIComponent(String(foldlogdataId)));
-            const localVarUrlObj = url.parse(localVarPath, true);
-            const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            localVarUrlObj.query = Object.assign({}, localVarUrlObj.query, localVarQueryParameter, options.query);
-            // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-            delete localVarUrlObj.search;
-            localVarRequestOptions.headers = Object.assign({}, localVarHeaderParameter, options.headers);
-
-            return {
-                url: url.format(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
-};
-
-/**
- * FoldlogdataApi - functional programming interface
- * @export
- */
-export const FoldlogdataApiFp = function(configuration?: Configuration) {
-    return {
-        /**
-         * Returns a single foldlogdata
-         * @summary Get FoldLogData by ID
-         * @param {string} foldlogdataId ID of foldlogdata to return
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getFoldLogDataById(foldlogdataId: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<FoldLogData> {
-            const localVarFetchArgs = FoldlogdataApiFetchParamCreator(configuration).getFoldLogDataById(foldlogdataId, options);
-            return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
-                return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
-                    if (response.status >= 200 && response.status < 300) {
-                        return response.json();
-                    } else {
-                        throw response;
-                    }
-                });
-            };
-        },
-    }
-};
-
-/**
- * FoldlogdataApi - factory interface
- * @export
- */
-export const FoldlogdataApiFactory = function (configuration?: Configuration, fetch?: FetchAPI, basePath?: string) {
-    return {
-        /**
-         * Returns a single foldlogdata
-         * @summary Get FoldLogData by ID
-         * @param {string} foldlogdataId ID of foldlogdata to return
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getFoldLogDataById(foldlogdataId: string, options?: any) {
-            return FoldlogdataApiFp(configuration).getFoldLogDataById(foldlogdataId, options)(fetch, basePath);
-        },
-    };
-};
-
-/**
- * FoldlogdataApi - object-oriented interface
- * @export
- * @class FoldlogdataApi
- * @extends {BaseAPI}
- */
-export class FoldlogdataApi extends BaseAPI {
     /**
-     * Returns a single foldlogdata
+     * Returns data for a single foldlog
      * @summary Get FoldLogData by ID
-     * @param {} foldlogdataId ID of foldlogdata to return
+     * @param {} foldlogId ID of foldlog to return data
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof FoldlogdataApi
+     * @memberof FoldlogApi
      */
-    public getFoldLogDataById(foldlogdataId: string, options?: any) {
-        return FoldlogdataApiFp(this.configuration).getFoldLogDataById(foldlogdataId, options)(this.fetch, this.basePath);
+    public getFoldLogDataById(foldlogId: string, options?: any) {
+        return FoldlogApiFp(this.configuration).getFoldLogDataById(foldlogId, options)(this.fetch, this.basePath);
     }
 
 }
