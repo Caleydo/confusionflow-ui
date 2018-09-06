@@ -1,12 +1,12 @@
 import { mixin } from 'phovea_core/src';
 import { INumberValueTypeDesc, VALUE_TYPE_REAL } from 'phovea_core/src/datatype';
-import { asMatrix, INumericalMatrix } from 'phovea_core/src/matrix';
-import { createDefaultMatrixDesc, IMatrixDataDescription } from 'phovea_core/src/matrix/IMatrix';
+import { INumericalMatrix } from 'phovea_core/src/matrix';
+import { createDefaultMatrixDesc, IMatrixDataDescription, IMatrix } from 'phovea_core/src/matrix/IMatrix';
 import { IMatrixLoader2 } from 'phovea_core/src/matrix/loader';
 import Matrix from 'phovea_core/src/matrix/Matrix';
 import { Range } from 'phovea_core/src/range';
 import { asTableFromArray, ITable } from 'phovea_core/src/table';
-import { Configuration, Dataset, Fold, Run, RunApi } from '../api';
+import { Configuration, Dataset, Fold, Run, RunApi, FoldLog, DatasetApi, FoldLogData, FoldlogApi } from '../api';
 import { IMalevoDatasetCollection, IMalevoEpochInfo, MalevoDataset } from '../MalevoDataset';
 import { IDataProvider } from './api';
 
@@ -15,18 +15,23 @@ const API_CONFIGURATION: Configuration = new Configuration({
   basePath: '/api'
 });
 
+const datasetApi = new DatasetApi(API_CONFIGURATION);
+const foldLogApi = new FoldlogApi(API_CONFIGURATION);
 const runApi = new RunApi(API_CONFIGURATION);
 
 export class SwaggerDataProvider implements IDataProvider {
 
   async load(): Promise<IMalevoDatasetCollection> {
-    const runs = await runApi.getRuns();
+    const datasets: Dataset[] = await datasetApi.getDatasets();
+
+    const runs: Run[] = await runApi.getRuns();
     const dsc = {};
 
-    runs.forEach((run) => {
+    runs.forEach((run: Run) => {
+      const dataset: Dataset = datasets.filter((d) => d.folds.some((f) => f.foldId === run.trainfoldId))[0];
       // list each fold as malevo dataset
-      run.folds.forEach((_, i) => {
-        const ds = new LazyMalevoDatasetProxy(run, i, 195); // TODO get dynamic number from API call
+      run.foldlogs.forEach((foldLog, i) => {
+        const ds = new LazyMalevoDatasetProxy(foldLog, dataset);
         dsc[ds.name] = ds;
       });
     });
@@ -36,35 +41,31 @@ export class SwaggerDataProvider implements IDataProvider {
 }
 
 /**
- * Proxy for MalevoDataset that retrieves the data from a Swagger run
+ * Proxy for MalevoDataset that retrieves the fold log data from Swagger.
+ * Here we cache the loaded fold log data to avoid multiple API requests for the same run
  */
-export class MalevoDatasetProxy extends MalevoDataset {
+const foldLogDataCache = new Map<string, FoldLog>();
 
-  protected _epochInfos: IMalevoEpochInfo[];
+/**
+ * Postpones loading the fold log data containing the epoch data until matrix.data() is called
+ */
+export class LazyMalevoDatasetProxy extends MalevoDataset {
 
   protected _classLabels: ITable;
 
-  constructor(protected run: Run, protected foldIndex) {
+  protected _epochInfos: IMalevoEpochInfo[];
+
+  /**
+   * cache promise to avoid multiple requests
+   */
+  private foldLogDataPromise: Promise<FoldLogData>;
+
+  constructor(private foldLog: FoldLog, private dataset: Dataset) {
     super();
   }
 
   get name(): string {
-    return this.run.runId + '_' + this.fold.name;
-  }
-
-  get epochInfos(): IMalevoEpochInfo[] {
-    if (this._epochInfos) {
-      return this._epochInfos;
-    }
-
-    // assumes that all epoch data are already available!
-    return this.fold.epochdata.map((e): IMalevoEpochInfo => {
-      return {
-        id: e.epochId,
-        name: e.epochId.toString(),
-        confusionInfo: this.convertConfMatToNumericalMatrix(e.confmat.slice(), this.run.dataset.numclass)
-      };
-    });
+    return this.foldLog.foldlogId;
   }
 
   get classLabels(): ITable {
@@ -72,53 +73,7 @@ export class MalevoDatasetProxy extends MalevoDataset {
       return this._classLabels;
     }
 
-    return this.convertClassLabelsToTable(this.run.dataset);
-  }
-
-  get fold(): Fold {
-    return this.run.folds[this.foldIndex];
-  }
-
-  private convertConfMatToNumericalMatrix(confMat: number[], numClass: number): INumericalMatrix {
-    const epochData2d = [
-      new Array(numClass + 1) // column header + 1 for id column
-    ];
-    while (confMat.length) {
-      epochData2d.push([0, ...confMat.splice(0, numClass)]); // first index = id column
-    }
-    return <INumericalMatrix>(asMatrix<number>(epochData2d));
-  }
-
-  private convertClassLabelsToTable(dataset: Dataset): ITable {
-    const tableArray = [
-      ['_id', 'class_id', 'class_labels'],
-      ...dataset.classes.map((d, i) => {
-        return [i, i, d];
-      })
-    ];
-    const table = asTableFromArray(tableArray, { keyProperty: 'class_id' });
-    return table;
-  }
-
-}
-
-/**
- * Cache loaded run data to avoid multiple API requests for folds of the same run
- */
-const runWithEpochDataCache = new Map<string, Run>();
-
-/**
- * Postpones loading the run data with the epoch data until the matrix data is requested
- */
-export class LazyMalevoDatasetProxy extends MalevoDatasetProxy {
-
-  /**
-   * cache promise to avoid multiple requests
-   */
-  private runDataPromise: Promise<Run>;
-
-  constructor(protected run: Run, protected foldIndex, protected numEpochs) {
-    super(run, foldIndex);
+    return this.convertClassLabelsToTable(this.dataset);
   }
 
   /**
@@ -129,12 +84,12 @@ export class LazyMalevoDatasetProxy extends MalevoDatasetProxy {
       return this._epochInfos;
     }
 
-    const epochs = new Array(this.numEpochs).fill(0);
+    const epochs = new Array(this.foldLog.numepochs).fill(0);
     return epochs.map((_, i) => {
       return {
         id: i,
         name: i.toString(),
-        confusionInfo: this.createLazyConfMatrix(i, this.run.dataset.numclass)
+        confusionInfo: this.createLazyConfMatrix(i, this.dataset.numclass)
       };
     });
   }
@@ -159,31 +114,31 @@ export class LazyMalevoDatasetProxy extends MalevoDatasetProxy {
       at: (desc: IMatrixDataDescription<any>, i, j) => Promise.reject('at() not implemented'),
       rows: (desc: IMatrixDataDescription<any>, range: Range) => Promise.reject('rows() not implemented'),
       cols: (desc: IMatrixDataDescription<any>, range: Range) => Promise.reject('cols() not implemented'),
-      data: (desc: IMatrixDataDescription<any>, range: Range) => this.loadRunWithEpochData().then((run) => this.getConfMat(run, epochId))
+      data: (desc: IMatrixDataDescription<any>, range: Range) => this.loadFoldLogData().then((foldLogData: FoldLogData) => this.getConfMat(foldLogData, epochId, this.dataset.numclass))
     };
 
     return new Matrix(desc, loader);
   }
 
   /**
-   * Load separate run data with epoch data
+   * Load fold log data containing the epoch data
    * and cache the promise to avoid multiple network requests
    */
-  private loadRunWithEpochData(): Promise<Run> {
-    if (runWithEpochDataCache.has(this.run.runId)) {
+  private loadFoldLogData(): Promise<FoldLogData> {
+    if (foldLogDataCache.has(this.foldLog.foldlogId)) {
       // check run cache first
-      return Promise.resolve(runWithEpochDataCache.get(this.run.runId));
-    } else if (this.runDataPromise) {
+      return Promise.resolve(foldLogDataCache.get(this.foldLog.foldlogId));
+    } else if (this.foldLogDataPromise) {
       // check for promise, i.e., if some one else is already loading
-      return this.runDataPromise;
+      return this.foldLogDataPromise;
     }
-    this.runDataPromise = runApi.getRunById(this.run.runId)
-      .then((run) => {
-        // add run to cache to avoid requests for a different fold
-        runWithEpochDataCache.set(run.runId, run);
-        return run;
+    this.foldLogDataPromise = foldLogApi.getFoldLogDataById(this.foldLog.foldlogId)
+      .then((foldLogData: FoldLogData) => {
+        // add fold log data to cache to avoid multiple requests
+        foldLogDataCache.set(foldLogData.foldlogId, foldLogData);
+        return foldLogData;
       });
-    return this.runDataPromise;
+    return this.foldLogDataPromise;
   }
 
   /**
@@ -191,8 +146,19 @@ export class LazyMalevoDatasetProxy extends MalevoDatasetProxy {
    * @param run {Run}
    * @param epochId {number}
    */
-  private getConfMat(run: Run, epochId: number): number[][] {
-    return convertArray1DtoArray2D(run.folds[this.foldIndex].epochdata[epochId].confmat, run.dataset.numclass);
+  private getConfMat(foldLogData: FoldLogData, epochId: number, numClass: number): number[][] {
+    return convertArray1DtoArray2D(foldLogData.epochdata[epochId].confmat, numClass);
+  }
+
+  private convertClassLabelsToTable(dataset: Dataset): ITable {
+    const tableArray = [
+      ['_id', 'class_id', 'class_labels'],
+      ...dataset.classes.map((d, i) => {
+        return [i, i, d];
+      })
+    ];
+    const table = asTableFromArray(tableArray, { keyProperty: 'class_id' });
+    return table;
   }
 
 }
