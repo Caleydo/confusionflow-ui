@@ -442,8 +442,7 @@ export class ConfusionMatrix implements IAppView {
       confMatrixRendererProto = {
         offdiagonal: [
           { renderer: 'HeatmapMultiEpochRenderer', params: [DataStoreApplicationProperties.transposeCellRenderer] },
-          // TODO improve performance of SingleEpochMarker
-          //{ renderer: 'SingleEpochMarker', params: [DataStoreApplicationProperties.transposeCellRenderer] }
+          { renderer: 'SingleEpochMarker', params: [DataStoreApplicationProperties.transposeCellRenderer] }
         ],
         diagonal: [{ renderer: 'LabelCellRenderer', params: null }],
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]

@@ -141,15 +141,9 @@ export class MatrixLineCellRenderer extends LineChartRenderer {
     super(width, height);
   }
 
-  // TODO: fix reflow issues
   protected render(cell: MatrixCell | PanelCell) {
     this.cell = cell;
     const data: Line[] = [].concat.apply([], cell.data.linecell);
-
-    // not sure whether this helps
-    //const node = <any>cell.$node.node();
-    //this.width = node.clientWidth;
-    //this.height = node.clientHeight;
 
     this.$svg = cell.$node.append('svg')
       .datum(data);
@@ -170,7 +164,6 @@ export class VerticalLineRenderer extends ACellRenderer {
     super();
   }
 
-  // TODO: fix reflow issues
   protected render(cell: MatrixCell | PanelCell) {
     if (cell.data.heatcell === null) {
       return;
@@ -186,14 +179,11 @@ export class VerticalLineRenderer extends ACellRenderer {
       return;
     }
 
-
     const width = this.width > -1 ? this.width : node.clientWidth;
     const height = this.height > -1 ? this.height : node.clientHeight;
-    const x = d3.scale.linear().rangeRound([0, width]);
-    // not used
-    //const y = d3.scale.linear().rangeRound([height, 0]);
-
-    x.domain([0, getLargestLine(data).values.length - 1]);
+    const x = d3.scale.linear()
+      .rangeRound([0, width])
+      .domain([0, getLargestLine(data).values.length - 1]);
 
     const $g = cell.$node.select('g');
 
@@ -239,7 +229,7 @@ export class VerticalLineRenderer extends ACellRenderer {
 export class SingleEpochMarker extends ACellRenderer implements ITransposeRenderer {
   protected cell: MatrixCell | PanelCell;
 
-  constructor(public isTransposed = false) {
+  constructor(public isTransposed = false, public width: number, public height: number) {
     super();
   }
 
@@ -256,11 +246,10 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
     if (isUndefined(singleEpochIndex) || singleEpochIndex === null) {
       return;
     }
-    const width = (<any>cell.$node[0][0]).clientWidth;
 
     const data: Line[] = [].concat.apply([], cell.data.linecell);
     const largest = getLargestLine(data).values.length;
-    let res = width / largest;
+    let res = this.width / largest;
 
     const firstHCPart = d3.select(cell.$node.selectAll('div.heat-cell')[0][0]); // select first part of heat cell
     let bg = firstHCPart.style('background');
@@ -680,7 +669,8 @@ function rendererFactory(proto: IRendererConfig) {
     case 'HeatmapSingleEpochRenderer':
       return new HeatmapSingleEpochRenderer(proto.params[0], proto.params[1]);
     case 'SingleEpochMarker':
-      return new SingleEpochMarker(proto.params[0]);
+      proto.params = (proto.params) ? proto.params : [false, 0, 0]; // width, height
+      return new SingleEpochMarker(proto.params[0], proto.params[1], proto.params[2]);
     case 'LineChartRenderer':
       return new LineChartRenderer(proto.params[0], proto.params[1]);
     case 'AxisRenderer':
@@ -692,7 +682,7 @@ function rendererFactory(proto: IRendererConfig) {
     case 'LabelCellRenderer':
       return new LabelCellRenderer();
     case 'MatrixLineCellRenderer':
-      proto.params = (proto.params) ? proto.params : [0, 0];
+      proto.params = (proto.params) ? proto.params : [0, 0]; // width, height
       return new MatrixLineCellRenderer(proto.params[0], proto.params[1]);
     case 'BarChartRenderer':
       return new BarChartRenderer(proto.params[0], proto.params[1], proto.params[2]);
@@ -702,8 +692,27 @@ function rendererFactory(proto: IRendererConfig) {
 }
 
 export function createCellRenderers($cells: d3.Selection<any>, renderProto: IMatrixRendererChain) {
+
+  const node: HTMLElement = <HTMLElement>$cells.node().parentNode;
+  const cellWidth = node.clientWidth / AppConstants.CONF_MATRIX_SIZE;
+  const cellHeight = node.clientHeight / AppConstants.CONF_MATRIX_SIZE;
+
+  // copy renderer config and add the cell width and height as last parameter
+  const diagonalRendererConfigs = renderProto.diagonal.map((renderConfig) => {
+    const config = { ...renderConfig };
+    config.params = (config.params) ? config.params.slice() : [];
+    config.params = [...config.params, cellWidth, cellHeight];
+    return config;
+  });
+  const offdiagonalRendererConfigs = renderProto.offdiagonal.map((renderConfig) => {
+    const config = { ...renderConfig };
+    config.params = (config.params) ? config.params.slice() : [];
+    config.params = [...config.params, cellWidth, cellHeight];
+    return config;
+  });
+
   $cells.each((datum, index) => {
-    const target = index % (AppConstants.CONF_MATRIX_SIZE + 1) !== 0 ? renderProto.offdiagonal : renderProto.diagonal;
+    const target = index % (AppConstants.CONF_MATRIX_SIZE + 1) !== 0 ? offdiagonalRendererConfigs : diagonalRendererConfigs;
     applyRendererChain(renderProto, datum, target);
   });
 }
