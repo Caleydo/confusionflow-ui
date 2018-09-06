@@ -1,39 +1,19 @@
 import * as d3 from 'd3';
 import * as $ from 'jquery';
 import * as events from 'phovea_core/src/event';
-import {ITable} from 'phovea_core/src/table';
 import 'select2';
-import {IAppView} from './app';
-import {AppConstants} from './AppConstants';
-import {ChartColumn} from './ChartColumn';
+import { IAppView } from './app';
+import { AppConstants } from './AppConstants';
+import { EChartOrientation, FNChartColumn, FPChartColumn } from './ChartColumn';
 import * as confMeasures from './ConfusionMeasures';
-import {
-  ACellRenderer,
-  applyRendererChain,
-  createCellRenderers,
-  HeatmapMultiEpochRenderer,
-  HeatmapSingleEpochRenderer,
-  IMatrixRendererChain,
-  MatrixLineCellRenderer,
-  removeListeners,
-  SingleEpochMarker,
-  VerticalLineRenderer
-} from './confusion_matrix_cell/ACellRenderer';
-import {ACell, LabelCell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
-import {
-  Line,
-  MatrixHeatCellContent,
-  MultiEpochCalculator,
-  SingleEpochCalculator
-} from './confusion_matrix_cell/CellContent';
-import {
-  DataStoreApplicationProperties, DataStoreLoadedRuns, DataStoreSelectedRun, RenderMode,
-  DataStoreCellSelection, dataStoreRuns
-} from './DataStore';
-import {SquareMatrix} from './DataStructures';
-import {Language} from './language';
-import {ILoadedMalevoDataset, ILoadedMalevoEpoch, IMalevoEpochInfo, MalevoDataset} from './MalevoDataset';
-import {simulateClick, zip} from './utils';
+import { ACellRenderer, applyRendererChain, createCellRenderers, HeatmapMultiEpochRenderer, HeatmapSingleEpochRenderer, IMatrixRendererChain, MatrixLineCellRenderer, removeListeners, VerticalLineRenderer } from './confusion_matrix_cell/ACellRenderer';
+import { ACell, LabelCell, MatrixCell, PanelCell } from './confusion_matrix_cell/Cell';
+import { Line, MatrixHeatCellContent, MultiEpochCalculator, SingleEpochCalculator } from './confusion_matrix_cell/CellContent';
+import { DataStoreApplicationProperties, DataStoreCellSelection, DataStoreLoadedRuns, RenderMode } from './DataStore';
+import { loadMatrixData } from './data_provider/MatrixDataLoader';
+import { Language } from './language';
+import { ILoadedMalevoDataset } from './MalevoDataset';
+import { simulateClick, zip } from './utils';
 
 
 export interface ICellData {
@@ -280,42 +260,9 @@ export class ConfusionMatrix implements IAppView {
    * Core method of this class: load the data from the server and renders them
    */
   updateViews() {
-    const dataStoreTimelineArray = Array.from(dataStoreRuns.values()).sort((a, b) => a.selectionIndex - b.selectionIndex);
-    // load the data range that is selected in the timeline + class labels; the color is part of the client is not save
-    // at the server
-    const allPromises: Promise<ILoadedMalevoDataset>[] = dataStoreTimelineArray.map((value: DataStoreSelectedRun) => {
-      const loadDataPromises = [];
-      loadDataPromises.push(this.loadEpochs(value.multiSelected, value.selectedDataset));
-      loadDataPromises.push(this.loadEpochs([value.singleSelected], value.selectedDataset));
-      loadDataPromises.push(value.selectedDataset.classLabels.data());
-      loadDataPromises.push(Promise.resolve(value.color));
-      loadDataPromises.push(value.selectedDataset.name);
-
-      // when a runs is loaded...
-      return Promise.all(loadDataPromises)
-        .then((d: any[]): ILoadedMalevoDataset => { // [ILoadedMalevoEpoch[], ILoadedMalevoEpoch, string[]]
-          // set labels and its ids
-          const labels: string[] = d[2].map((x) => x[1]);
-          const labelIds: number[] = d[2].map((x) => x[0]);
-
-          dataStoreRuns.get(d[4]).isLoading = false;
-          events.fire(AppConstants.EVENT_LOADING_COMPLETE);
-
-          // create a run object and return it
-          return {
-            multiEpochData: <ILoadedMalevoEpoch[]>d[0],
-            singleEpochData: <ILoadedMalevoEpoch>d[1][0],
-            labels,
-            labelIds,
-            datasetColor: <string>d[3],
-            classSizes: this.calcClassSizes(d)
-          };
-        });
-    });
-
-    // wait until datasets are loaded
-    Promise.all(allPromises).then((allDatasets: ILoadedMalevoDataset[]) => {
+    loadMatrixData().then((allDatasets: ILoadedMalevoDataset[]) => {
       DataStoreLoadedRuns.runs = allDatasets;
+
       if (allDatasets.length === 0) {
         this.clear();
         this.clearDetailView();
@@ -373,34 +320,6 @@ export class ConfusionMatrix implements IAppView {
         classSizes: indexArray.map((x) => ds.classSizes[x])
       };
     });
-  }
-
-  private loadEpochs(matrix: IMalevoEpochInfo[], dataset: MalevoDataset): Promise<ILoadedMalevoEpoch[]> {
-    if (matrix === null || matrix[0] === null) { // if a single epoch or multiepoch-range was deselected
-      return Promise.resolve([]);
-    }
-    matrix = matrix.filter((epochInfo) => epochInfo !== null);
-    const res = matrix.map((x) => {
-      return x.confusionInfo.data();
-    });
-    return Promise.all(res).then((loadedEpochData: number[][][]) => {
-      console.assert(loadedEpochData.length === matrix.length);
-      if (loadedEpochData.length !== matrix.length) {
-        throw new Error('The loaded epoch data does not conform with its description');
-      }
-      return loadedEpochData.map((val: number[][], index: number) => {
-        const m = new SquareMatrix<number>(val.length);
-        m.init(val);
-        return {name: matrix[index].name, confusionData: m, id: matrix[index].id};
-      });
-    });
-  }
-
-  private loadLabels(table: ITable, dataset: MalevoDataset): Promise<string[]> {
-    return table.data()
-      .then((x: [[number, string]]) => {
-        return x.map((x) => x[1]);
-      });
   }
 
   private renderClassSelector(labelIds: number[], labels: string[], selected: number[]) {

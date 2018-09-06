@@ -1,14 +1,11 @@
 /**
  * Created by Martin on 13.02.2018.
  */
-import {ITable} from 'phovea_core/src/table';
-import {MalevoDataset, IMalevoEpochInfo, ILoadedMalevoDataset} from './MalevoDataset';
-import * as events from 'phovea_core/src/event';
-import {AppConstants} from './AppConstants';
-import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, min, NumberMatrix} from './DataStructures';
-import {ACell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
 import * as d3 from 'd3';
-import {extractEpochId} from './utils';
+import * as events from 'phovea_core/src/event';
+import { AppConstants } from './AppConstants';
+import { MatrixCell, PanelCell } from './confusion_matrix_cell/Cell';
+import { ILoadedMalevoDataset, IMalevoEpochInfo, MalevoDataset } from './MalevoDataset';
 
 export const dataStoreRuns: Map<string, DataStoreSelectedRun> = new Map<string, DataStoreSelectedRun>();
 
