@@ -1,8 +1,8 @@
-import {DataStoreApplicationProperties, DataStoreCellSelection, RenderMode} from '../DataStore';
-import {AppConstants} from '../AppConstants';
+import { DataStoreApplicationProperties, DataStoreCellSelection, RenderMode } from '../DataStore';
+import { AppConstants } from '../AppConstants';
 import * as d3 from 'd3';
-import {Language} from '../language';
-import {ACell, DetailChartCell, MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
+import { Language } from '../language';
+import { ACell, DetailChartCell, MatrixCell, PanelCell } from '../confusion_matrix_cell/Cell';
 import {
   ACellRenderer, applyRendererChain,
   AxisRenderer, IMatrixRendererChain, LineChartRenderer, removeListeners,
@@ -89,7 +89,7 @@ export class DetailChart {
         text += cell.data.linecell[0][0].classLabel;
       } else if (cell.type === AppConstants.CELL_OVERALL_ACCURACY_SCORE) {
         text = Language.OVERALL_ACCURACY;
-      } else if(cell.type === AppConstants.CELL_CLASS_SIZE) {
+      } else if (cell.type === AppConstants.CELL_CLASS_SIZE) {
         text = Language.CLASS_SIZE;
       }
     }
@@ -113,12 +113,12 @@ export class DetailChart {
     if (!(cell instanceof MatrixCell) && !(cell instanceof PanelCell)) {
       return;
     }
-    if(DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
+    if (DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
       return;
     }
 
     this.createHeaderText();
-    const margin = {top: 5, right: 10, bottom: 140, left: 65}; // set left + bottom to show axis and labels
+    const margin = { top: 5, right: 10, bottom: 140, left: 65 }; // set left + bottom to show axis and labels
     this.width = (<any>this.$node[0][0]).clientWidth - margin.left - margin.right;
     this.height = (<any>this.$node[0][0]).clientHeight - margin.top - margin.bottom;
 
@@ -129,9 +129,9 @@ export class DetailChart {
     this.cell.init(this.$svg);
 
     let confMatrixRendererProto: IMatrixRendererChain = null;
-    if(cell instanceof PanelCell && cell.hasType([AppConstants.CELL_CLASS_SIZE])) {
+    if (cell instanceof PanelCell && cell.hasType([AppConstants.CELL_CLASS_SIZE])) {
       confMatrixRendererProto = {
-        diagonal: [{renderer: 'BarChartRenderer', params: [this.width, this.height, this.$g]}, {renderer: 'BarAxisRenderer', params: [this.width, this.height]}],offdiagonal: null, functors: []
+        diagonal: [{ renderer: 'BarChartRenderer', params: [this.$g, this.width, this.height] }, { renderer: 'BarAxisRenderer', params: [this.width, this.height] }], offdiagonal: null, functors: []
       };
     } else {
       let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener(), (renderer: ACellRenderer) => renderer.addYAxisScaleChangedListener()];
@@ -139,7 +139,7 @@ export class DetailChart {
         wfc = [];
       }
       confMatrixRendererProto = {
-        diagonal: [{renderer: 'LineChartRenderer', params: [this.width, this.height]}, {
+        diagonal: [{ renderer: 'LineChartRenderer', params: [this.width, this.height] }, {
           renderer: 'AxisRenderer',
           params: [this.width, this.height]
         }, {
@@ -149,7 +149,7 @@ export class DetailChart {
       };
     }
 
-    applyRendererChain(confMatrixRendererProto , this.cell, confMatrixRendererProto.diagonal);
+    applyRendererChain(confMatrixRendererProto, this.cell, confMatrixRendererProto.diagonal);
     this.cell.render();
   }
 }

@@ -1,14 +1,13 @@
 import * as events from 'phovea_core/src/event';
-import {Line, MatrixHeatCellContent} from './CellContent';
-import {ACell, DetailChartCell, LabelCell, MatrixCell, PanelCell} from './Cell';
-import {adaptTextColorToBgColor, extractEpochId} from '../utils';
+import { Line, MatrixHeatCellContent } from './CellContent';
+import { ACell, DetailChartCell, LabelCell, MatrixCell, PanelCell } from './Cell';
+import { adaptTextColorToBgColor, extractEpochId } from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
-import {Language} from '../language';
-import {DataStoreApplicationProperties, DataStoreCellSelection, dataStoreRuns} from '../DataStore';
-import {time} from 'd3';
-import {AppConstants} from '../AppConstants';
-import {isUndefined} from 'util';
+import { Language } from '../language';
+import { DataStoreApplicationProperties, DataStoreCellSelection, dataStoreRuns } from '../DataStore';
+import { AppConstants } from '../AppConstants';
+import { isUndefined } from 'util';
 
 /**
  * Created by Martin on 19.03.2018.
@@ -79,7 +78,7 @@ export class LineChartRenderer extends ACellRenderer {
     this.renderLine(data, this.cell.$node);
   }
 
-  constructor(protected width: number, protected height: number) {
+  constructor(public width: number, public height: number) {
     super();
   }
 
@@ -138,8 +137,8 @@ export class LineChartRenderer extends ACellRenderer {
 export class MatrixLineCellRenderer extends LineChartRenderer {
   private $svg: d3.Selection<any>;
 
-  constructor() {
-    super(0, 0);
+  constructor(public width: number = 0, public height: number = 0) {
+    super(width, height);
   }
 
   // TODO: fix reflow issues
@@ -148,9 +147,9 @@ export class MatrixLineCellRenderer extends LineChartRenderer {
     const data: Line[] = [].concat.apply([], cell.data.linecell);
 
     // not sure whether this helps
-    const node = <any>cell.$node.node();
-    this.width = node.clientWidth;
-    this.height = node.clientHeight;
+    //const node = <any>cell.$node.node();
+    //this.width = node.clientWidth;
+    //this.height = node.clientHeight;
 
     this.$svg = cell.$node.append('svg')
       .datum(data);
@@ -187,8 +186,7 @@ export class VerticalLineRenderer extends ACellRenderer {
       return;
     }
 
-    // TODO: refactor SingleEpochMarker functionality out
-    /*
+
     const width = this.width > -1 ? this.width : node.clientWidth;
     const height = this.height > -1 ? this.height : node.clientHeight;
     const x = d3.scale.linear().rangeRound([0, width]);
@@ -202,7 +200,6 @@ export class VerticalLineRenderer extends ACellRenderer {
     if (singleEpochIndex > -1) {
       this.addDashedLines($g, x, singleEpochIndex, width, height);
     }
-    */
   }
 
   private addDashedLines($g: d3.Selection<any>, x: any, singleEpochIndex: number, width: number, height: number) {
@@ -223,15 +220,19 @@ export class VerticalLineRenderer extends ACellRenderer {
   }
 
   public addWeightFactorChangedListener() {
+    //
   }
 
   public removeWeightFactorChangedListener() {
+    //
   }
 
   public addYAxisScaleChangedListener() {
+    //
   }
 
   public removeYAxisScaleChangedListener() {
+    //
   }
 }
 
@@ -298,7 +299,7 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
 
 export class BarChartRenderer extends ACellRenderer {
 
-  constructor(protected width: number, protected height: number, protected $g: d3.Selection<any>) {
+  constructor(protected $g: d3.Selection<any>, protected width: number, protected height: number) {
     super();
   }
 
@@ -330,29 +331,29 @@ export class BarChartRenderer extends ACellRenderer {
       $svg
         .attr('viewBox', `0 0 ${width} ${height}`);
 
-      this.$g = $svg.append("g")
-        .attr("transform", "translate(" + 0 + "," + 0 + ")");
+      this.$g = $svg.append('g')
+        .attr('transform', 'translate(' + 0 + ',' + 0 + ')');
     }
 
-    this.$g.selectAll(".bar")
+    this.$g.selectAll('.bar')
       .data(data.counts)
-      .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function (d, i) {
+      .enter().append('rect')
+      .attr('class', 'bar')
+      .attr('x', function (d, i) {
         return x(i.toString());
       })
-      .attr("y", function (d) {
+      .attr('y', function (d) {
         return y(d);
       })
-      .attr("width", x.rangeBand())
-      .attr("height", function (d) {
+      .attr('width', x.rangeBand())
+      .attr('height', function (d) {
         return height - y(d);
       })
       .style('fill', (d, i) => data.colorValues[i]);
   }
 
   private update = () => {
-
+    //
   }
 
   public addWeightFactorChangedListener() {
@@ -380,15 +381,19 @@ export class LabelCellRenderer extends ACellRenderer {
   }
 
   public addWeightFactorChangedListener() {
+    //
   }
 
   public removeWeightFactorChangedListener() {
+    //
   }
 
   public addYAxisScaleChangedListener() {
+    //
   }
 
   public removeYAxisScaleChangedListener() {
+    //
   }
 }
 
@@ -461,7 +466,7 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
           const colorDomain = d3.scale.linear().domain([0, hc.maxVal]);
           const colorScale = this.renderGrayscale ? colorDomain.range(<any>AppConstants.BG_COLOR_SCALE).interpolate(<any>d3.interpolateHcl) :
             colorDomain.range(<any>['white', hc.colorValues[i]]);
-          return {count: hc.counts[i], colorValue: String(colorScale(hc.counts[i]))};
+          return { count: hc.counts[i], colorValue: String(colorScale(hc.counts[i])) };
         });
       });
 
@@ -474,15 +479,19 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
   }
 
   public addWeightFactorChangedListener() {
+    //
   }
 
   public removeWeightFactorChangedListener() {
+    //
   }
 
   public addYAxisScaleChangedListener() {
+    //
   }
 
   public removeYAxisScaleChangedListener() {
+    //
   }
 }
 
@@ -600,19 +609,19 @@ export class BarAxisRenderer extends ACellRenderer {
 
     const xAxis = d3.svg.axis()
       .scale(x)
-      .orient("bottom");
+      .orient('bottom');
 
     const yAxis = d3.svg.axis()
       .scale(y)
-      .orient("left");
+      .orient('left');
 
-    $g.append("g")
-      .attr("class", "chart-axis-x")
-      .attr("transform", "translate(0," + this.height + ")")
+    $g.append('g')
+      .attr('class', 'chart-axis-x')
+      .attr('transform', 'translate(0,' + this.height + ')')
       .call(xAxis);
 
-    $g.append("g")
-      .attr("class", "chart-axis-y")
+    $g.append('g')
+      .attr('class', 'chart-axis-y')
       .call(yAxis);
 
     const axisDistance = 100;
@@ -683,7 +692,8 @@ function rendererFactory(proto: IRendererConfig) {
     case 'LabelCellRenderer':
       return new LabelCellRenderer();
     case 'MatrixLineCellRenderer':
-      return new MatrixLineCellRenderer();
+      proto.params = (proto.params) ? proto.params : [0, 0];
+      return new MatrixLineCellRenderer(proto.params[0], proto.params[1]);
     case 'BarChartRenderer':
       return new BarChartRenderer(proto.params[0], proto.params[1], proto.params[2]);
     default:
@@ -717,26 +727,26 @@ function getYMax(cell: ACell, data: Line[]) {
 }
 
 function getYLabelText() {
-    let text = '';
-    const cell = DataStoreCellSelection.getCell();
-    if (cell instanceof MatrixCell) {
-      const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
-      text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
-    } else if (cell instanceof PanelCell) {
-      if (cell.type === AppConstants.CELL_FP) {
-        text = Language.FP_RATE;
-      } else if (cell.type === AppConstants.CELL_FN) {
-        text = Language.FN_RATE;
-      } else if (cell.type === AppConstants.CELL_PRECISION) {
-        text = Language.PRECISION;
-      } else if (cell.type === AppConstants.CELL_RECALL) {
-        text = Language.RECALL;
-      } else if (cell.type === AppConstants.CELL_F1_SCORE) {
-        text = Language.F1_SCORE;
-      } else if(cell.type === AppConstants.CELL_CLASS_SIZE) {
-        text = Language.CLASS_SIZE;
-      }
+  let text = '';
+  const cell = DataStoreCellSelection.getCell();
+  if (cell instanceof MatrixCell) {
+    const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
+    text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
+  } else if (cell instanceof PanelCell) {
+    if (cell.type === AppConstants.CELL_FP) {
+      text = Language.FP_RATE;
+    } else if (cell.type === AppConstants.CELL_FN) {
+      text = Language.FN_RATE;
+    } else if (cell.type === AppConstants.CELL_PRECISION) {
+      text = Language.PRECISION;
+    } else if (cell.type === AppConstants.CELL_RECALL) {
+      text = Language.RECALL;
+    } else if (cell.type === AppConstants.CELL_F1_SCORE) {
+      text = Language.F1_SCORE;
+    } else if (cell.type === AppConstants.CELL_CLASS_SIZE) {
+      text = Language.CLASS_SIZE;
     }
-    return text;
   }
+  return text;
+}
 
