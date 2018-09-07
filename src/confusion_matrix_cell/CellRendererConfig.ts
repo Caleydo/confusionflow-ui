@@ -7,6 +7,8 @@ import { DataStoreApplicationProperties, ERenderMode } from '../DataStore';
 import { zip } from '../utils';
 
 export interface ICellRendererConfig {
+  readonly datasets: ILoadedMalevoDataset[];
+  readonly functors: ((renderer: ACellRenderer) => void)[];
   readonly data: ICellData[];
   readonly dataOverallAccuracy: number[][];
   readonly singleEpochIndex: number[];
@@ -17,8 +19,8 @@ export interface ICellRendererConfig {
   readonly classSizeRendererProto: IMatrixRendererChain;
 }
 
-abstract class CellRendererConfig {
-  constructor(protected datasets: ILoadedMalevoDataset[], protected functors: ((renderer: ACellRenderer) => void)[]) {
+abstract class CellRendererConfig implements ICellRendererConfig {
+  constructor(public readonly datasets: ILoadedMalevoDataset[], public readonly functors: ((renderer: ACellRenderer) => void)[]) {
     //
   }
 
@@ -31,14 +33,20 @@ abstract class CellRendererConfig {
 
   get labelRendererProto(): IMatrixRendererChain {
     return {
-      diagonal: [{ renderer: ERenderer.LabelCell, params: null }], offdiagonal: null,
+      diagonal: [
+        { renderer: ERenderer.LabelCell, params: null }
+      ],
+      offdiagonal: null,
       functors: []
     };
   }
 
   get classSizeRendererProto(): IMatrixRendererChain {
     return {
-      diagonal: [{ renderer: ERenderer.BarChart, params: [null] }], offdiagonal: null,
+      diagonal: [
+        { renderer: ERenderer.BarChart, params: [null] }
+      ],
+      offdiagonal: null,
       functors: []
     };
   }
@@ -79,14 +87,34 @@ class CombinedCellRendererConfig extends CellRendererConfig {
   }
 
   public get confMatrixRendererProto(): IMatrixRendererChain {
-    return {
-      offdiagonal: [
-        { renderer: ERenderer.HeatmapMultiEpoch, params: [DataStoreApplicationProperties.transposeCellRenderer] },
-        { renderer: ERenderer.SingleEpochMarker, params: [DataStoreApplicationProperties.transposeCellRenderer] }
-      ],
-      diagonal: [{ renderer: ERenderer.LabelCell, params: null }],
-      functors: this.functors
-    };
+    switch (DataStoreApplicationProperties.confMatrixCellRenderer) {
+      case ERenderer.MatrixLineCell:
+        return {
+          offdiagonal: [
+            { renderer: ERenderer.MatrixLineCell, params: null },
+            { renderer: ERenderer.HeatmapSingleEpoch, params: [false, true] },
+            { renderer: ERenderer.VerticalLine, params: null }
+          ],
+          diagonal: [
+            { renderer: ERenderer.LabelCell, params: null }
+          ],
+          functors: this.functors
+        };
+
+      case ERenderer.HeatmapMultiEpoch:
+        return {
+          offdiagonal: [
+            { renderer: ERenderer.HeatmapMultiEpoch, params: [DataStoreApplicationProperties.transposeCellRenderer] },
+            { renderer: ERenderer.SingleEpochMarker, params: [DataStoreApplicationProperties.transposeCellRenderer] }
+          ],
+          diagonal: [
+            { renderer: ERenderer.LabelCell, params: null }
+          ],
+          functors: this.functors
+        };
+    }
+
+    throw new Error('Unknown renderer for `DataStoreApplicationProperties.confMatrixCellRenderer`.');
   }
 
   public get overallAccuracyRendererProto(): IMatrixRendererChain {
@@ -123,22 +151,32 @@ class SingleCellRendererConfig extends CellRendererConfig {
 
   public get fpFnRendererProto(): IMatrixRendererChain {
     return {
-      diagonal: [{ renderer: ERenderer.BarChart, params: [null] }], offdiagonal: null,
+      diagonal: [
+        { renderer: ERenderer.BarChart, params: [null] }
+      ],
+      offdiagonal: null,
       functors: this.functors
     };
   }
 
   public get confMatrixRendererProto(): IMatrixRendererChain {
     return {
-      offdiagonal: [{ renderer: ERenderer.HeatmapSingleEpoch, params: [false, false] }],
-      diagonal: [{ renderer: ERenderer.LabelCell, params: null }],
+      offdiagonal: [
+        { renderer: ERenderer.HeatmapSingleEpoch, params: [false, false] }
+      ],
+      diagonal: [
+        { renderer: ERenderer.LabelCell, params: null }
+      ],
       functors: this.functors
     };
   }
 
   public get overallAccuracyRendererProto(): IMatrixRendererChain {
     return {
-      diagonal: [{ renderer: ERenderer.BarChart, params: [null] }], offdiagonal: null,
+      diagonal: [
+        { renderer: ERenderer.BarChart, params: [null] }
+      ],
+      offdiagonal: null,
       functors: this.functors
     };
   }
@@ -169,22 +207,48 @@ class MultiCellRendererConfig extends CellRendererConfig {
 
   public get fpFnRendererProto(): IMatrixRendererChain {
     return {
-      diagonal: [{ renderer: ERenderer.MatrixLineCell, params: null }], offdiagonal: null,
+      diagonal: [
+        { renderer: ERenderer.MatrixLineCell, params: null }
+      ],
+      offdiagonal: null,
       functors: this.functors
     };
   }
 
   public get confMatrixRendererProto(): IMatrixRendererChain {
-    return {
-      offdiagonal: [{ renderer: ERenderer.HeatmapMultiEpoch, params: [DataStoreApplicationProperties.transposeCellRenderer] }],
-      diagonal: [{ renderer: ERenderer.LabelCell, params: null }],
-      functors: this.functors
-    };
+    switch (DataStoreApplicationProperties.confMatrixCellRenderer) {
+      case ERenderer.MatrixLineCell:
+        return {
+          offdiagonal: [
+            { renderer: ERenderer.MatrixLineCell, params: null }
+          ],
+          diagonal: [
+            { renderer: ERenderer.LabelCell, params: null }
+          ],
+          functors: this.functors
+        };
+
+      case ERenderer.HeatmapMultiEpoch:
+        return {
+          offdiagonal: [
+            { renderer: ERenderer.HeatmapMultiEpoch, params: [DataStoreApplicationProperties.transposeCellRenderer] }
+          ],
+          diagonal: [
+            { renderer: ERenderer.LabelCell, params: null }
+          ],
+          functors: this.functors
+        };
+    }
+
+    throw new Error('Unknown renderer for `DataStoreApplicationProperties.confMatrixCellRenderer`.');
   }
 
   public get overallAccuracyRendererProto(): IMatrixRendererChain {
     return {
-      diagonal: [{ renderer: ERenderer.MatrixLineCell, params: null }], offdiagonal: null,
+      diagonal: [
+        { renderer: ERenderer.MatrixLineCell, params: null }
+      ],
+      offdiagonal: null,
       functors: []
     };
   }

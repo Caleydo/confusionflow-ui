@@ -39,12 +39,12 @@ export default class ConfusionMeasuresView implements IAppView {
   }
 
   private attachListener() {
-    events.on(AppConstants.EVENT_RENDER_CONF_MEASURE, (evt, datasets: ILoadedMalevoDataset[], cellRendererConfig: ICellRendererConfig) => {
+    events.on(AppConstants.EVENT_RENDER_CONF_MEASURE, (evt, cellRendererConfig: ICellRendererConfig) => {
       if (DataStoreApplicationProperties.renderMode === ERenderMode.SINGLE) {
         this.clear();
         return;
       }
-      const { header, rows, rendererProtos } = this.prepareData(datasets, cellRendererConfig);
+      const { header, rows, rendererProtos } = this.prepareData(cellRendererConfig);
       this.renderTable(header, rows, rendererProtos);
       this.updateSelectedCell();
     });
@@ -58,7 +58,8 @@ export default class ConfusionMeasuresView implements IAppView {
     this.$node.selectAll('td').html('');
   }
 
-  private prepareData(datasets: ILoadedMalevoDataset[], cellRendererConfig: ICellRendererConfig) {
+  private prepareData(cellRendererConfig: ICellRendererConfig) {
+    const datasets: ILoadedMalevoDataset[] = cellRendererConfig.datasets;
     const singleEpochIndex: number[] = cellRendererConfig.singleEpochIndex;
     const lineChartRendererProto: IMatrixRendererChain = cellRendererConfig.overallAccuracyRendererProto;
     const labelRendererProto: IMatrixRendererChain = cellRendererConfig.labelRendererProto;

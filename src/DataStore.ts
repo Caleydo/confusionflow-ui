@@ -6,6 +6,7 @@ import * as events from 'phovea_core/src/event';
 import { AppConstants } from './AppConstants';
 import { MatrixCell, PanelCell } from './confusion_matrix_cell/Cell';
 import { ILoadedMalevoDataset, IMalevoEpochInfo, MalevoDataset } from './MalevoDataset';
+import { ERenderer } from './confusion_matrix_cell/ACellRenderer';
 
 export const dataStoreRuns: Map<string, DataStoreSelectedRun> = new Map<string, DataStoreSelectedRun>();
 
@@ -159,7 +160,7 @@ export enum ERenderMode {
  */
 export class DataStoreApplicationProperties {
   private static _transposeCellRenderer = false;
-  private static _switchCellRenderer = false;
+  private static _confMatrixCellRenderer: ERenderer.HeatmapMultiEpoch | ERenderer.MatrixLineCell = ERenderer.HeatmapMultiEpoch;
   private static _isAbsolute = false;
   private static _weightFactor = 1;
   private static _renderMode: ERenderMode = ERenderMode.COMBINED;
@@ -187,13 +188,13 @@ export class DataStoreApplicationProperties {
     events.fire(AppConstants.EVENT_CELL_RENDERER_TRANSPOSED, this.transposeCellRenderer);
   }
 
-  static get switchCellRenderer(): boolean {
-    return this._switchCellRenderer;
+  static get confMatrixCellRenderer(): ERenderer.HeatmapMultiEpoch | ERenderer.MatrixLineCell {
+    return this._confMatrixCellRenderer;
   }
 
-  static set switchCellRenderer(value: boolean) {
-    this._switchCellRenderer = value;
-    events.fire(AppConstants.EVENT_CELL_RENDERER_CHANGED, this.switchCellRenderer);
+  static set confMatrixCellRenderer(value: ERenderer.HeatmapMultiEpoch | ERenderer.MatrixLineCell) {
+    this._confMatrixCellRenderer = value;
+    events.fire(AppConstants.EVENT_CELL_RENDERER_CHANGED, this.confMatrixCellRenderer);
   }
 
   static get weightFactor(): number {
