@@ -75,16 +75,16 @@ export class LineChartRenderer extends ACellRenderer {
 
   private update = () => {
     const data: Line[] = [].concat.apply([], this.cell.data.linecell);
-    this.renderLine(data, this.cell.$node);
+    this.renderLine(data, this.cell.$node, this.cell.width, this.cell.height);
   }
 
-  constructor(public width: number, public height: number) {
+  constructor() {
     super();
   }
 
-  protected renderLine(data: Line[], $node: d3.Selection<any>) {
-    const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([this.height, 0]);
+  protected renderLine(data: Line[], $node: d3.Selection<any>, width: number, height: number) {
+    const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, width]);
+    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -123,44 +123,44 @@ export class LineChartRenderer extends ACellRenderer {
   }
 
   protected render(cell: MatrixCell | PanelCell) {
-    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    const data: Line[] = [].concat.apply([], cell.data.linecell); // flatten the array
     // we don't want to render empty cells
     if (data.length === 1 && data[0].values.length === 0) {
       return;
     }
 
     this.cell = cell;
-    this.renderLine(data, this.cell.$node);
+    this.renderLine(data, this.cell.$node, this.cell.width, this.cell.height);
   }
 }
 
 export class MatrixLineCellRenderer extends LineChartRenderer {
   private $svg: d3.Selection<any>;
 
-  constructor(public width: number = 0, public height: number = 0) {
-    super(width, height);
+  constructor() {
+    super();
   }
 
   protected render(cell: MatrixCell | PanelCell) {
     this.cell = cell;
-    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    const data: Line[] = [].concat.apply([], cell.data.linecell); // flatten the array
 
     this.$svg = cell.$node.append('svg')
       .datum(data);
 
     this.$svg
-      .attr('viewBox', `0 0 ${this.width} ${this.height}`)
+      .attr('viewBox', `0 0 ${this.cell.width} ${this.cell.height}`)
       .classed('linechart', true)
       .append('g');
 
-    this.renderLine(data, this.$svg);
+    this.renderLine(data, this.$svg, this.cell.width, this.cell.height);
   }
 
 
 }
 
 export class VerticalLineRenderer extends ACellRenderer {
-  constructor(private width: number, private height: number) {
+  constructor() {
     super();
   }
 
@@ -173,22 +173,20 @@ export class VerticalLineRenderer extends ACellRenderer {
       return;
     }
     const node = (<any>cell.$node[0][0]);
-    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    const data: Line[] = [].concat.apply([], cell.data.linecell); // flatten the array
     // we don't want to render empty cells
     if (data.length === 1 && data[0].values.length === 0) {
       return;
     }
 
-    const width = this.width > -1 ? this.width : node.clientWidth;
-    const height = this.height > -1 ? this.height : node.clientHeight;
     const x = d3.scale.linear()
-      .rangeRound([0, width])
+      .rangeRound([0, cell.width])
       .domain([0, getLargestLine(data).values.length - 1]);
 
     const $g = cell.$node.select('g');
 
     if (singleEpochIndex > -1) {
-      this.addDashedLines($g, x, singleEpochIndex, width, height);
+      this.addDashedLines($g, x, singleEpochIndex, cell.width, cell.height);
     }
   }
 
@@ -229,7 +227,7 @@ export class VerticalLineRenderer extends ACellRenderer {
 export class SingleEpochMarker extends ACellRenderer implements ITransposeRenderer {
   protected cell: MatrixCell | PanelCell;
 
-  constructor(public isTransposed = false, public width: number, public height: number) {
+  constructor(public isTransposed = false) {
     super();
   }
 
@@ -247,9 +245,10 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
       return;
     }
 
-    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    const data: Line[] = [].concat.apply([], cell.data.linecell); // flatten the array
     const largest = getLargestLine(data).values.length;
-    let res = this.width / largest;
+    const borderWidth = 2;
+    let res = (cell.width - borderWidth) / largest;
 
     const firstHCPart = d3.select(cell.$node.selectAll('div.heat-cell')[0][0]); // select first part of heat cell
     let bg = firstHCPart.style('background');
@@ -288,7 +287,7 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
 
 export class BarChartRenderer extends ACellRenderer {
 
-  constructor(protected $g: d3.Selection<any>, protected width: number, protected height: number) {
+  constructor(protected $g: d3.Selection<any>) {
     super();
   }
 
@@ -297,15 +296,13 @@ export class BarChartRenderer extends ACellRenderer {
       return;
     }
     const data = cell.data.heatcell;
-    const width = this.width === -1 ? (<any>cell.$node.node()).clientWidth : this.width;
-    const height = this.height === -1 ? (<any>cell.$node.node()).clientHeight : this.height;
 
     //const x = d3.scale.ordinal().rangeRoundBands([0, width], 0.1);
-    const xScaleRange = data.counts.length * ((width / 2) / AppConstants.MAX_DATASET_COUNT);
+    const xScaleRange = data.counts.length * ((cell.width / 2) / AppConstants.MAX_DATASET_COUNT);
     const x = d3.scale.ordinal()
-      .rangeRoundBands([width / 2 - xScaleRange, width / 2 + xScaleRange], 0.2);
+      .rangeRoundBands([cell.width / 2 - xScaleRange, cell.width / 2 + xScaleRange], 0.2);
 
-    const y = d3.scale.linear().rangeRound([height, 0]);
+    const y = d3.scale.linear().rangeRound([cell.height, 0]);
 
 
     x.domain(data.counts.map(function (d, i) {
@@ -318,7 +315,7 @@ export class BarChartRenderer extends ACellRenderer {
     if (this.$g === null) {
       const $svg = cell.$node.append('svg');
       $svg
-        .attr('viewBox', `0 0 ${width} ${height}`);
+        .attr('viewBox', `0 0 ${cell.width} ${cell.height}`);
 
       this.$g = $svg.append('g')
         .attr('transform', 'translate(' + 0 + ',' + 0 + ')');
@@ -336,7 +333,7 @@ export class BarChartRenderer extends ACellRenderer {
       })
       .attr('width', x.rangeBand())
       .attr('height', function (d) {
-        return height - y(d);
+        return cell.height - y(d);
       })
       .style('fill', (d, i) => data.colorValues[i]);
   }
@@ -395,7 +392,7 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
 
   protected render(cell: MatrixCell | PanelCell) {
     this.cell = cell;
-    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    const data: Line[] = [].concat.apply([], cell.data.linecell); // flatten the array
 
     const $subCells = cell.$node
       .selectAll('div')
@@ -497,7 +494,7 @@ export class AxisRenderer extends ACellRenderer {
     }
   }
 
-  constructor(private width: number, private height: number) {
+  constructor() {
     super();
     this.yAxis = d3.svg.axis()
       .orient('left');
@@ -521,7 +518,7 @@ export class AxisRenderer extends ACellRenderer {
   }
 
   private updateYAxis(value: number) {
-    this.y.exponent(value).domain([0, getYMax(this.cell, this.data)]).range([this.height, 0]);
+    this.y.exponent(value).domain([0, getYMax(this.cell, this.data)]).range([this.cell.height, 0]);
     this.yAxis.scale(this.y);
     this.$g.select('.chart-axis-y').call(this.yAxis);
   }
@@ -540,15 +537,15 @@ export class AxisRenderer extends ACellRenderer {
 
     const x = d3.scale.ordinal()
       .domain(values)
-      .rangePoints([0, this.width]);
+      .rangePoints([0, this.cell.width]);
 
     const y = d3.scale.linear()
-      .rangeRound([this.height, 0])
+      .rangeRound([this.cell.height, 0])
       .domain([0, getYMax(cell, this.data)]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
     const labelWidth = 25; // in pixel
-    const numTicks = this.width / labelWidth;
+    const numTicks = this.cell.width / labelWidth;
     const tickFrequency = Math.ceil(values.length / numTicks);
 
     const ticks = values.filter((x, i) => i % tickFrequency === 0);
@@ -558,7 +555,7 @@ export class AxisRenderer extends ACellRenderer {
 
     this.$g.append('g')
       .attr('class', 'chart-axis-x')
-      .attr('transform', 'translate(0,' + this.height + ')')
+      .attr('transform', 'translate(0,' + this.cell.height + ')')
       .call(xAxis);
 
     this.updateYAxis(DataStoreApplicationProperties.weightFactor);
@@ -571,18 +568,18 @@ export class AxisRenderer extends ACellRenderer {
     // now add titles to the axes
     this.$g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-      .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
+      .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.cell.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
       .text(getYLabelText());
 
     this.$g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-      .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance / 2)) + ')')  // centre below axis
+      .attr('transform', 'translate(' + (this.cell.width / 2) + ',' + (this.cell.height - (-axisDistance / 2)) + ')')  // centre below axis
       .text(Language.EPOCH);
   }
 }
 
 export class BarAxisRenderer extends ACellRenderer {
-  constructor(private width: number, private height: number) {
+  constructor() {
     super();
   }
 
@@ -590,11 +587,11 @@ export class BarAxisRenderer extends ACellRenderer {
     const $g = cell.$node.select('g');
     const data = cell.data.heatcell;
 
-    const xScaleRange = data.counts.length * ((this.width / 2) / AppConstants.MAX_DATASET_COUNT);
+    const xScaleRange = data.counts.length * ((cell.width / 2) / AppConstants.MAX_DATASET_COUNT);
     const x = d3.scale.ordinal()
-      .rangeRoundBands([0, this.width], 0.2);
+      .rangeRoundBands([0, cell.width], 0.2);
 
-    const y = d3.scale.linear().rangeRound([this.height, 0]).domain([0, Math.max(...data.counts)]);
+    const y = d3.scale.linear().rangeRound([cell.height, 0]).domain([0, Math.max(...data.counts)]);
 
     const xAxis = d3.svg.axis()
       .scale(x)
@@ -606,7 +603,7 @@ export class BarAxisRenderer extends ACellRenderer {
 
     $g.append('g')
       .attr('class', 'chart-axis-x')
-      .attr('transform', 'translate(0,' + this.height + ')')
+      .attr('transform', 'translate(0,' + cell.height + ')')
       .call(xAxis);
 
     $g.append('g')
@@ -618,25 +615,29 @@ export class BarAxisRenderer extends ACellRenderer {
     // now add titles to the axes
     $g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-      .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
+      .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (cell.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
       .text(getYLabelText());
 
     $g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-      .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance / 3)) + ')')  // centre below axis
+      .attr('transform', 'translate(' + (cell.width / 2) + ',' + (cell.height - (-axisDistance / 3)) + ')')  // centre below axis
       .text(Language.RUNS);
   }
 
   public addWeightFactorChangedListener() {
+    //
   }
 
   public removeWeightFactorChangedListener() {
+    //
   }
 
   public addYAxisScaleChangedListener() {
+    //
   }
 
   public removeYAxisScaleChangedListener() {
+    //
   }
 }
 
@@ -669,50 +670,29 @@ function rendererFactory(proto: IRendererConfig) {
     case 'HeatmapSingleEpochRenderer':
       return new HeatmapSingleEpochRenderer(proto.params[0], proto.params[1]);
     case 'SingleEpochMarker':
-      proto.params = (proto.params) ? proto.params : [false, 0, 0]; // width, height
-      return new SingleEpochMarker(proto.params[0], proto.params[1], proto.params[2]);
+      return new SingleEpochMarker(proto.params[0]);
     case 'LineChartRenderer':
-      return new LineChartRenderer(proto.params[0], proto.params[1]);
+      return new LineChartRenderer();
     case 'AxisRenderer':
-      return new AxisRenderer(proto.params[0], proto.params[1]);
+      return new AxisRenderer();
     case 'BarAxisRenderer':
-      return new BarAxisRenderer(proto.params[0], proto.params[1]);
+      return new BarAxisRenderer();
     case 'VerticalLineRenderer':
-      return new VerticalLineRenderer(proto.params[0], proto.params[1]);
+      return new VerticalLineRenderer();
     case 'LabelCellRenderer':
       return new LabelCellRenderer();
     case 'MatrixLineCellRenderer':
-      proto.params = (proto.params) ? proto.params : [0, 0]; // width, height
-      return new MatrixLineCellRenderer(proto.params[0], proto.params[1]);
+      return new MatrixLineCellRenderer();
     case 'BarChartRenderer':
-      return new BarChartRenderer(proto.params[0], proto.params[1], proto.params[2]);
+      return new BarChartRenderer(proto.params[0]);
     default:
       return null;
   }
 }
 
 export function createCellRenderers($cells: d3.Selection<any>, renderProto: IMatrixRendererChain) {
-
-  const node: HTMLElement = <HTMLElement>$cells.node().parentNode;
-  const cellWidth = node.clientWidth / AppConstants.CONF_MATRIX_SIZE;
-  const cellHeight = node.clientHeight / AppConstants.CONF_MATRIX_SIZE;
-
-  // copy renderer config and add the cell width and height as last parameter
-  const diagonalRendererConfigs = renderProto.diagonal.map((renderConfig) => {
-    const config = { ...renderConfig };
-    config.params = (config.params) ? config.params.slice() : [];
-    config.params = [...config.params, cellWidth, cellHeight];
-    return config;
-  });
-  const offdiagonalRendererConfigs = renderProto.offdiagonal.map((renderConfig) => {
-    const config = { ...renderConfig };
-    config.params = (config.params) ? config.params.slice() : [];
-    config.params = [...config.params, cellWidth, cellHeight];
-    return config;
-  });
-
   $cells.each((datum, index) => {
-    const target = index % (AppConstants.CONF_MATRIX_SIZE + 1) !== 0 ? offdiagonalRendererConfigs : diagonalRendererConfigs;
+    const target = index % (AppConstants.CONF_MATRIX_SIZE + 1) !== 0 ? renderProto.offdiagonal : renderProto.diagonal;
     applyRendererChain(renderProto, datum, target);
   });
 }

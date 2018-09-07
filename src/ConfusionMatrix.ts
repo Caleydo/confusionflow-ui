@@ -174,21 +174,16 @@ export class ConfusionMatrix implements IAppView {
        * for the current renderer is a line cell renderer do the same but the other way round
        */
       this.$cells.each((c) => {
-        // TODO read size only once
-        const node = c.$node.node();
-        const cellClientWidth = node.clientWidth;
-        const cellClientHeight = node.clientHeight;
-
         let currentMatrixRenderer = (<any>c.renderer);
         while (currentMatrixRenderer !== null) {
           if (currentMatrixRenderer instanceof HeatmapMultiEpochRenderer && switched) {
             removeListeners(currentMatrixRenderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener(), (r: ACellRenderer) => r.removeYAxisScaleChangedListener()]);
-            c.renderer = new MatrixLineCellRenderer(cellClientWidth, cellClientHeight);
+            c.renderer = new MatrixLineCellRenderer();
             this.setWeightUpdateListener(c.renderer);
             this.setYAxisScaleListener(c.renderer);
             if (DataStoreApplicationProperties.renderMode === RenderMode.COMBINED) {
               c.renderer.setNextRenderer(new HeatmapSingleEpochRenderer(false, true))
-                .setNextRenderer(new VerticalLineRenderer(-1, -1));
+                .setNextRenderer(new VerticalLineRenderer());
             }
             this.$node.select('div .cfm-transpose-cell').style('display', 'none');
             break;
@@ -476,11 +471,11 @@ export class ConfusionMatrix implements IAppView {
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
       fpfnRendererProto = {
-        diagonal: [{ renderer: 'BarChartRenderer', params: [null, -1, -1] }], offdiagonal: null,
+        diagonal: [{ renderer: 'BarChartRenderer', params: [null] }], offdiagonal: null,
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
       overallAccuracyRendererProto = {
-        diagonal: [{ renderer: 'BarChartRenderer', params: [null, -1, -1] }], offdiagonal: null,
+        diagonal: [{ renderer: 'BarChartRenderer', params: [null] }], offdiagonal: null,
         functors: [this.setWeightUpdateListener, this.setYAxisScaleListener]
       };
 
@@ -526,6 +521,10 @@ export class ConfusionMatrix implements IAppView {
       );
     });
 
+    const node = (<HTMLElement>this.$confusionMatrix.node());
+    const cellWidth = node.clientWidth / datasets[0].labels.length;
+    const cellHeight = cellWidth;
+
     this.$cells = this.$confusionMatrix
       .selectAll('div')
       .data(cellData);
@@ -534,7 +533,7 @@ export class ConfusionMatrix implements IAppView {
       .append('div')
       .classed('cell', true)
       .each(function (d: ACell) {
-        d.init(d3.select(this));
+        d.init(d3.select(this), cellWidth, cellHeight);
       });
 
     createCellRenderers(this.$cells, confMatrixRendererProto);
@@ -567,16 +566,8 @@ export class ConfusionMatrix implements IAppView {
     const cellWidth = node.clientWidth;
     const cellHeight = node.clientHeight;
 
-    // copy renderer config and add the cell width and height as last parameter
-    const rendererConfigs = renderer.diagonal.map((renderConfig) => {
-      const config = { ...renderConfig };
-      config.params = (config.params) ? config.params.slice() : [];
-      config.params = [...config.params, cellWidth, cellHeight];
-      return config;
-    });
-
-    cell.init($overallAccuracyCell);
-    applyRendererChain(renderer, cell, rendererConfigs);
+    cell.init($overallAccuracyCell, cellWidth, cellHeight);
+    applyRendererChain(renderer, cell, renderer.diagonal);
     cell.render();
   }
 

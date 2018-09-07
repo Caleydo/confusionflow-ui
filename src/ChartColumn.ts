@@ -26,14 +26,6 @@ export abstract class ChartColumn {
     const panelCells = this.createPanelCells(data, singleEpochIndex);
     const { cellWidth, cellHeight } = this.cellSize(this.orientation, <HTMLElement>this.$node.node(), panelCells.length);
 
-    // copy renderer config and add the cell width and height as last parameter
-    const rendererConfigs = rendererChain.diagonal.map((renderConfig) => {
-      const config = { ...renderConfig };
-      config.params = (config.params) ? config.params.slice() : [];
-      config.params = [...config.params, cellWidth, cellHeight];
-      return config;
-    });
-
     this.$node
       .selectAll('div')
       .data(panelCells)
@@ -41,8 +33,8 @@ export abstract class ChartColumn {
       .append('div')
       .classed('cell', true)
       .each(function (cell: ACell) {
-        cell.init(d3.select(this));
-        applyRendererChain(rendererChain, cell, rendererConfigs);
+        cell.init(d3.select(this), cellWidth, cellHeight);
+        applyRendererChain(rendererChain, cell, rendererChain.diagonal);
         cell.render();
       });
   }

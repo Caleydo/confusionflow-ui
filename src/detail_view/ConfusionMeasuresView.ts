@@ -211,17 +211,6 @@ export default class ConfusionMeasuresView implements IAppView {
         };
       });
 
-    // copy renderer config and add the cell width and height as last parameter
-    rendererProtos = rendererProtos.map((rendererProto, i) => {
-      rendererProto.diagonal = rendererProto.diagonal.map((renderConfig) => {
-        const config = { ...renderConfig };
-        config.params = (config.params) ? config.params.slice() : [];
-        config.params = [...config.params, cellSizes[i].cellWidth, cellSizes[i].cellHeight];
-        return config;
-      });
-      return rendererProto;
-    });
-
     const $trs = this.$node.select('tbody').selectAll('tr').data(rows);
     $trs.enter().append('tr');
 
@@ -231,7 +220,7 @@ export default class ConfusionMeasuresView implements IAppView {
     $tds.each(function (cell, i) {
       const $td = d3.select(this);
       $td.html(''); // remove before adding a new svg
-      cell.init($td);
+      cell.init($td, cellSizes[i].cellWidth, cellSizes[i].cellHeight);
       applyRendererChain(rendererProtos[i], cell, rendererProtos[i].diagonal);
       cell.render();
       return null;

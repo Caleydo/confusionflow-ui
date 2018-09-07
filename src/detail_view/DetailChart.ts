@@ -119,19 +119,24 @@ export class DetailChart {
 
     this.createHeaderText();
     const margin = { top: 5, right: 10, bottom: 140, left: 65 }; // set left + bottom to show axis and labels
-    this.width = (<any>this.$node[0][0]).clientWidth - margin.left - margin.right;
-    this.height = (<any>this.$node[0][0]).clientHeight - margin.top - margin.bottom;
+    const width = this.width - margin.left - margin.right;
+    const height = this.height - margin.top - margin.bottom;
 
     this.$g = this.$svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
     this.$g.classed('linechart', true);
 
     this.cell = new DetailChartCell(cell);
-    this.cell.init(this.$svg);
+    this.cell.init(this.$svg, width, height);
 
     let confMatrixRendererProto: IMatrixRendererChain = null;
     if (cell instanceof PanelCell && cell.hasType([AppConstants.CELL_CLASS_SIZE])) {
       confMatrixRendererProto = {
-        diagonal: [{ renderer: 'BarChartRenderer', params: [this.$g, this.width, this.height] }, { renderer: 'BarAxisRenderer', params: [this.width, this.height] }], offdiagonal: null, functors: []
+        diagonal: [
+          { renderer: 'BarChartRenderer', params: [this.$g] },
+          { renderer: 'BarAxisRenderer', params: [] }
+        ],
+        offdiagonal: null,
+        functors: []
       };
     } else {
       let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener(), (renderer: ACellRenderer) => renderer.addYAxisScaleChangedListener()];
@@ -139,13 +144,13 @@ export class DetailChart {
         wfc = [];
       }
       confMatrixRendererProto = {
-        diagonal: [{ renderer: 'LineChartRenderer', params: [this.width, this.height] }, {
-          renderer: 'AxisRenderer',
-          params: [this.width, this.height]
-        }, {
-          renderer: 'VerticalLineRenderer',
-          params: [this.width, this.height]
-        }], offdiagonal: null, functors: wfc
+        diagonal: [
+          { renderer: 'LineChartRenderer', params: [] },
+          { renderer: 'AxisRenderer', params: [] },
+          { renderer: 'VerticalLineRenderer', params: [] }
+        ],
+        offdiagonal: null,
+        functors: wfc
       };
     }
 
