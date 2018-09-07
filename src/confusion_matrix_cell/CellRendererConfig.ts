@@ -1,9 +1,9 @@
-import { ACellRenderer, IMatrixRendererChain } from './ACellRenderer';
+import { ACellRenderer, IMatrixRendererChain, ERenderer } from './ACellRenderer';
 import { ICellData } from '../ConfusionMatrix';
 import { ILoadedMalevoDataset } from '../MalevoDataset';
 import { SingleEpochCalculator, MultiEpochCalculator } from './CellContent';
 import * as confMeasures from '../ConfusionMeasures';
-import { DataStoreApplicationProperties, RenderMode } from '../DataStore';
+import { DataStoreApplicationProperties, ERenderMode } from '../DataStore';
 import { zip } from '../utils';
 
 export interface ICellRendererConfig {
@@ -31,14 +31,14 @@ abstract class CellRendererConfig {
 
   get labelRendererProto(): IMatrixRendererChain {
     return {
-      diagonal: [{ renderer: 'LabelCellRenderer', params: null }], offdiagonal: null,
+      diagonal: [{ renderer: ERenderer.LabelCell, params: null }], offdiagonal: null,
       functors: []
     };
   }
 
   get classSizeRendererProto(): IMatrixRendererChain {
     return {
-      diagonal: [{ renderer: 'BarChartRenderer', params: [null] }], offdiagonal: null,
+      diagonal: [{ renderer: ERenderer.BarChart, params: [null] }], offdiagonal: null,
       functors: []
     };
   }
@@ -70,8 +70,8 @@ class CombinedCellRendererConfig extends CellRendererConfig {
   public get fpFnRendererProto(): IMatrixRendererChain {
     return {
       diagonal: [
-        { renderer: 'MatrixLineCellRenderer', params: null },
-        { renderer: 'VerticalLineRenderer', params: [] }
+        { renderer: ERenderer.MatrixLineCell, params: null },
+        { renderer: ERenderer.VerticalLine, params: [] }
       ],
       offdiagonal: null,
       functors: this.functors
@@ -81,10 +81,10 @@ class CombinedCellRendererConfig extends CellRendererConfig {
   public get confMatrixRendererProto(): IMatrixRendererChain {
     return {
       offdiagonal: [
-        { renderer: 'HeatmapMultiEpochRenderer', params: [DataStoreApplicationProperties.transposeCellRenderer] },
-        { renderer: 'SingleEpochMarker', params: [DataStoreApplicationProperties.transposeCellRenderer] }
+        { renderer: ERenderer.HeatmapMultiEpoch, params: [DataStoreApplicationProperties.transposeCellRenderer] },
+        { renderer: ERenderer.SingleEpochMarker, params: [DataStoreApplicationProperties.transposeCellRenderer] }
       ],
-      diagonal: [{ renderer: 'LabelCellRenderer', params: null }],
+      diagonal: [{ renderer: ERenderer.LabelCell, params: null }],
       functors: this.functors
     };
   }
@@ -92,8 +92,8 @@ class CombinedCellRendererConfig extends CellRendererConfig {
   public get overallAccuracyRendererProto(): IMatrixRendererChain {
     return {
       diagonal: [
-        { renderer: 'MatrixLineCellRenderer', params: null },
-        { renderer: 'VerticalLineRenderer', params: [] }
+        { renderer: ERenderer.MatrixLineCell, params: null },
+        { renderer: ERenderer.VerticalLine, params: [] }
       ],
       offdiagonal: null,
       functors: []
@@ -123,22 +123,22 @@ class SingleCellRendererConfig extends CellRendererConfig {
 
   public get fpFnRendererProto(): IMatrixRendererChain {
     return {
-      diagonal: [{ renderer: 'BarChartRenderer', params: [null] }], offdiagonal: null,
+      diagonal: [{ renderer: ERenderer.BarChart, params: [null] }], offdiagonal: null,
       functors: this.functors
     };
   }
 
   public get confMatrixRendererProto(): IMatrixRendererChain {
     return {
-      offdiagonal: [{ renderer: 'HeatmapSingleEpochRenderer', params: [false, false] }],
-      diagonal: [{ renderer: 'LabelCellRenderer', params: null }],
+      offdiagonal: [{ renderer: ERenderer.HeatmapSingleEpoch, params: [false, false] }],
+      diagonal: [{ renderer: ERenderer.LabelCell, params: null }],
       functors: this.functors
     };
   }
 
   public get overallAccuracyRendererProto(): IMatrixRendererChain {
     return {
-      diagonal: [{ renderer: 'BarChartRenderer', params: [null] }], offdiagonal: null,
+      diagonal: [{ renderer: ERenderer.BarChart, params: [null] }], offdiagonal: null,
       functors: this.functors
     };
   }
@@ -169,39 +169,36 @@ class MultiCellRendererConfig extends CellRendererConfig {
 
   public get fpFnRendererProto(): IMatrixRendererChain {
     return {
-      diagonal: [{ renderer: 'MatrixLineCellRenderer', params: null }], offdiagonal: null,
+      diagonal: [{ renderer: ERenderer.MatrixLineCell, params: null }], offdiagonal: null,
       functors: this.functors
     };
   }
 
   public get confMatrixRendererProto(): IMatrixRendererChain {
     return {
-      offdiagonal: [{
-        renderer: 'HeatmapMultiEpochRenderer',
-        params: [DataStoreApplicationProperties.transposeCellRenderer]
-      }],
-      diagonal: [{ renderer: 'LabelCellRenderer', params: null }],
+      offdiagonal: [{ renderer: ERenderer.HeatmapMultiEpoch, params: [DataStoreApplicationProperties.transposeCellRenderer] }],
+      diagonal: [{ renderer: ERenderer.LabelCell, params: null }],
       functors: this.functors
     };
   }
 
   public get overallAccuracyRendererProto(): IMatrixRendererChain {
     return {
-      diagonal: [{ renderer: 'MatrixLineCellRenderer', params: null }], offdiagonal: null,
+      diagonal: [{ renderer: ERenderer.MatrixLineCell, params: null }], offdiagonal: null,
       functors: []
     };
   }
 }
 
-export function createCellRendererConfig(renderMode: RenderMode, datasets: ILoadedMalevoDataset[], functors: ((renderer: ACellRenderer) => void)[]): CellRendererConfig {
+export function createCellRendererConfig(renderMode: ERenderMode, datasets: ILoadedMalevoDataset[], functors: ((renderer: ACellRenderer) => void)[]): CellRendererConfig {
   switch (renderMode) {
-    case RenderMode.COMBINED:
+    case ERenderMode.COMBINED:
       return new CombinedCellRendererConfig(datasets, functors);
 
-    case RenderMode.SINGLE:
+    case ERenderMode.SINGLE:
       return new SingleCellRendererConfig(datasets, functors);
 
-    case RenderMode.MULTI:
+    case ERenderMode.MULTI:
       return new MultiCellRendererConfig(datasets, functors);
   }
   throw new Error('Unknown render mode. Cannot create cell renderer config.');

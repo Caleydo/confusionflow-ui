@@ -1,4 +1,4 @@
-import { DataStoreApplicationProperties, DataStoreCellSelection, RenderMode } from '../DataStore';
+import { DataStoreApplicationProperties, DataStoreCellSelection, ERenderMode } from '../DataStore';
 import { AppConstants } from '../AppConstants';
 import * as d3 from 'd3';
 import { Language } from '../language';
@@ -6,7 +6,8 @@ import { ACell, DetailChartCell, MatrixCell, PanelCell } from '../confusion_matr
 import {
   ACellRenderer, applyRendererChain,
   AxisRenderer, IMatrixRendererChain, LineChartRenderer, removeListeners,
-  VerticalLineRenderer
+  VerticalLineRenderer,
+  ERenderer
 } from '../confusion_matrix_cell/ACellRenderer';
 import * as events from 'phovea_core/src/event';
 
@@ -113,7 +114,7 @@ export class DetailChart {
     if (!(cell instanceof MatrixCell) && !(cell instanceof PanelCell)) {
       return;
     }
-    if (DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
+    if (DataStoreApplicationProperties.renderMode === ERenderMode.SINGLE) {
       return;
     }
 
@@ -132,8 +133,8 @@ export class DetailChart {
     if (cell instanceof PanelCell && cell.hasType([AppConstants.CELL_CLASS_SIZE])) {
       confMatrixRendererProto = {
         diagonal: [
-          { renderer: 'BarChartRenderer', params: [this.$g] },
-          { renderer: 'BarAxisRenderer', params: [] }
+          { renderer: ERenderer.BarChart, params: [this.$g] },
+          { renderer: ERenderer.BarAxis, params: [] }
         ],
         offdiagonal: null,
         functors: []
@@ -145,9 +146,9 @@ export class DetailChart {
       }
       confMatrixRendererProto = {
         diagonal: [
-          { renderer: 'LineChartRenderer', params: [] },
-          { renderer: 'AxisRenderer', params: [] },
-          { renderer: 'VerticalLineRenderer', params: [] }
+          { renderer: ERenderer.LineChart, params: [] },
+          { renderer: ERenderer.Axis, params: [] },
+          { renderer: ERenderer.VerticalLine, params: [] }
         ],
         offdiagonal: null,
         functors: wfc

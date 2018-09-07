@@ -18,7 +18,7 @@ export interface ITransposeRenderer {
 }
 
 export interface IRendererConfig {
-  renderer: string;
+  renderer: ERenderer;
   params: any[];
 }
 
@@ -663,27 +663,40 @@ export function applyRendererChain(rendererProto: IMatrixRendererChain, cell: AC
   cell.renderer = firstRenderer;
 }
 
+export enum ERenderer {
+  HeatmapMultiEpoch,
+  HeatmapSingleEpoch,
+  SingleEpochMarker,
+  LineChart,
+  Axis,
+  BarAxis,
+  VerticalLine,
+  LabelCell,
+  MatrixLineCell,
+  BarChart
+}
+
 function rendererFactory(proto: IRendererConfig) {
   switch (proto.renderer) {
-    case 'HeatmapMultiEpochRenderer': // TODO Use constants
+    case ERenderer.HeatmapMultiEpoch:
       return new HeatmapMultiEpochRenderer(proto.params[0]);
-    case 'HeatmapSingleEpochRenderer':
+    case ERenderer.HeatmapSingleEpoch:
       return new HeatmapSingleEpochRenderer(proto.params[0], proto.params[1]);
-    case 'SingleEpochMarker':
+    case ERenderer.SingleEpochMarker:
       return new SingleEpochMarker(proto.params[0]);
-    case 'LineChartRenderer':
+    case ERenderer.LineChart:
       return new LineChartRenderer();
-    case 'AxisRenderer':
+    case ERenderer.Axis:
       return new AxisRenderer();
-    case 'BarAxisRenderer':
+    case ERenderer.BarAxis:
       return new BarAxisRenderer();
-    case 'VerticalLineRenderer':
+    case ERenderer.VerticalLine:
       return new VerticalLineRenderer();
-    case 'LabelCellRenderer':
+    case ERenderer.LabelCell:
       return new LabelCellRenderer();
-    case 'MatrixLineCellRenderer':
+    case ERenderer.MatrixLineCell:
       return new MatrixLineCellRenderer();
-    case 'BarChartRenderer':
+    case ERenderer.BarChart:
       return new BarChartRenderer(proto.params[0]);
     default:
       return null;

@@ -147,7 +147,7 @@ export class DataStoreCellSelection {
   }
 }
 
-export enum RenderMode {
+export enum ERenderMode {
   CLEAR = 0,
   SINGLE = 1,
   MULTI = 2,
@@ -162,14 +162,14 @@ export class DataStoreApplicationProperties {
   private static _switchCellRenderer = false;
   private static _isAbsolute = false;
   private static _weightFactor = 1;
-  private static _renderMode: RenderMode = RenderMode.COMBINED;
+  private static _renderMode: ERenderMode = ERenderMode.COMBINED;
   private static _selectedClassIndices: number[] = [];
 
-  static get renderMode(): RenderMode {
+  static get renderMode(): ERenderMode {
     return this._renderMode;
   }
 
-  static set renderMode(value: RenderMode) {
+  static set renderMode(value: ERenderMode) {
     this._renderMode = value;
   }
 

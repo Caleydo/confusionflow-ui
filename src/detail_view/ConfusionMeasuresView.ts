@@ -8,7 +8,7 @@ import { AppConstants } from '../AppConstants';
 import * as confMeasures from '../ConfusionMeasures';
 import { applyRendererChain, IMatrixRendererChain } from '../confusion_matrix_cell/ACellRenderer';
 import { ACell, LabelCell, PanelCell } from '../confusion_matrix_cell/Cell';
-import { DataStoreApplicationProperties, DataStoreCellSelection, RenderMode } from '../DataStore';
+import { DataStoreApplicationProperties, DataStoreCellSelection, ERenderMode } from '../DataStore';
 import { Matrix, max } from '../DataStructures';
 import { Language } from '../language';
 import { ILoadedMalevoDataset } from '../MalevoDataset';
@@ -40,7 +40,7 @@ export default class ConfusionMeasuresView implements IAppView {
 
   private attachListener() {
     events.on(AppConstants.EVENT_RENDER_CONF_MEASURE, (evt, datasets: ILoadedMalevoDataset[], cellRendererConfig: ICellRendererConfig) => {
-      if (DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
+      if (DataStoreApplicationProperties.renderMode === ERenderMode.SINGLE) {
         this.clear();
         return;
       }
@@ -68,7 +68,7 @@ export default class ConfusionMeasuresView implements IAppView {
     let dataRecall = null;
     let dataF1 = null;
 
-    if (DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
+    if (DataStoreApplicationProperties.renderMode === ERenderMode.SINGLE) {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.PPV));
       dataRecall = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.TPR));
       dataF1 = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.F1));

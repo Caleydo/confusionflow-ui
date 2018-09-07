@@ -8,7 +8,7 @@ import { EChartOrientation, FNChartColumn, FPChartColumn } from './ChartColumn';
 import { ACellRenderer, applyRendererChain, HeatmapMultiEpochRenderer, HeatmapSingleEpochRenderer, IMatrixRendererChain, MatrixLineCellRenderer, removeListeners, SingleEpochMarker, VerticalLineRenderer } from './confusion_matrix_cell/ACellRenderer';
 import { ACell, LabelCell, MatrixCell, PanelCell } from './confusion_matrix_cell/Cell';
 import { Line, MatrixHeatCellContent } from './confusion_matrix_cell/CellContent';
-import { DataStoreApplicationProperties, DataStoreCellSelection, DataStoreLoadedRuns, RenderMode } from './DataStore';
+import { DataStoreApplicationProperties, DataStoreCellSelection, DataStoreLoadedRuns, ERenderMode } from './DataStore';
 import { loadMatrixData } from './data_provider/MatrixDataLoader';
 import { Language } from './language';
 import { ILoadedMalevoDataset } from './MalevoDataset';
@@ -181,7 +181,7 @@ export class ConfusionMatrix implements IAppView {
             c.renderer = new MatrixLineCellRenderer();
             this.setWeightUpdateListener(c.renderer);
             this.setYAxisScaleListener(c.renderer);
-            if (DataStoreApplicationProperties.renderMode === RenderMode.COMBINED) {
+            if (DataStoreApplicationProperties.renderMode === ERenderMode.COMBINED) {
               c.renderer.setNextRenderer(new HeatmapSingleEpochRenderer(false, true))
                 .setNextRenderer(new VerticalLineRenderer());
             }
@@ -192,7 +192,7 @@ export class ConfusionMatrix implements IAppView {
             c.renderer = new HeatmapMultiEpochRenderer(DataStoreApplicationProperties.transposeCellRenderer);
             this.setWeightUpdateListener(c.renderer);
             this.setYAxisScaleListener(c.renderer);
-            if (DataStoreApplicationProperties.renderMode === RenderMode.COMBINED) {
+            if (DataStoreApplicationProperties.renderMode === ERenderMode.COMBINED) {
               c.renderer.setNextRenderer(new SingleEpochMarker(DataStoreApplicationProperties.transposeCellRenderer));
             }
             this.$node.select('div .cfm-transpose-cell').style('display', 'initial');
@@ -217,7 +217,7 @@ export class ConfusionMatrix implements IAppView {
 
   // is called to elicit the render mode
   chooseRenderMode(datasets: ILoadedMalevoDataset[]) {
-    DataStoreApplicationProperties.renderMode = RenderMode.CLEAR;
+    DataStoreApplicationProperties.renderMode = ERenderMode.CLEAR;
 
     const singleEpochDataExists = function (data: ILoadedMalevoDataset) {
       return !!data.singleEpochData;
@@ -231,7 +231,7 @@ export class ConfusionMatrix implements IAppView {
     datasets.forEach((x) => {
       if (singleEpochDataExists(x)) {
         // tslint:disable-next-line:no-bitwise
-        DataStoreApplicationProperties.renderMode |= RenderMode.SINGLE;
+        DataStoreApplicationProperties.renderMode |= ERenderMode.SINGLE;
         return;
       }
     });
@@ -241,7 +241,7 @@ export class ConfusionMatrix implements IAppView {
     datasets.forEach((x) => {
       if (multiEpochDataExists(x)) {
         // tslint:disable-next-line:no-bitwise
-        DataStoreApplicationProperties.renderMode |= RenderMode.MULTI;
+        DataStoreApplicationProperties.renderMode |= ERenderMode.MULTI;
         return;
       }
     });
@@ -251,7 +251,7 @@ export class ConfusionMatrix implements IAppView {
   /*
    * Core method of this class: load the data from the server and renders them
    */
-  updateViews() {
+  private updateViews() {
     loadMatrixData().then((allDatasets: ILoadedMalevoDataset[]) => {
       DataStoreLoadedRuns.runs = allDatasets;
 
@@ -400,7 +400,7 @@ export class ConfusionMatrix implements IAppView {
 
   private renderCells(datasets: ILoadedMalevoDataset[]) {
     this.clear();
-    if (DataStoreApplicationProperties.renderMode === RenderMode.CLEAR) {
+    if (DataStoreApplicationProperties.renderMode === ERenderMode.CLEAR) {
       return;
     }
 
