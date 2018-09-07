@@ -1,11 +1,11 @@
 import * as d3 from 'd3';
-import {IAppView} from '../app';
-import {ConfusionMatrix} from '../ConfusionMatrix';
-import {AppConstants} from '../AppConstants';
+import { IAppView } from '../app';
+import { ConfusionMatrix } from '../ConfusionMatrix';
+import { AppConstants } from '../AppConstants';
 import * as events from 'phovea_core/src/event';
 import * as plugins from 'phovea_core/src/plugin';
-import {DataStoreApplicationProperties} from '../DataStore';
-import {simulateClick} from "../utils";
+import { DataStoreApplicationProperties } from '../DataStore';
+import { simulateClick } from "../utils";
 
 export class ToolbarView implements IAppView {
 
@@ -29,14 +29,14 @@ export class ToolbarView implements IAppView {
 
   private attachListeners() {
     events.on(AppConstants.EVENT_UPDATE_TOOLBAR_STATE, () => {
-      if(DataStoreApplicationProperties.switchCellRenderer) {
+      if (DataStoreApplicationProperties.switchCellRenderer) {
         simulateClick(this.$node.select('.line-chart').node());
       } else {
         simulateClick(this.$node.select('.heatmap').node());
         this.updateTransposeState(this.$node.select('div.toolbar-transpose-cell'));
       }
 
-      if(DataStoreApplicationProperties.switchToAbsolute) {
+      if (DataStoreApplicationProperties.switchToAbsolute) {
         simulateClick(this.$node.select('button.absolute').node());
       } else {
         simulateClick(this.$node.select('button.relative').node());
@@ -116,15 +116,11 @@ export class ToolbarView implements IAppView {
     });
 
     $div.select('button.heatmap').on('click', () => {
-      this.setStateToHeatmap();
+      DataStoreApplicationProperties.switchCellRenderer = false;
+      this.$node.select('div.toolbar-switch-cell-vis').selectAll('.active').classed('active', false);
+      this.$node.select('div.toolbar-switch-cell-vis').select('button.heatmap').classed('active', true);
+      this.$node.select('.toolbar-transpose-cell > button').attr('disabled', null);
     });
-  }
-
-  private setStateToHeatmap() {
-    DataStoreApplicationProperties.switchCellRenderer = false;
-    this.$node.select('div.toolbar-switch-cell-vis').selectAll('.active').classed('active', false);
-    this.$node.select('div.toolbar-switch-cell-vis').select('button.heatmap').classed('active', true);
-    this.$node.select('.toolbar-transpose-cell > button').attr('disabled', null);
   }
 
   private createTransposeCellsDiv() {
@@ -145,10 +141,10 @@ export class ToolbarView implements IAppView {
 
   private updateTransposeState($div: d3.Selection<any>) {
     $div.select('i.fa')
-        .classed('fa-long-arrow-right', DataStoreApplicationProperties.transposeCellRenderer === false)
-        .classed('fa-long-arrow-down', DataStoreApplicationProperties.transposeCellRenderer === true);
-      this.$node.select('.toolbar-switch-cell-vis > button.heatmap i.fa')
-        .classed('fa-rotate-90', DataStoreApplicationProperties.transposeCellRenderer);
+      .classed('fa-long-arrow-right', DataStoreApplicationProperties.transposeCellRenderer === false)
+      .classed('fa-long-arrow-down', DataStoreApplicationProperties.transposeCellRenderer === true);
+    this.$node.select('.toolbar-switch-cell-vis > button.heatmap i.fa')
+      .classed('fa-rotate-90', DataStoreApplicationProperties.transposeCellRenderer);
   }
 
   private addYScaleSlider() {

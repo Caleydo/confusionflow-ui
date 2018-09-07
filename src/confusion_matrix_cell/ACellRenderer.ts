@@ -690,13 +690,6 @@ function rendererFactory(proto: IRendererConfig) {
   }
 }
 
-export function createCellRenderers($cells: d3.Selection<any>, renderProto: IMatrixRendererChain) {
-  $cells.each((datum, index) => {
-    const target = index % (AppConstants.CONF_MATRIX_SIZE + 1) !== 0 ? renderProto.offdiagonal : renderProto.diagonal;
-    applyRendererChain(renderProto, datum, target);
-  });
-}
-
 export function removeListeners(renderChain: ACellRenderer, funct: ((r: ACellRenderer) => any)[]) {
   let curRenderer = renderChain;
   while (curRenderer !== null) {

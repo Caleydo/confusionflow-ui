@@ -13,6 +13,7 @@ import { Matrix, max } from '../DataStructures';
 import { Language } from '../language';
 import { ILoadedMalevoDataset } from '../MalevoDataset';
 import { zip } from '../utils';
+import { ICellRendererConfig } from '../confusion_matrix_cell/CellRendererConfig';
 
 export default class ConfusionMeasuresView implements IAppView {
   private parentHeight = 0;
@@ -38,13 +39,12 @@ export default class ConfusionMeasuresView implements IAppView {
   }
 
   private attachListener() {
-    events.on(AppConstants.EVENT_RENDER_CONF_MEASURE, (evt, datasets: ILoadedMalevoDataset[], singleEpochIndex: number[], lineChartRendererProto: IMatrixRendererChain,
-      labelRendererProto: IMatrixRendererChain, classSizeRendererProto: IMatrixRendererChain) => {
+    events.on(AppConstants.EVENT_RENDER_CONF_MEASURE, (evt, datasets: ILoadedMalevoDataset[], cellRendererConfig: ICellRendererConfig) => {
       if (DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
         this.clear();
         return;
       }
-      const { header, rows, rendererProtos } = this.prepareData(datasets, singleEpochIndex, lineChartRendererProto, labelRendererProto, classSizeRendererProto);
+      const { header, rows, rendererProtos } = this.prepareData(datasets, cellRendererConfig);
       this.renderTable(header, rows, rendererProtos);
       this.updateSelectedCell();
     });
@@ -58,8 +58,12 @@ export default class ConfusionMeasuresView implements IAppView {
     this.$node.selectAll('td').html('');
   }
 
-  private prepareData(datasets: ILoadedMalevoDataset[], singleEpochIndex: number[], lineChartRendererProto: IMatrixRendererChain,
-    labelRendererProto: IMatrixRendererChain, classSizeRendererProto: IMatrixRendererChain) {
+  private prepareData(datasets: ILoadedMalevoDataset[], cellRendererConfig: ICellRendererConfig) {
+    const singleEpochIndex: number[] = cellRendererConfig.singleEpochIndex;
+    const lineChartRendererProto: IMatrixRendererChain = cellRendererConfig.overallAccuracyRendererProto;
+    const labelRendererProto: IMatrixRendererChain = cellRendererConfig.labelRendererProto;
+    const classSizeRendererProto: IMatrixRendererChain = cellRendererConfig.classSizeRendererProto;
+
     let dataPrecision = null;
     let dataRecall = null;
     let dataF1 = null;

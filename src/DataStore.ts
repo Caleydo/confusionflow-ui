@@ -196,11 +196,6 @@ export class DataStoreApplicationProperties {
     events.fire(AppConstants.EVENT_CELL_RENDERER_CHANGED, this.switchCellRenderer);
   }
 
-  static toggleSwitchCellRenderer() {
-    this._switchCellRenderer = !this._switchCellRenderer;
-    events.fire(AppConstants.EVENT_CELL_RENDERER_CHANGED, this.switchCellRenderer);
-  }
-
   static get weightFactor(): number {
     return (this._weightFactor === 0) ? 0.00001 : this._weightFactor;
   }
