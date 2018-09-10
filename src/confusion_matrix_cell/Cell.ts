@@ -11,7 +11,6 @@ export abstract class ACell {
   private _height: number;
   public renderer: ACellRenderer;
 
-  //abstract clear();
   constructor() {
     //
   }

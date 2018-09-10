@@ -6,6 +6,7 @@ import { ICellData } from './ConfusionMatrix';
 import { PanelCell, ACell } from './confusion_matrix_cell/Cell';
 import { IMatrixRendererChain, applyRendererChain } from './confusion_matrix_cell/ACellRenderer';
 import { AppConstants } from './AppConstants';
+import { DataStoreApplicationProperties } from './DataStore';
 
 
 export enum EChartOrientation {
@@ -24,7 +25,7 @@ export abstract class ChartColumn {
 
   public render(data: ICellData[], rendererChain: IMatrixRendererChain, singleEpochIndex: number[]) {
     const panelCells = this.createPanelCells(data, singleEpochIndex);
-    const { cellWidth, cellHeight } = this.cellSize(this.orientation, <HTMLElement>this.$node.node(), panelCells.length);
+    const cellSize = DataStoreApplicationProperties.confMatrixCellSize;
 
     this.$node
       .selectAll('div')
@@ -33,7 +34,7 @@ export abstract class ChartColumn {
       .append('div')
       .classed('cell', true)
       .each(function (cell: ACell) {
-        cell.init(d3.select(this), cellWidth, cellHeight);
+        cell.init(d3.select(this), cellSize[0], cellSize[1]);
         applyRendererChain(rendererChain, cell, rendererChain.diagonal);
         cell.render();
       });
@@ -56,23 +57,6 @@ export abstract class ChartColumn {
       }
     }, type, index, -1);
   };
-
-  protected cellSize(orientation: EChartOrientation, node: HTMLElement, dataLength: number): { cellWidth: number, cellHeight: number } {
-    switch (orientation) {
-      case EChartOrientation.COLUMN:
-        return {
-          cellWidth: node.clientWidth,
-          cellHeight: node.clientHeight / dataLength
-        };
-
-      case EChartOrientation.ROW:
-        return {
-          cellWidth: node.clientWidth / dataLength,
-          cellHeight: node.clientHeight
-        };
-    }
-    throw new Error('Unknown orientation. Cannot calculate cell size.');
-  }
 }
 
 export class FPChartColumn extends ChartColumn {

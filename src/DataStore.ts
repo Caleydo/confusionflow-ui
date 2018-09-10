@@ -165,6 +165,7 @@ export class DataStoreApplicationProperties {
   private static _weightFactor = 1;
   private static _renderMode: ERenderMode = ERenderMode.COMBINED;
   private static _selectedClassIndices: number[] = [];
+  private static _confMatrixCellSize = [];
 
   static get renderMode(): ERenderMode {
     return this._renderMode;
@@ -222,5 +223,12 @@ export class DataStoreApplicationProperties {
   static set selectedClassIndices(val: number[]) {
     this._selectedClassIndices = val;
     events.fire(AppConstants.EVENT_CLASS_INDICES_CHANGED, this.selectedClassIndices);
+  }
+  static get confMatrixCellSize(): number[] {
+    return this._confMatrixCellSize;
+  }
+
+  static set confMatrixCellSize(value: number[]) {
+    this._confMatrixCellSize = value;
   }
 }

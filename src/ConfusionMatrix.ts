@@ -237,6 +237,10 @@ export class ConfusionMatrix implements IAppView {
     this.$node.classed(`grid-${AppConstants.CONF_MATRIX_SIZE}`, true);
     this.$node.style('--matrix-size', AppConstants.CONF_MATRIX_SIZE);
 
+    // determine the cell sizes before the actual rendering starts to avoid layout trashing by the browser
+    // must be done after adding the size CSS classes to the matrix $node
+    DataStoreApplicationProperties.confMatrixCellSize = this.determineCellSize(DataStoreApplicationProperties.selectedClassIndices.length);
+
     this.chooseRenderMode(filteredAllDatasets);
     this.renderCells(filteredAllDatasets);
     if (DataStoreLoadedRuns.runs.length > 0) {
@@ -267,6 +271,17 @@ export class ConfusionMatrix implements IAppView {
         classSizes: indexArray.map((x) => ds.classSizes[x])
       };
     });
+  }
+
+  /**
+   * Calculates the cell width and height based on the node size of the confusion matrix divided by the number of classes
+   *
+   * @param classLength Number of labels
+   */
+  private determineCellSize(classLength: number): number[] {
+    const node = <HTMLElement>this.$confusionMatrix.node();
+    const size = (node.clientWidth / classLength) - 2;
+    return [size, size];
   }
 
   private renderClassSelector(labelIds: number[], labels: string[], selected: number[]) {
@@ -380,9 +395,7 @@ export class ConfusionMatrix implements IAppView {
       );
     });
 
-    const node = (<HTMLElement>this.$confusionMatrix.node());
-    const cellWidth = node.clientWidth / datasets[0].labels.length;
-    const cellHeight = cellWidth;
+    const cellSize = DataStoreApplicationProperties.confMatrixCellSize;
 
     this.$cells = this.$confusionMatrix
       .selectAll('div')
@@ -392,7 +405,7 @@ export class ConfusionMatrix implements IAppView {
       .append('div')
       .classed('cell', true)
       .each(function (d: ACell) {
-        d.init(d3.select(this), cellWidth, cellHeight);
+        d.init(d3.select(this), cellSize[0], cellSize[1]);
       });
 
     const confMatrixRendererProto: IMatrixRendererChain = cellRendererConfig.confMatrixRendererProto;
@@ -404,6 +417,7 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private renderOverallAccuracyCell(cellRendererConfig: ICellRendererConfig, colors: string[]) {
+    const cellSize = DataStoreApplicationProperties.confMatrixCellSize;
     const data: number[][] = cellRendererConfig.dataOverallAccuracy;
     const renderer: IMatrixRendererChain = cellRendererConfig.overallAccuracyRendererProto;
     const singleEpochIndex: number[] = cellRendererConfig.singleEpochIndex;
@@ -419,11 +433,7 @@ export class ConfusionMatrix implements IAppView {
       .classed('cell', true)
       .datum(cell);
 
-    const node: HTMLElement = <HTMLElement>$overallAccuracyCell.node();
-    const cellWidth = node.clientWidth;
-    const cellHeight = node.clientHeight;
-
-    cell.init($overallAccuracyCell, cellWidth, cellHeight);
+    cell.init($overallAccuracyCell, cellSize[0], cellSize[1]);
     applyRendererChain(renderer, cell, renderer.diagonal);
     cell.render();
   }
