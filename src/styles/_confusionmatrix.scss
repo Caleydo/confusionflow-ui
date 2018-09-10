@@ -14,11 +14,11 @@
 .grid {
   display: grid;
   grid-template-areas:
-  ". . axis-top . ."
-  ". . label-top . label-right"
-  "axis-left label-left matrix . chart-right"
-  ". . . . ."
-  ". label-bottom chart-bottom . chart-bottom-right";
+    ". . axis-top . ."
+    ". . label-top . label-right"
+    "axis-left label-left matrix . chart-right"
+    ". . . . ."
+    ". label-bottom chart-bottom . chart-bottom-right";
   grid-template-columns: 20px 45px 10fr 10px 1fr;
   grid-template-rows: 20px 45px 10fr 10px 1fr;
 }
@@ -228,18 +228,34 @@
 .chart-bottom,
 .matrix {
   .cell {
-    outline: 1px solid #ccc;
+
+    // use pseudo element to create matrix grid
+    &::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      bottom: -1px;
+      right: -1px;
+      left: -1px;
+      outline: 1px solid #ccc;
+    }
 
     &:not(.label-cell) {
+
       &.selected,
       &:active,
       &:focus,
       &:hover {
+        &::before {
+          top: 0;
+          bottom: 0;
+          right: 0;
+          left: 0;
+          outline: 2px solid $select-color;
+        }
+
         cursor: pointer;
-        outline: 2px solid $select-color;
-        border: none;
         z-index: 1;
-        margin: 1px;
       }
     }
   }

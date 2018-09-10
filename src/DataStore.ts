@@ -1,14 +1,12 @@
 /**
  * Created by Martin on 13.02.2018.
  */
-import {ITable} from 'phovea_core/src/table';
-import {MalevoDataset, IMalevoEpochInfo, ILoadedMalevoDataset} from './MalevoDataset';
-import * as events from 'phovea_core/src/event';
-import {AppConstants} from './AppConstants';
-import {IClassAffiliation, IClassEvolution, SquareMatrix, Matrix, max, min, NumberMatrix} from './DataStructures';
-import {ACell, MatrixCell, PanelCell} from './confusion_matrix_cell/Cell';
 import * as d3 from 'd3';
-import {extractEpochId} from './utils';
+import * as events from 'phovea_core/src/event';
+import { AppConstants } from './AppConstants';
+import { MatrixCell, PanelCell } from './confusion_matrix_cell/Cell';
+import { ILoadedMalevoDataset, IMalevoEpochInfo, MalevoDataset } from './MalevoDataset';
+import { ERenderer } from './confusion_matrix_cell/ACellRenderer';
 
 export const dataStoreRuns: Map<string, DataStoreSelectedRun> = new Map<string, DataStoreSelectedRun>();
 
@@ -150,7 +148,7 @@ export class DataStoreCellSelection {
   }
 }
 
-export enum RenderMode {
+export enum ERenderMode {
   CLEAR = 0,
   SINGLE = 1,
   MULTI = 2,
@@ -162,17 +160,18 @@ export enum RenderMode {
  */
 export class DataStoreApplicationProperties {
   private static _transposeCellRenderer = false;
-  private static _switchCellRenderer = false;
+  private static _confMatrixCellRenderer: ERenderer.HeatmapMultiEpoch | ERenderer.MatrixLineCell = ERenderer.HeatmapMultiEpoch;
   private static _isAbsolute = false;
   private static _weightFactor = 1;
-  private static _renderMode: RenderMode = RenderMode.COMBINED;
+  private static _renderMode: ERenderMode = ERenderMode.COMBINED;
   private static _selectedClassIndices: number[] = [];
+  private static _confMatrixCellSize = [];
 
-  static get renderMode(): RenderMode {
+  static get renderMode(): ERenderMode {
     return this._renderMode;
   }
 
-  static set renderMode(value: RenderMode) {
+  static set renderMode(value: ERenderMode) {
     this._renderMode = value;
   }
 
@@ -190,18 +189,13 @@ export class DataStoreApplicationProperties {
     events.fire(AppConstants.EVENT_CELL_RENDERER_TRANSPOSED, this.transposeCellRenderer);
   }
 
-  static get switchCellRenderer(): boolean {
-    return this._switchCellRenderer;
+  static get confMatrixCellRenderer(): ERenderer.HeatmapMultiEpoch | ERenderer.MatrixLineCell {
+    return this._confMatrixCellRenderer;
   }
 
-  static set switchCellRenderer(value: boolean) {
-    this._switchCellRenderer = value;
-    events.fire(AppConstants.EVENT_CELL_RENDERER_CHANGED, this.switchCellRenderer);
-  }
-
-  static toggleSwitchCellRenderer() {
-    this._switchCellRenderer = !this._switchCellRenderer;
-    events.fire(AppConstants.EVENT_CELL_RENDERER_CHANGED, this.switchCellRenderer);
+  static set confMatrixCellRenderer(value: ERenderer.HeatmapMultiEpoch | ERenderer.MatrixLineCell) {
+    this._confMatrixCellRenderer = value;
+    events.fire(AppConstants.EVENT_CELL_RENDERER_CHANGED, this.confMatrixCellRenderer);
   }
 
   static get weightFactor(): number {
@@ -229,5 +223,12 @@ export class DataStoreApplicationProperties {
   static set selectedClassIndices(val: number[]) {
     this._selectedClassIndices = val;
     events.fire(AppConstants.EVENT_CLASS_INDICES_CHANGED, this.selectedClassIndices);
+  }
+  static get confMatrixCellSize(): number[] {
+    return this._confMatrixCellSize;
+  }
+
+  static set confMatrixCellSize(value: number[]) {
+    this._confMatrixCellSize = value;
   }
 }

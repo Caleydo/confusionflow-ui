@@ -3,21 +3,25 @@
  */
 import * as d3 from 'd3';
 import * as events from 'phovea_core/src/event';
-import {IAppView} from '../app';
-import {AppConstants} from '../AppConstants';
+import { IAppView } from '../app';
+import { AppConstants } from '../AppConstants';
 import * as confMeasures from '../ConfusionMeasures';
-import {applyRendererChain, IMatrixRendererChain} from '../confusion_matrix_cell/ACellRenderer';
-import {ACell, LabelCell, PanelCell} from '../confusion_matrix_cell/Cell';
-import {DataStoreApplicationProperties, DataStoreCellSelection, RenderMode} from '../DataStore';
-import {Matrix, max} from '../DataStructures';
-import {Language} from '../language';
-import {ILoadedMalevoDataset} from '../MalevoDataset';
-import {zip} from '../utils';
+import { applyRendererChain, IMatrixRendererChain } from '../confusion_matrix_cell/ACellRenderer';
+import { ACell, LabelCell, PanelCell } from '../confusion_matrix_cell/Cell';
+import { DataStoreApplicationProperties, DataStoreCellSelection, ERenderMode } from '../DataStore';
+import { Matrix, max } from '../DataStructures';
+import { Language } from '../language';
+import { ILoadedMalevoDataset } from '../MalevoDataset';
+import { zip } from '../utils';
+import { ICellRendererConfig } from '../confusion_matrix_cell/CellRendererConfig';
 
 export default class ConfusionMeasuresView implements IAppView {
+  private parentHeight = 0;
   private $node: d3.Selection<any>;
 
   constructor(parent: Element) {
+    this.parentHeight = parent.clientHeight;
+
     this.$node = d3.select(parent).append('table');
     this.$node.append('thead').append('tr');
     this.$node.append('tbody');
@@ -35,13 +39,12 @@ export default class ConfusionMeasuresView implements IAppView {
   }
 
   private attachListener() {
-    events.on(AppConstants.EVENT_RENDER_CONF_MEASURE, (evt, datasets: ILoadedMalevoDataset[], singleEpochIndex: number[], lineChartRendererProto: IMatrixRendererChain,
-                                                       labelRendererProto: IMatrixRendererChain, classSizeRendererProto: IMatrixRendererChain) => {
-      if(DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
+    events.on(AppConstants.EVENT_RENDER_CONF_MEASURE, (evt, cellRendererConfig: ICellRendererConfig) => {
+      if (DataStoreApplicationProperties.renderMode === ERenderMode.SINGLE) {
         this.clear();
         return;
       }
-      const {header, rows, rendererProtos} = this.prepareData(datasets, singleEpochIndex, lineChartRendererProto, labelRendererProto, classSizeRendererProto);
+      const { header, rows, rendererProtos } = this.prepareData(cellRendererConfig);
       this.renderTable(header, rows, rendererProtos);
       this.updateSelectedCell();
     });
@@ -55,13 +58,18 @@ export default class ConfusionMeasuresView implements IAppView {
     this.$node.selectAll('td').html('');
   }
 
-  private prepareData(datasets: ILoadedMalevoDataset[], singleEpochIndex: number[], lineChartRendererProto: IMatrixRendererChain,
-                      labelRendererProto: IMatrixRendererChain, classSizeRendererProto: IMatrixRendererChain) {
+  private prepareData(cellRendererConfig: ICellRendererConfig) {
+    const datasets: ILoadedMalevoDataset[] = cellRendererConfig.datasets;
+    const singleEpochIndex: number[] = cellRendererConfig.singleEpochIndex;
+    const lineChartRendererProto: IMatrixRendererChain = cellRendererConfig.overallAccuracyRendererProto;
+    const labelRendererProto: IMatrixRendererChain = cellRendererConfig.labelRendererProto;
+    const classSizeRendererProto: IMatrixRendererChain = cellRendererConfig.classSizeRendererProto;
+
     let dataPrecision = null;
     let dataRecall = null;
     let dataF1 = null;
 
-    if (DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
+    if (DataStoreApplicationProperties.renderMode === ERenderMode.SINGLE) {
       dataPrecision = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.PPV));
       dataRecall = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.TPR));
       dataF1 = datasets.map((x) => confMeasures.calcEvolution([x.singleEpochData.confusionData], confMeasures.F1));
@@ -81,11 +89,11 @@ export default class ConfusionMeasuresView implements IAppView {
 
     return {
       header: [
-        {label: Language.CLASS_LABELS, width: '12.5%'},
-        {label: Language.PRECISION, width: '25%'},
-        {label: Language.RECALL, width: '25%'},
-        {label: Language.F1_SCORE, width: '25%'},
-        {label: Language.CLASS_SIZE, width: '12.5%'}
+        { label: Language.CLASS_LABELS, width: '12.5%' },
+        { label: Language.PRECISION, width: '25%' },
+        { label: Language.RECALL, width: '25%' },
+        { label: Language.F1_SCORE, width: '25%' },
+        { label: Language.CLASS_SIZE, width: '12.5%' }
       ],
       rows: zip([labels, precisions, recalls, f1Scores, classSizes]),
       rendererProtos: [labelRendererProto, lineChartRendererProto, lineChartRendererProto, lineChartRendererProto, classSizeRendererProto]
@@ -95,7 +103,7 @@ export default class ConfusionMeasuresView implements IAppView {
   private renderClassLabels(datasets: ILoadedMalevoDataset[]): LabelCell[] {
     const classLabelData = datasets[0].labels;
     return classLabelData.map((datum) => {
-      return new LabelCell({label: String(datum)});
+      return new LabelCell({ label: String(datum) });
     });
   }
 
@@ -177,7 +185,7 @@ export default class ConfusionMeasuresView implements IAppView {
     });
   }
 
-  private renderClassSize(datasets: ILoadedMalevoDataset[],  colors: string[], columnIndex: number): PanelCell[] {
+  private renderClassSize(datasets: ILoadedMalevoDataset[], colors: string[], columnIndex: number): PanelCell[] {
     let transformedData = datasets.map((x) => x.classSizes);
     transformedData = zip(transformedData);
     return transformedData.map((x, index) => {
@@ -200,6 +208,14 @@ export default class ConfusionMeasuresView implements IAppView {
     $header.enter().append('th').style('width', (d) => d.width).text((d) => d.label);
     $header.exit().remove();
 
+    const cellSizes = Array.from(this.$node.select('thead tr').node().childNodes)
+      .map((th: HTMLElement) => {
+        return {
+          cellWidth: th.clientWidth,
+          cellHeight: (this.parentHeight - th.clientHeight) / rows.length
+        };
+      });
+
     const $trs = this.$node.select('tbody').selectAll('tr').data(rows);
     $trs.enter().append('tr');
 
@@ -209,7 +225,7 @@ export default class ConfusionMeasuresView implements IAppView {
     $tds.each(function (cell, i) {
       const $td = d3.select(this);
       $td.html(''); // remove before adding a new svg
-      cell.init($td);
+      cell.init($td, cellSizes[i].cellWidth, cellSizes[i].cellHeight);
       applyRendererChain(rendererProtos[i], cell, rendererProtos[i].diagonal);
       cell.render();
       return null;

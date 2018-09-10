@@ -1,6 +1,5 @@
 import {ILoadedMalevoDataset} from '../MalevoDataset';
 import {AppConstants} from '../AppConstants';
-import * as d3 from 'd3';
 import {zip} from '../utils';
 
 /**

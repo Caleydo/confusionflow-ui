@@ -1,15 +1,16 @@
-import {Line, MatrixHeatCellContent} from './CellContent';
-import {DataStoreCellSelection} from '../DataStore';
-import {ACellRenderer} from './ACellRenderer';
+import { Line, MatrixHeatCellContent } from './CellContent';
+import { DataStoreCellSelection } from '../DataStore';
+import { ACellRenderer } from './ACellRenderer';
 
 /**
  * Represents a cell in the confusin matrix
  */
 export abstract class ACell {
   private _$node: d3.Selection<any>;
+  private _width: number;
+  private _height: number;
   public renderer: ACellRenderer;
 
-  //abstract clear();
   constructor() {
     //
   }
@@ -18,8 +19,18 @@ export abstract class ACell {
     return this._$node;
   }
 
-  init($node: d3.Selection<any>) {
+  get width(): number {
+    return this._width;
+  }
+
+  get height(): number {
+    return this._height;
+  }
+
+  init($node: d3.Selection<any>, width: number = -1, height: number = -1) {
     this._$node = $node;
+    this._width = (width < 0) ? (<HTMLElement>$node.node()).clientWidth : width;
+    this._height = (height < 0) ? (<HTMLElement>$node.node()).clientHeight : height;
     this.attachListener();
   }
 
@@ -38,8 +49,8 @@ export abstract class ACell {
 
 export class MatrixCell extends ACell {
   constructor(public data: { linecell: Line[][], heatcell: MatrixHeatCellContent },
-              public predictedLabel: string, public groundTruthLabel: string,
-              public predictedIndex: number, public groundTruthIndex: number) {
+    public predictedLabel: string, public groundTruthLabel: string,
+    public predictedIndex: number, public groundTruthIndex: number) {
     super();
   }
 }
@@ -52,7 +63,7 @@ export class LabelCell extends ACell {
 
 export class PanelCell extends ACell {
   constructor(public data: { linecell: Line[][], heatcell: MatrixHeatCellContent },
-              public type: string, public panelColumnIndex: number, public panelRowIndex: number) {
+    public type: string, public panelColumnIndex: number, public panelRowIndex: number) {
     super();
   }
 

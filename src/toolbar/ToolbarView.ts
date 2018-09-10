@@ -1,11 +1,12 @@
 import * as d3 from 'd3';
-import {IAppView} from '../app';
-import {ConfusionMatrix} from '../ConfusionMatrix';
-import {AppConstants} from '../AppConstants';
+import { IAppView } from '../app';
+import { ConfusionMatrix } from '../ConfusionMatrix';
+import { AppConstants } from '../AppConstants';
 import * as events from 'phovea_core/src/event';
 import * as plugins from 'phovea_core/src/plugin';
-import {DataStoreApplicationProperties} from '../DataStore';
-import {simulateClick} from "../utils";
+import { DataStoreApplicationProperties } from '../DataStore';
+import { simulateClick } from "../utils";
+import { ERenderer } from '../confusion_matrix_cell/ACellRenderer';
 
 export class ToolbarView implements IAppView {
 
@@ -28,23 +29,7 @@ export class ToolbarView implements IAppView {
   }
 
   private attachListeners() {
-    events.on(AppConstants.EVENT_UPDATE_TOOLBAR_STATE, () => {
-      if(DataStoreApplicationProperties.switchCellRenderer) {
-        simulateClick(this.$node.select('.line-chart').node());
-      } else {
-        simulateClick(this.$node.select('.heatmap').node());
-        this.updateTransposeState(this.$node.select('div.toolbar-transpose-cell'));
-      }
-
-      if(DataStoreApplicationProperties.switchToAbsolute) {
-        simulateClick(this.$node.select('button.absolute').node());
-      } else {
-        simulateClick(this.$node.select('button.relative').node());
-      }
-
-      this.$node.select('div.y-scale-slider').select('input').property('value', 1 - DataStoreApplicationProperties.weightFactor);
-
-    });
+    // nothing
   }
 
   /**
@@ -102,29 +87,29 @@ export class ToolbarView implements IAppView {
           <i class="fa fa-line-chart"></i>
           <span class="sr-only">&nbsp; Line Chart</span>
         </button>
-        <button class="btn btn-default heatmap active" title="Switch to heatmap">
+        <button class="btn btn-default heatmap" title="Switch to heatmap">
           <i class="fa fa-barcode"></i>
           <span class="sr-only">&nbsp; Heatmap</span>
         </button>
       `);
 
-    $div.select('button.line-chart').on('click', () => {
-      DataStoreApplicationProperties.switchCellRenderer = true;
-      $div.selectAll('.active').classed('active', false);
-      $div.select('button.line-chart').classed('active', true);
-      this.$node.select('.toolbar-transpose-cell > button').attr('disabled', 'disabled');
-    });
+    $div.select('button.line-chart')
+      .classed('active', DataStoreApplicationProperties.confMatrixCellRenderer === ERenderer.MatrixLineCell)
+      .on('click', () => {
+        DataStoreApplicationProperties.confMatrixCellRenderer = ERenderer.MatrixLineCell;
+        $div.selectAll('.active').classed('active', false);
+        $div.select('button.line-chart').classed('active', true);
+        this.$node.select('.toolbar-transpose-cell > button').attr('disabled', 'disabled');
+      });
 
-    $div.select('button.heatmap').on('click', () => {
-      this.setStateToHeatmap();
-    });
-  }
-
-  private setStateToHeatmap() {
-    DataStoreApplicationProperties.switchCellRenderer = false;
-    this.$node.select('div.toolbar-switch-cell-vis').selectAll('.active').classed('active', false);
-    this.$node.select('div.toolbar-switch-cell-vis').select('button.heatmap').classed('active', true);
-    this.$node.select('.toolbar-transpose-cell > button').attr('disabled', null);
+    $div.select('button.heatmap')
+      .classed('active', DataStoreApplicationProperties.confMatrixCellRenderer === ERenderer.HeatmapMultiEpoch)
+      .on('click', () => {
+        DataStoreApplicationProperties.confMatrixCellRenderer = ERenderer.HeatmapMultiEpoch;
+        this.$node.select('div.toolbar-switch-cell-vis').selectAll('.active').classed('active', false);
+        this.$node.select('div.toolbar-switch-cell-vis').select('button.heatmap').classed('active', true);
+        this.$node.select('.toolbar-transpose-cell > button').attr('disabled', null);
+      });
   }
 
   private createTransposeCellsDiv() {
@@ -145,10 +130,10 @@ export class ToolbarView implements IAppView {
 
   private updateTransposeState($div: d3.Selection<any>) {
     $div.select('i.fa')
-        .classed('fa-long-arrow-right', DataStoreApplicationProperties.transposeCellRenderer === false)
-        .classed('fa-long-arrow-down', DataStoreApplicationProperties.transposeCellRenderer === true);
-      this.$node.select('.toolbar-switch-cell-vis > button.heatmap i.fa')
-        .classed('fa-rotate-90', DataStoreApplicationProperties.transposeCellRenderer);
+      .classed('fa-long-arrow-right', DataStoreApplicationProperties.transposeCellRenderer === false)
+      .classed('fa-long-arrow-down', DataStoreApplicationProperties.transposeCellRenderer === true);
+    this.$node.select('.toolbar-switch-cell-vis > button.heatmap i.fa')
+      .classed('fa-rotate-90', DataStoreApplicationProperties.transposeCellRenderer);
   }
 
   private addYScaleSlider() {

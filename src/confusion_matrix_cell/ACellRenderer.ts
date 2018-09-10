@@ -1,14 +1,13 @@
 import * as events from 'phovea_core/src/event';
-import {Line, MatrixHeatCellContent} from './CellContent';
-import {ACell, DetailChartCell, LabelCell, MatrixCell, PanelCell} from './Cell';
-import {adaptTextColorToBgColor, extractEpochId} from '../utils';
+import { Line, MatrixHeatCellContent } from './CellContent';
+import { ACell, DetailChartCell, LabelCell, MatrixCell, PanelCell } from './Cell';
+import { adaptTextColorToBgColor, extractEpochId } from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
-import {Language} from '../language';
-import {DataStoreApplicationProperties, DataStoreCellSelection, dataStoreRuns} from '../DataStore';
-import {time} from 'd3';
-import {AppConstants} from '../AppConstants';
-import {isUndefined} from 'util';
+import { Language } from '../language';
+import { DataStoreApplicationProperties, DataStoreCellSelection, dataStoreRuns } from '../DataStore';
+import { AppConstants } from '../AppConstants';
+import { isUndefined } from 'util';
 
 /**
  * Created by Martin on 19.03.2018.
@@ -19,7 +18,7 @@ export interface ITransposeRenderer {
 }
 
 export interface IRendererConfig {
-  renderer: string;
+  renderer: ERenderer;
   params: any[];
 }
 
@@ -76,16 +75,16 @@ export class LineChartRenderer extends ACellRenderer {
 
   private update = () => {
     const data: Line[] = [].concat.apply([], this.cell.data.linecell);
-    this.renderLine(data, this.cell.$node);
+    this.renderLine(data, this.cell.$node, this.cell.width, this.cell.height);
   }
 
-  constructor(protected width: number, protected height: number) {
+  constructor() {
     super();
   }
 
-  protected renderLine(data: Line[], $node: d3.Selection<any>) {
-    const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, this.width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([this.height, 0]);
+  protected renderLine(data: Line[], $node: d3.Selection<any>, width: number, height: number) {
+    const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, width]);
+    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([height, 0]);
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -124,14 +123,14 @@ export class LineChartRenderer extends ACellRenderer {
   }
 
   protected render(cell: MatrixCell | PanelCell) {
-    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    const data: Line[] = [].concat.apply([], cell.data.linecell); // flatten the array
     // we don't want to render empty cells
     if (data.length === 1 && data[0].values.length === 0) {
       return;
     }
 
     this.cell = cell;
-    this.renderLine(data, this.cell.$node);
+    this.renderLine(data, this.cell.$node, this.cell.width, this.cell.height);
   }
 }
 
@@ -139,30 +138,29 @@ export class MatrixLineCellRenderer extends LineChartRenderer {
   private $svg: d3.Selection<any>;
 
   constructor() {
-    super(0, 0);
+    super();
   }
 
   protected render(cell: MatrixCell | PanelCell) {
     this.cell = cell;
-    const data: Line[] = [].concat.apply([], cell.data.linecell);
-    this.$svg = cell.$node.append('svg').datum(data);
+    const data: Line[] = [].concat.apply([], cell.data.linecell); // flatten the array
 
-    this.width = (<any>cell.$node.node()).clientWidth;
-    this.height = (<any>cell.$node.node()).clientHeight;
+    this.$svg = cell.$node.append('svg')
+      .datum(data);
 
     this.$svg
-      .attr('viewBox', `0 0 ${this.width} ${this.height}`)
+      .attr('viewBox', `0 0 ${this.cell.width} ${this.cell.height}`)
       .classed('linechart', true)
       .append('g');
 
-    this.renderLine(data, this.$svg);
+    this.renderLine(data, this.$svg, this.cell.width, this.cell.height);
   }
 
 
 }
 
 export class VerticalLineRenderer extends ACellRenderer {
-  constructor(private width: number, private height: number) {
+  constructor() {
     super();
   }
 
@@ -174,20 +172,21 @@ export class VerticalLineRenderer extends ACellRenderer {
     if (isUndefined(singleEpochIndex) || singleEpochIndex === null) {
       return;
     }
-    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    const node = (<any>cell.$node[0][0]);
+    const data: Line[] = [].concat.apply([], cell.data.linecell); // flatten the array
     // we don't want to render empty cells
     if (data.length === 1 && data[0].values.length === 0) {
       return;
     }
-    const $g = cell.$node.select('g');
-    const width = this.width > -1 ? this.width : (<any>cell.$node[0][0]).clientWidth;
-    const height = this.height > -1 ? this.height : (<any>cell.$node[0][0]).clientHeight;
-    const x = d3.scale.linear().rangeRound([0, width]);
-    const y = d3.scale.linear().rangeRound([height, 0]);
 
-    x.domain([0, getLargestLine(data).values.length - 1]);
+    const x = d3.scale.linear()
+      .rangeRound([0, cell.width])
+      .domain([0, getLargestLine(data).values.length - 1]);
+
+    const $g = cell.$node.select('g');
+
     if (singleEpochIndex > -1) {
-      this.addDashedLines($g, x, singleEpochIndex, width, height);
+      this.addDashedLines($g, x, singleEpochIndex, cell.width, cell.height);
     }
   }
 
@@ -209,15 +208,19 @@ export class VerticalLineRenderer extends ACellRenderer {
   }
 
   public addWeightFactorChangedListener() {
+    //
   }
 
   public removeWeightFactorChangedListener() {
+    //
   }
 
   public addYAxisScaleChangedListener() {
+    //
   }
 
   public removeYAxisScaleChangedListener() {
+    //
   }
 }
 
@@ -241,11 +244,11 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
     if (isUndefined(singleEpochIndex) || singleEpochIndex === null) {
       return;
     }
-    const width = (<any>cell.$node[0][0]).clientWidth;
 
-    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    const data: Line[] = [].concat.apply([], cell.data.linecell); // flatten the array
     const largest = getLargestLine(data).values.length;
-    let res = width / largest;
+    const borderWidth = 2;
+    let res = (cell.width - borderWidth) / largest;
 
     const firstHCPart = d3.select(cell.$node.selectAll('div.heat-cell')[0][0]); // select first part of heat cell
     let bg = firstHCPart.style('background');
@@ -284,7 +287,7 @@ export class SingleEpochMarker extends ACellRenderer implements ITransposeRender
 
 export class BarChartRenderer extends ACellRenderer {
 
-  constructor(protected width: number, protected height: number, protected $g: d3.Selection<any>) {
+  constructor(protected $g: d3.Selection<any>) {
     super();
   }
 
@@ -293,15 +296,13 @@ export class BarChartRenderer extends ACellRenderer {
       return;
     }
     const data = cell.data.heatcell;
-    const width = this.width === -1 ? (<any>cell.$node.node()).clientWidth : this.width;
-    const height = this.height === -1 ? (<any>cell.$node.node()).clientHeight : this.height;
 
     //const x = d3.scale.ordinal().rangeRoundBands([0, width], 0.1);
-    const xScaleRange = data.counts.length * ((width / 2) / AppConstants.MAX_DATASET_COUNT);
+    const xScaleRange = data.counts.length * ((cell.width / 2) / AppConstants.MAX_DATASET_COUNT);
     const x = d3.scale.ordinal()
-      .rangeRoundBands([width / 2 - xScaleRange, width / 2 + xScaleRange], 0.2);
+      .rangeRoundBands([cell.width / 2 - xScaleRange, cell.width / 2 + xScaleRange], 0.2);
 
-    const y = d3.scale.linear().rangeRound([height, 0]);
+    const y = d3.scale.linear().rangeRound([cell.height, 0]);
 
 
     x.domain(data.counts.map(function (d, i) {
@@ -314,31 +315,31 @@ export class BarChartRenderer extends ACellRenderer {
     if (this.$g === null) {
       const $svg = cell.$node.append('svg');
       $svg
-        .attr('viewBox', `0 0 ${width} ${height}`);
+        .attr('viewBox', `0 0 ${cell.width} ${cell.height}`);
 
-      this.$g = $svg.append("g")
-        .attr("transform", "translate(" + 0 + "," + 0 + ")");
+      this.$g = $svg.append('g')
+        .attr('transform', 'translate(' + 0 + ',' + 0 + ')');
     }
 
-    this.$g.selectAll(".bar")
+    this.$g.selectAll('.bar')
       .data(data.counts)
-      .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function (d, i) {
+      .enter().append('rect')
+      .attr('class', 'bar')
+      .attr('x', function (d, i) {
         return x(i.toString());
       })
-      .attr("y", function (d) {
+      .attr('y', function (d) {
         return y(d);
       })
-      .attr("width", x.rangeBand())
-      .attr("height", function (d) {
-        return height - y(d);
+      .attr('width', x.rangeBand())
+      .attr('height', function (d) {
+        return cell.height - y(d);
       })
       .style('fill', (d, i) => data.colorValues[i]);
   }
 
   private update = () => {
-
+    //
   }
 
   public addWeightFactorChangedListener() {
@@ -366,15 +367,19 @@ export class LabelCellRenderer extends ACellRenderer {
   }
 
   public addWeightFactorChangedListener() {
+    //
   }
 
   public removeWeightFactorChangedListener() {
+    //
   }
 
   public addYAxisScaleChangedListener() {
+    //
   }
 
   public removeYAxisScaleChangedListener() {
+    //
   }
 }
 
@@ -387,7 +392,7 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
 
   protected render(cell: MatrixCell | PanelCell) {
     this.cell = cell;
-    const data: Line[] = [].concat.apply([], cell.data.linecell);
+    const data: Line[] = [].concat.apply([], cell.data.linecell); // flatten the array
 
     const $subCells = cell.$node
       .selectAll('div')
@@ -447,7 +452,7 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
           const colorDomain = d3.scale.linear().domain([0, hc.maxVal]);
           const colorScale = this.renderGrayscale ? colorDomain.range(<any>AppConstants.BG_COLOR_SCALE).interpolate(<any>d3.interpolateHcl) :
             colorDomain.range(<any>['white', hc.colorValues[i]]);
-          return {count: hc.counts[i], colorValue: String(colorScale(hc.counts[i]))};
+          return { count: hc.counts[i], colorValue: String(colorScale(hc.counts[i])) };
         });
       });
 
@@ -460,15 +465,19 @@ export class HeatmapSingleEpochRenderer extends ACellRenderer {
   }
 
   public addWeightFactorChangedListener() {
+    //
   }
 
   public removeWeightFactorChangedListener() {
+    //
   }
 
   public addYAxisScaleChangedListener() {
+    //
   }
 
   public removeYAxisScaleChangedListener() {
+    //
   }
 }
 
@@ -485,7 +494,7 @@ export class AxisRenderer extends ACellRenderer {
     }
   }
 
-  constructor(private width: number, private height: number) {
+  constructor() {
     super();
     this.yAxis = d3.svg.axis()
       .orient('left');
@@ -509,7 +518,7 @@ export class AxisRenderer extends ACellRenderer {
   }
 
   private updateYAxis(value: number) {
-    this.y.exponent(value).domain([0, getYMax(this.cell, this.data)]).range([this.height, 0]);
+    this.y.exponent(value).domain([0, getYMax(this.cell, this.data)]).range([this.cell.height, 0]);
     this.yAxis.scale(this.y);
     this.$g.select('.chart-axis-y').call(this.yAxis);
   }
@@ -528,15 +537,15 @@ export class AxisRenderer extends ACellRenderer {
 
     const x = d3.scale.ordinal()
       .domain(values)
-      .rangePoints([0, this.width]);
+      .rangePoints([0, this.cell.width]);
 
     const y = d3.scale.linear()
-      .rangeRound([this.height, 0])
+      .rangeRound([this.cell.height, 0])
       .domain([0, getYMax(cell, this.data)]);
 
     //todo these are magic constants: use a more sophisticated algo to solve this
     const labelWidth = 25; // in pixel
-    const numTicks = this.width / labelWidth;
+    const numTicks = this.cell.width / labelWidth;
     const tickFrequency = Math.ceil(values.length / numTicks);
 
     const ticks = values.filter((x, i) => i % tickFrequency === 0);
@@ -546,7 +555,7 @@ export class AxisRenderer extends ACellRenderer {
 
     this.$g.append('g')
       .attr('class', 'chart-axis-x')
-      .attr('transform', 'translate(0,' + this.height + ')')
+      .attr('transform', 'translate(0,' + this.cell.height + ')')
       .call(xAxis);
 
     this.updateYAxis(DataStoreApplicationProperties.weightFactor);
@@ -559,18 +568,18 @@ export class AxisRenderer extends ACellRenderer {
     // now add titles to the axes
     this.$g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-      .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
+      .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.cell.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
       .text(getYLabelText());
 
     this.$g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-      .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance / 2)) + ')')  // centre below axis
+      .attr('transform', 'translate(' + (this.cell.width / 2) + ',' + (this.cell.height - (-axisDistance / 2)) + ')')  // centre below axis
       .text(Language.EPOCH);
   }
 }
 
 export class BarAxisRenderer extends ACellRenderer {
-  constructor(private width: number, private height: number) {
+  constructor() {
     super();
   }
 
@@ -578,27 +587,27 @@ export class BarAxisRenderer extends ACellRenderer {
     const $g = cell.$node.select('g');
     const data = cell.data.heatcell;
 
-    const xScaleRange = data.counts.length * ((this.width / 2) / AppConstants.MAX_DATASET_COUNT);
+    const xScaleRange = data.counts.length * ((cell.width / 2) / AppConstants.MAX_DATASET_COUNT);
     const x = d3.scale.ordinal()
-      .rangeRoundBands([0, this.width], 0.2);
+      .rangeRoundBands([0, cell.width], 0.2);
 
-    const y = d3.scale.linear().rangeRound([this.height, 0]).domain([0, Math.max(...data.counts)]);
+    const y = d3.scale.linear().rangeRound([cell.height, 0]).domain([0, Math.max(...data.counts)]);
 
     const xAxis = d3.svg.axis()
       .scale(x)
-      .orient("bottom");
+      .orient('bottom');
 
     const yAxis = d3.svg.axis()
       .scale(y)
-      .orient("left");
+      .orient('left');
 
-    $g.append("g")
-      .attr("class", "chart-axis-x")
-      .attr("transform", "translate(0," + this.height + ")")
+    $g.append('g')
+      .attr('class', 'chart-axis-x')
+      .attr('transform', 'translate(0,' + cell.height + ')')
       .call(xAxis);
 
-    $g.append("g")
-      .attr("class", "chart-axis-y")
+    $g.append('g')
+      .attr('class', 'chart-axis-y')
       .call(yAxis);
 
     const axisDistance = 100;
@@ -606,25 +615,29 @@ export class BarAxisRenderer extends ACellRenderer {
     // now add titles to the axes
     $g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-      .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (this.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
+      .attr('transform', 'translate(' + (-axisDistance / 2) + ',' + (cell.height / 2) + ')rotate(-90)')  // text is drawn off the screen top left, move down and out and rotate
       .text(getYLabelText());
 
     $g.append('text')
       .attr('text-anchor', 'middle')  // this makes it easy to centre the text as the transform is applied to the anchor
-      .attr('transform', 'translate(' + (this.width / 2) + ',' + (this.height - (-axisDistance / 3)) + ')')  // centre below axis
+      .attr('transform', 'translate(' + (cell.width / 2) + ',' + (cell.height - (-axisDistance / 3)) + ')')  // centre below axis
       .text(Language.RUNS);
   }
 
   public addWeightFactorChangedListener() {
+    //
   }
 
   public removeWeightFactorChangedListener() {
+    //
   }
 
   public addYAxisScaleChangedListener() {
+    //
   }
 
   public removeYAxisScaleChangedListener() {
+    //
   }
 }
 
@@ -650,38 +663,44 @@ export function applyRendererChain(rendererProto: IMatrixRendererChain, cell: AC
   cell.renderer = firstRenderer;
 }
 
+export enum ERenderer {
+  HeatmapMultiEpoch,
+  HeatmapSingleEpoch,
+  SingleEpochMarker,
+  LineChart,
+  Axis,
+  BarAxis,
+  VerticalLine,
+  LabelCell,
+  MatrixLineCell,
+  BarChart
+}
+
 function rendererFactory(proto: IRendererConfig) {
   switch (proto.renderer) {
-    case 'HeatmapMultiEpochRenderer': // TODO Use constants
+    case ERenderer.HeatmapMultiEpoch:
       return new HeatmapMultiEpochRenderer(proto.params[0]);
-    case 'HeatmapSingleEpochRenderer':
+    case ERenderer.HeatmapSingleEpoch:
       return new HeatmapSingleEpochRenderer(proto.params[0], proto.params[1]);
-    case 'SingleEpochMarker':
+    case ERenderer.SingleEpochMarker:
       return new SingleEpochMarker(proto.params[0]);
-    case 'LineChartRenderer':
-      return new LineChartRenderer(proto.params[0], proto.params[1]);
-    case 'AxisRenderer':
-      return new AxisRenderer(proto.params[0], proto.params[1]);
-    case 'BarAxisRenderer':
-      return new BarAxisRenderer(proto.params[0], proto.params[1]);
-    case 'VerticalLineRenderer':
-      return new VerticalLineRenderer(proto.params[0], proto.params[1]);
-    case 'LabelCellRenderer':
+    case ERenderer.LineChart:
+      return new LineChartRenderer();
+    case ERenderer.Axis:
+      return new AxisRenderer();
+    case ERenderer.BarAxis:
+      return new BarAxisRenderer();
+    case ERenderer.VerticalLine:
+      return new VerticalLineRenderer();
+    case ERenderer.LabelCell:
       return new LabelCellRenderer();
-    case 'MatrixLineCellRenderer':
+    case ERenderer.MatrixLineCell:
       return new MatrixLineCellRenderer();
-    case 'BarChartRenderer':
-      return new BarChartRenderer(proto.params[0], proto.params[1], proto.params[2]);
+    case ERenderer.BarChart:
+      return new BarChartRenderer(proto.params[0]);
     default:
       return null;
   }
-}
-
-export function createCellRenderers($cells: d3.Selection<any>, renderProto: IMatrixRendererChain) {
-  $cells.each((datum, index) => {
-    const target = index % (AppConstants.CONF_MATRIX_SIZE + 1) !== 0 ? renderProto.offdiagonal : renderProto.diagonal;
-    applyRendererChain(renderProto, datum, target);
-  });
 }
 
 export function removeListeners(renderChain: ACellRenderer, funct: ((r: ACellRenderer) => any)[]) {
@@ -703,26 +722,26 @@ function getYMax(cell: ACell, data: Line[]) {
 }
 
 function getYLabelText() {
-    let text = '';
-    const cell = DataStoreCellSelection.getCell();
-    if (cell instanceof MatrixCell) {
-      const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
-      text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
-    } else if (cell instanceof PanelCell) {
-      if (cell.type === AppConstants.CELL_FP) {
-        text = Language.FP_RATE;
-      } else if (cell.type === AppConstants.CELL_FN) {
-        text = Language.FN_RATE;
-      } else if (cell.type === AppConstants.CELL_PRECISION) {
-        text = Language.PRECISION;
-      } else if (cell.type === AppConstants.CELL_RECALL) {
-        text = Language.RECALL;
-      } else if (cell.type === AppConstants.CELL_F1_SCORE) {
-        text = Language.F1_SCORE;
-      } else if(cell.type === AppConstants.CELL_CLASS_SIZE) {
-        text = Language.CLASS_SIZE;
-      }
+  let text = '';
+  const cell = DataStoreCellSelection.getCell();
+  if (cell instanceof MatrixCell) {
+    const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
+    text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
+  } else if (cell instanceof PanelCell) {
+    if (cell.type === AppConstants.CELL_FP) {
+      text = Language.FP_RATE;
+    } else if (cell.type === AppConstants.CELL_FN) {
+      text = Language.FN_RATE;
+    } else if (cell.type === AppConstants.CELL_PRECISION) {
+      text = Language.PRECISION;
+    } else if (cell.type === AppConstants.CELL_RECALL) {
+      text = Language.RECALL;
+    } else if (cell.type === AppConstants.CELL_F1_SCORE) {
+      text = Language.F1_SCORE;
+    } else if (cell.type === AppConstants.CELL_CLASS_SIZE) {
+      text = Language.CLASS_SIZE;
     }
-    return text;
   }
+  return text;
+}
 

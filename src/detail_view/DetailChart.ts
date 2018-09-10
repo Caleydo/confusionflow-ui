@@ -1,12 +1,13 @@
-import {DataStoreApplicationProperties, DataStoreCellSelection, RenderMode} from '../DataStore';
-import {AppConstants} from '../AppConstants';
+import { DataStoreApplicationProperties, DataStoreCellSelection, ERenderMode } from '../DataStore';
+import { AppConstants } from '../AppConstants';
 import * as d3 from 'd3';
-import {Language} from '../language';
-import {ACell, DetailChartCell, MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
+import { Language } from '../language';
+import { ACell, DetailChartCell, MatrixCell, PanelCell } from '../confusion_matrix_cell/Cell';
 import {
   ACellRenderer, applyRendererChain,
   AxisRenderer, IMatrixRendererChain, LineChartRenderer, removeListeners,
-  VerticalLineRenderer
+  VerticalLineRenderer,
+  ERenderer
 } from '../confusion_matrix_cell/ACellRenderer';
 import * as events from 'phovea_core/src/event';
 
@@ -89,7 +90,7 @@ export class DetailChart {
         text += cell.data.linecell[0][0].classLabel;
       } else if (cell.type === AppConstants.CELL_OVERALL_ACCURACY_SCORE) {
         text = Language.OVERALL_ACCURACY;
-      } else if(cell.type === AppConstants.CELL_CLASS_SIZE) {
+      } else if (cell.type === AppConstants.CELL_CLASS_SIZE) {
         text = Language.CLASS_SIZE;
       }
     }
@@ -113,25 +114,30 @@ export class DetailChart {
     if (!(cell instanceof MatrixCell) && !(cell instanceof PanelCell)) {
       return;
     }
-    if(DataStoreApplicationProperties.renderMode === RenderMode.SINGLE) {
+    if (DataStoreApplicationProperties.renderMode === ERenderMode.SINGLE) {
       return;
     }
 
     this.createHeaderText();
-    const margin = {top: 5, right: 10, bottom: 140, left: 65}; // set left + bottom to show axis and labels
-    this.width = (<any>this.$node[0][0]).clientWidth - margin.left - margin.right;
-    this.height = (<any>this.$node[0][0]).clientHeight - margin.top - margin.bottom;
+    const margin = { top: 5, right: 10, bottom: 140, left: 65 }; // set left + bottom to show axis and labels
+    const width = this.width - margin.left - margin.right;
+    const height = this.height - margin.top - margin.bottom;
 
     this.$g = this.$svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
     this.$g.classed('linechart', true);
 
     this.cell = new DetailChartCell(cell);
-    this.cell.init(this.$svg);
+    this.cell.init(this.$svg, width, height);
 
     let confMatrixRendererProto: IMatrixRendererChain = null;
-    if(cell instanceof PanelCell && cell.hasType([AppConstants.CELL_CLASS_SIZE])) {
+    if (cell instanceof PanelCell && cell.hasType([AppConstants.CELL_CLASS_SIZE])) {
       confMatrixRendererProto = {
-        diagonal: [{renderer: 'BarChartRenderer', params: [this.width, this.height, this.$g]}, {renderer: 'BarAxisRenderer', params: [this.width, this.height]}],offdiagonal: null, functors: []
+        diagonal: [
+          { renderer: ERenderer.BarChart, params: [this.$g] },
+          { renderer: ERenderer.BarAxis, params: [] }
+        ],
+        offdiagonal: null,
+        functors: []
       };
     } else {
       let wfc = [(renderer: ACellRenderer) => renderer.addWeightFactorChangedListener(), (renderer: ACellRenderer) => renderer.addYAxisScaleChangedListener()];
@@ -139,17 +145,17 @@ export class DetailChart {
         wfc = [];
       }
       confMatrixRendererProto = {
-        diagonal: [{renderer: 'LineChartRenderer', params: [this.width, this.height]}, {
-          renderer: 'AxisRenderer',
-          params: [this.width, this.height]
-        }, {
-          renderer: 'VerticalLineRenderer',
-          params: [this.width, this.height]
-        }], offdiagonal: null, functors: wfc
+        diagonal: [
+          { renderer: ERenderer.LineChart, params: [] },
+          { renderer: ERenderer.Axis, params: [] },
+          { renderer: ERenderer.VerticalLine, params: [] }
+        ],
+        offdiagonal: null,
+        functors: wfc
       };
     }
 
-    applyRendererChain(confMatrixRendererProto , this.cell, confMatrixRendererProto.diagonal);
+    applyRendererChain(confMatrixRendererProto, this.cell, confMatrixRendererProto.diagonal);
     this.cell.render();
   }
 }
