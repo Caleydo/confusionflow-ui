@@ -16,7 +16,9 @@ export function loadMatrixData(): Promise<ILoadedMalevoDataset[]> {
   const allPromises: Promise<ILoadedMalevoDataset>[] = dataStoreTimelineArray.map((value: DataStoreSelectedRun) => {
     const loadDataPromises = [];
     loadDataPromises.push(loadEpochs(value.multiSelected, value.selectedDataset));
-    loadDataPromises.push(loadEpochs([value.singleSelected], value.selectedDataset));
+    if (value.singleSelected) {
+      loadDataPromises.push(loadEpochs([value.singleSelected], value.selectedDataset));
+    }
     loadDataPromises.push(value.selectedDataset.classLabels.data());
     loadDataPromises.push(Promise.resolve(value.color));
     loadDataPromises.push(value.selectedDataset.name);
