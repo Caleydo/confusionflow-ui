@@ -7,7 +7,8 @@ import {
   ACellRenderer, applyRendererChain,
   AxisRenderer, IMatrixRendererChain, LineChartRenderer, removeListeners,
   VerticalLineRenderer,
-  ERenderer
+  ERenderer,
+  MatrixLineCellRenderer
 } from '../confusion_matrix_cell/ACellRenderer';
 import * as events from 'phovea_core/src/event';
 
@@ -75,7 +76,10 @@ export class DetailChart {
       } else if (cell.type === AppConstants.CELL_FN) {
         text = DataStoreApplicationProperties.switchToAbsolute ? Language.FN_NUM : Language.FN_RATES;
         text = text + ' ' + Language.FOR_ALLCLASS + ' ' + Language.GIVEN + ' ';
-        text += cell.data.linecell[0][0].classLabel;
+        // hack for getting the ground-truth class label:
+        // - as the diagonal cells are empty for each ground-truth row we simply check for the empty array and return the class label
+        const classlabelIndex = cell.data.linecell[0].map(d => (d.values.length == 0) ? d.classLabel : null).filter(x => x); 
+        text += classlabelIndex[0];
       } else if (cell.type === AppConstants.CELL_PRECISION) {
         text = Language.PRECISION_Y_LABEL;
         text = text + ' ' + Language.FOR_CLASS + ' ';
