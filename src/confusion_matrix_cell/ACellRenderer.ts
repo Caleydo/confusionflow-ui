@@ -83,8 +83,11 @@ export class LineChartRenderer extends ACellRenderer {
   }
 
   protected renderLine(data: Line[], $node: d3.Selection<any>, width: number, height: number) {
+    const linearScale = d3.scale.linear().domain([0, DataStoreApplicationProperties.weightFactor * getYMax(this.cell, data)]).rangeRound([height, 0]);
+    const logScale = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([height, 0]);
+
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, width]);
-    const y = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([height, 0]);
+    const y = DataStoreApplicationProperties.yScalingIsLinear ? linearScale : logScale;
 
     const line = d3_shape.line()
       .x((d, i) => {
@@ -403,7 +406,10 @@ export class HeatmapMultiEpochRenderer extends ACellRenderer implements ITranspo
   }
 
   private getColorScale(datum: Line) {
-    return d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, DataStoreApplicationProperties.switchToAbsolute ? datum.max : 1]).range(<any>['white', datum.color]);
+    const linearColorScale = d3.scale.linear().domain([0, DataStoreApplicationProperties.weightFactor * (DataStoreApplicationProperties.switchToAbsolute ? datum.max : 1)]).range(<any>['white', datum.color]);
+    const logColorScale = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, DataStoreApplicationProperties.switchToAbsolute ? datum.max : 1]).range(<any>['white', datum.color]);
+
+    return DataStoreApplicationProperties.yScalingIsLinear ? linearColorScale : logColorScale;
   }
 
   private update = () => {
@@ -518,7 +524,11 @@ export class AxisRenderer extends ACellRenderer {
   }
 
   private updateYAxis(value: number) {
-    this.y.exponent(value).domain([0, getYMax(this.cell, this.data)]).range([this.cell.height, 0]);
+    if (DataStoreApplicationProperties.yScalingIsLinear) {
+      this.y.domain([0, value * getYMax(this.cell, this.data)]).range([this.cell.height, 0]);
+    } else {
+      this.y.exponent(value).domain([0, getYMax(this.cell, this.data)]).range([this.cell.height, 0]);
+    }
     this.yAxis.scale(this.y);
     this.$g.select('.chart-axis-y').call(this.yAxis);
   }
