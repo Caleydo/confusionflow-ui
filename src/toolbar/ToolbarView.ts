@@ -40,7 +40,8 @@ export class ToolbarView implements IAppView {
     this.createSwitchCellsVisDiv();
     this.createTransposeCellsDiv();
     this.createSwitchYAxisScale();
-    this.addYScaleSlider();
+    this.addYScalingSlider();
+    this.createYScalingDiv();
     return Promise.resolve(this);
   }
 
@@ -136,9 +137,32 @@ export class ToolbarView implements IAppView {
       .classed('fa-rotate-90', DataStoreApplicationProperties.transposeCellRenderer);
   }
 
-  private addYScaleSlider() {
+  private createYScalingDiv() {
+    const $div = this.$node.append('div')
+      .classed('toolbar-scaling-cell', true)
+      .html(`
+        <button class="btn btn-default" title="Change y-scaling">
+          <span class="ysc">lin</span>
+        </button>
+      `)
+      .select('button')
+      .on('click', () => {
+        DataStoreApplicationProperties.toggleYScaling();
+        this.updateYScalingState($div);
+      });
+  }
+
+  private updateYScalingState($div: d3.Selection<any>) {
+    $div.select('span.ysc')
+      .text(() => {
+        return DataStoreApplicationProperties.yScalingIsLinear ? 'lin' : 'log';
+      });
+    this.$node.select('div.y-scale-slider').select('input').property('value', 1 - DataStoreApplicationProperties.weightFactor);
+  }
+
+  private addYScalingSlider() {
     const $div = this.$node.append('div').classed('y-scale-slider', true);
-    $div.html(`<input type="range" min="0" max="0.9" step="0.1" value="${1 - DataStoreApplicationProperties.weightFactor}" orient="vertical">`);
+    $div.html(`<input type="range" min="0.00" max="0.95" step="0.05" value="${1 - DataStoreApplicationProperties.weightFactor}" orient="vertical">`);
     $div.select('input')
       .on('input', function () {
         DataStoreApplicationProperties.weightFactor = this.value;

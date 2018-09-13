@@ -162,7 +162,9 @@ export class DataStoreApplicationProperties {
   private static _transposeCellRenderer = false;
   private static _confMatrixCellRenderer: ERenderer.HeatmapMultiEpoch | ERenderer.MatrixLineCell = ERenderer.HeatmapMultiEpoch;
   private static _isAbsolute = false;
-  private static _weightFactor = 1;
+  private static _weightFactorLinear = 1;
+  private static _weightFactorLog = 1;
+  private static _yScalingIsLinear = true;
   private static _renderMode: ERenderMode = ERenderMode.COMBINED;
   private static _selectedClassIndices: number[] = [];
   private static _confMatrixCellSize = [];
@@ -199,11 +201,36 @@ export class DataStoreApplicationProperties {
   }
 
   static get weightFactor(): number {
-    return (this._weightFactor === 0) ? 0.00001 : this._weightFactor;
+    return this._yScalingIsLinear ? this.weightFactorLinear : this.weightFactorLog;
+  }
+
+  static get weightFactorLinear(): number {
+    return (this._weightFactorLinear === 0) ? 0.00001 : this._weightFactorLinear;
+  }
+
+  static get weightFactorLog(): number {
+    return (this._weightFactorLog === 0) ? 0.00001 : this._weightFactorLog;
   }
 
   static set weightFactor(value: number) {
-    this._weightFactor = 1 - value;
+    this.yScalingIsLinear ? this.weightFactorLinear = value : this.weightFactorLog = value;
+    events.fire(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.weightFactor);
+  }
+
+  static set weightFactorLinear(value: number) {
+    this._weightFactorLinear = 1 - value;
+  }
+
+  static set weightFactorLog(value: number) {
+    this._weightFactorLog = 1 - value;
+  }
+
+  static get yScalingIsLinear(): boolean {
+    return this._yScalingIsLinear;
+  }
+
+  static toggleYScaling() {
+    this._yScalingIsLinear = !this._yScalingIsLinear;
     events.fire(AppConstants.EVENT_WEIGHT_FACTOR_CHANGED, this.weightFactor);
   }
 
