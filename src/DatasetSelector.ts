@@ -23,7 +23,7 @@ class DataSetSelector implements IAppView {
   private $select;
   private select2Options = {
     maximumSelectionLength: AppConstants.MAX_DATASET_COUNT,
-    placeholder: Language.DATASET
+    placeholder: Language.DATASET_SELECTOR_PLACEHOLDER
   };
 
   constructor() {

@@ -4,7 +4,7 @@
 
 export class Language {
   static APP_NAME = 'ConfusionFlow';
-  static DATASET = 'Select a Dataset';
+  static DATASET_SELECTOR_PLACEHOLDER = 'Select a Performance Log';
   static GROUND_TRUTH = 'Ground Truth';
   static PREDICTED = 'Predicted';
   static FN = 'FN';
