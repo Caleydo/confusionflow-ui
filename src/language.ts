@@ -16,6 +16,7 @@ export class Language {
   static CHART_VIEW = 'Charts';
   static CLASS_LABELS = 'Class Labels';
   static EPOCH = 'Epoch';
+  static GIVEN = 'given';
   static RUNS = 'Runs';
   static NUMBER = '#';
   static PERCENT = '%';
@@ -24,8 +25,13 @@ export class Language {
   static RECALL_Y_LABEL = 'Recall [%]';
   static F1_SCORE_Y_LABEL = 'F1 Score [%]';
   static OVERALL_ACCURACY = 'Overall Accuracy';
+  static FP_NUM = '# False Positives';
   static FP_RATE = 'False Positive Rate';
+  static FP_RATES = 'False Positive Rates';
+  static FN_NUM = '# False Negatives';
   static FN_RATE = 'False Negative Rate';
+  static FN_RATES = 'False Negative Rates';
+  static FOR_ALLCLASS = 'for all classes';
   static FOR_CLASS = 'for class';
   static PREDICTED_AS = 'predicted as';
   static SELECT_CLASSES = 'Select classes';

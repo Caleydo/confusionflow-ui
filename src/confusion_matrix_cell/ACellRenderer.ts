@@ -739,9 +739,9 @@ function getYLabelText() {
     text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
   } else if (cell instanceof PanelCell) {
     if (cell.type === AppConstants.CELL_FP) {
-      text = Language.FP_RATE;
+      text =  DataStoreApplicationProperties.switchToAbsolute ? Language.FP_NUM : Language.FP_RATE;
     } else if (cell.type === AppConstants.CELL_FN) {
-      text = Language.FN_RATE;
+      text = DataStoreApplicationProperties.switchToAbsolute ? Language.FN_NUM : Language.FN_RATE;
     } else if (cell.type === AppConstants.CELL_PRECISION) {
       text = Language.PRECISION;
     } else if (cell.type === AppConstants.CELL_RECALL) {

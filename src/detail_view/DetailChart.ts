@@ -69,12 +69,12 @@ export class DetailChart {
       text += cell.predictedLabel;
     } else if (cell instanceof PanelCell) {
       if (cell.type === AppConstants.CELL_FP) {
-        text = Language.FP_RATE;
-        text = text + ' ' + Language.FOR_CLASS + ' ';
+        text = DataStoreApplicationProperties.switchToAbsolute ? Language.FP_NUM : Language.FP_RATES; 
+        text = text + ' ' + Language.FOR_ALLCLASS + ' ' + Language.PREDICTED_AS + ' ';
         text += cell.data.linecell[0][0].classLabel;
       } else if (cell.type === AppConstants.CELL_FN) {
-        text = Language.FN_RATE;
-        text = text + ' ' + Language.FOR_CLASS + ' ';
+        text = DataStoreApplicationProperties.switchToAbsolute ? Language.FN_NUM : Language.FN_RATES;
+        text = text + ' ' + Language.FOR_ALLCLASS + ' ' + Language.GIVEN + ' ';
         text += cell.data.linecell[0][0].classLabel;
       } else if (cell.type === AppConstants.CELL_PRECISION) {
         text = Language.PRECISION_Y_LABEL;
