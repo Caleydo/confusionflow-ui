@@ -72,6 +72,17 @@ export class PanelCell extends ACell {
   }
 }
 
+export class MetricsPanelCell extends PanelCell {
+  constructor(public data: { linecell: Line[][], heatcell: MatrixHeatCellContent },
+    public type: string, public panelColumnIndex: number, public panelRowIndex: number) {
+    super(data, type, panelColumnIndex, panelRowIndex);
+  }
+
+  hasType(types: string[]) {
+    return types.includes(this.type);
+  }
+}
+
 export class DetailChartCell extends ACell {
   public data: { linecell: Line[][], heatcell: MatrixHeatCellContent };
 
