@@ -347,8 +347,6 @@ export class ConfusionMatrix implements IAppView {
         .each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener(), (r: ACellRenderer) => r.removeYAxisScaleChangedListener()]));
     };
     remove(this.$confusionMatrix);
-    remove(this.fpColumn.$node);
-    remove(this.fnColumn.$node);
   }
 
   clear() {
