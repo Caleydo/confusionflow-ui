@@ -70,7 +70,7 @@ export class DetailChart {
       text += cell.predictedLabel;
     } else if (cell instanceof PanelCell) {
       if (cell.type === AppConstants.CELL_FP) {
-        text = DataStoreApplicationProperties.switchToAbsolute ? Language.FP_NUM : Language.FP_RATES; 
+        text = DataStoreApplicationProperties.switchToAbsolute ? Language.FP_NUM : Language.FP_RATES;
         text = text + ' ' + Language.FOR_ALLCLASS + ' ' + Language.PREDICTED_AS + ' ';
         text += cell.data.linecell[0][0].classLabel;
       } else if (cell.type === AppConstants.CELL_FN) {
@@ -78,7 +78,7 @@ export class DetailChart {
         text = text + ' ' + Language.FOR_ALLCLASS + ' ' + Language.GIVEN + ' ';
         // hack for getting the ground-truth class label:
         // - as the diagonal cells are empty for each ground-truth row we simply check for the empty array and return the class label
-        const classlabelIndex = cell.data.linecell[0].map(d => (d.values.length == 0) ? d.classLabel : null).filter(x => x); 
+        const classlabelIndex = cell.data.linecell[0].map((d) => (d.values.length === 0) ? d.classLabel : null).filter((x) => x);
         text += classlabelIndex[0];
       } else if (cell.type === AppConstants.CELL_PRECISION) {
         text = Language.PRECISION_Y_LABEL;
