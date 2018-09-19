@@ -168,6 +168,9 @@ export class DataStoreApplicationProperties {
   private static _renderMode: ERenderMode = ERenderMode.COMBINED;
   private static _selectedClassIndices: number[] = [];
   private static _confMatrixCellSize = [];
+  private static _highlightedPredictedClass = '';
+  private static _highlightedGroundTruthClass = '';
+  private static _isHighlighted = false;
 
   static get renderMode(): ERenderMode {
     return this._renderMode;
@@ -257,5 +260,29 @@ export class DataStoreApplicationProperties {
 
   static set confMatrixCellSize(value: number[]) {
     this._confMatrixCellSize = value;
+  }
+
+  static get highlightedPredictedClass() {
+    return this._highlightedPredictedClass;
+  }
+
+  static set highlightedPredictedClass(value: string) {
+    this._highlightedPredictedClass = value;
+  }
+
+  static get highlightedGroundTruthClass() {
+    return this._highlightedGroundTruthClass;
+  }
+
+  static set highlightedGroundTruthClass(value: string) {
+    this._highlightedGroundTruthClass = value;
+  }
+
+  static toggleHighLighting() {
+    this._isHighlighted = !this._isHighlighted;
+  }
+
+  static get isHighlighted() {
+    return this._isHighlighted;
   }
 }

@@ -89,6 +89,12 @@ export class AppConstants {
   static EVENT_CLASS_INDICES_CHANGED = 'eventClassIndicesChanged';
 
   /**
+   * Fires when the selected cell is hovered and corresponding PanelCell is selected
+   * @type {string}
+   */
+  static EVENT_MATRIX_CELL_HOVERED = 'eventMatrixCellHovered';
+
+  /**
    * Fires when a new confusion measure should be rendered
    * @type {string}
    */
@@ -130,4 +136,9 @@ export class AppConstants {
    * @type {[string,string]}
    */
   static BG_COLOR_SCALE = ['white', 'gray'];
+
+  /**
+   * Color Gray
+   */
+  static COLOR_GRAY = '#D3D3D3';
 }

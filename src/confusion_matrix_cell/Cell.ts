@@ -1,12 +1,14 @@
 import { Line, MatrixHeatCellContent } from './CellContent';
-import { DataStoreCellSelection } from '../DataStore';
+import { DataStoreCellSelection, DataStoreApplicationProperties } from '../DataStore';
 import { ACellRenderer } from './ACellRenderer';
+import { AppConstants } from '../AppConstants';
+import * as events from 'phovea_core/src/event';
 
 /**
  * Represents a cell in the confusin matrix
  */
 export abstract class ACell {
-  private _$node: d3.Selection<any>;
+  protected _$node: d3.Selection<any>;
   private _width: number;
   private _height: number;
   public renderer: ACellRenderer;
@@ -34,13 +36,7 @@ export abstract class ACell {
     this.attachListener();
   }
 
-  protected attachListener() {
-    this._$node.on('click', () => {
-      if (this instanceof MatrixCell || this instanceof PanelCell) {
-        DataStoreCellSelection.cellSelected(this);
-      }
-    });
-  }
+  protected abstract attachListener();
 
   public render() {
     this.renderer.renderNext(this);
@@ -53,12 +49,47 @@ export class MatrixCell extends ACell {
     public predictedIndex: number, public groundTruthIndex: number) {
     super();
   }
+
+  protected attachListener() {
+    this._$node.on('mouseover', () => {
+      const cell = DataStoreCellSelection.getCell();
+      if (cell instanceof PanelCell) {
+        if (cell.type === 'cellFN') {
+          const panelClassLabel = cell.data.linecell[0][0].groundTruthLabel;
+          if (panelClassLabel === this.groundTruthLabel) {
+            DataStoreApplicationProperties.highlightedPredictedClass = this.predictedLabel;
+            DataStoreApplicationProperties.highlightedGroundTruthClass = this.groundTruthLabel;
+            console.log(DataStoreApplicationProperties.highlightedGroundTruthClass, DataStoreApplicationProperties.highlightedPredictedClass);
+            DataStoreApplicationProperties.toggleHighLighting();
+            events.fire(AppConstants.EVENT_MATRIX_CELL_HOVERED);
+          }
+        } else if (cell.type === 'cellFP') {
+          const panelClassLabel = cell.data.linecell[0][0].predictedLabel;
+          if (panelClassLabel === this.predictedLabel) {
+            DataStoreApplicationProperties.highlightedPredictedClass = this.predictedLabel;
+            DataStoreApplicationProperties.highlightedGroundTruthClass = this.groundTruthLabel;
+            console.log(DataStoreApplicationProperties.highlightedGroundTruthClass, DataStoreApplicationProperties.highlightedPredictedClass);
+            DataStoreApplicationProperties.toggleHighLighting();
+            events.fire(AppConstants.EVENT_MATRIX_CELL_HOVERED);
+          }
+        }
+      }
+    });
+
+    this._$node.on('click', () => {
+      DataStoreCellSelection.cellSelected(this);
+    });
+  }
 }
 
 export class LabelCell extends ACell {
   constructor(public labelData: { label: string }) {
     super();
   }
+
+  protected attachListener() {
+    // not used
+  };
 }
 
 export class PanelCell extends ACell {
@@ -70,6 +101,12 @@ export class PanelCell extends ACell {
   hasType(types: string[]) {
     return types.includes(this.type);
   }
+
+  protected attachListener() {
+    this._$node.on('click', () => {
+      DataStoreCellSelection.cellSelected(this);
+    });
+  }
 }
 
 export class DetailChartCell extends ACell {
@@ -79,4 +116,8 @@ export class DetailChartCell extends ACell {
     super();
     this.data = child.data;
   }
+
+  protected attachListener() {
+    // not used
+  };
 }

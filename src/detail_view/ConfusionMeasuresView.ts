@@ -118,7 +118,8 @@ export default class ConfusionMeasuresView implements IAppView {
           values: x,
           valuesInPercent: x,
           max: maxVal,
-          classLabel: labels[index],
+          predictedLabel: labels[index],
+          groundTruthLabel: null,
           color: colors[i]
         }]),
         heatcell: {
@@ -144,7 +145,8 @@ export default class ConfusionMeasuresView implements IAppView {
           values: x,
           valuesInPercent: x,
           max: maxVal,
-          classLabel: labels[index],
+          predictedLabel: labels[index],
+          groundTruthLabel: null,
           color: colors[i]
         }]),
         heatcell: {
@@ -170,7 +172,8 @@ export default class ConfusionMeasuresView implements IAppView {
           values: x,
           valuesInPercent: x,
           max: maxVal,
-          classLabel: labels[index],
+          predictedLabel: labels[index],
+          groundTruthLabel: null,
           color: colors[i]
         }]),
         heatcell: {

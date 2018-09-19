@@ -51,6 +51,11 @@ export class DetailChart {
       this.render();
     });
 
+    events.on(AppConstants.EVENT_MATRIX_CELL_HOVERED, () => {
+      this.clear();
+      this.render();
+    });
+
     events.on(AppConstants.EVENT_CLEAR_DETAIL_CHART, () => {
       this.clear();
     });
@@ -71,23 +76,23 @@ export class DetailChart {
       if (cell.type === AppConstants.CELL_FP) {
         text = Language.FP_RATE;
         text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += cell.data.linecell[0][0].classLabel;
+        text += cell.data.linecell[0][0].predictedLabel;
       } else if (cell.type === AppConstants.CELL_FN) {
         text = Language.FN_RATE;
         text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += cell.data.linecell[0][0].classLabel;
+        text += cell.data.linecell[0][0].predictedLabel;
       } else if (cell.type === AppConstants.CELL_PRECISION) {
         text = Language.PRECISION_Y_LABEL;
         text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += cell.data.linecell[0][0].classLabel;
+        text += cell.data.linecell[0][0].predictedLabel;
       } else if (cell.type === AppConstants.CELL_RECALL) {
         text = Language.RECALL_Y_LABEL;
         text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += cell.data.linecell[0][0].classLabel;
+        text += cell.data.linecell[0][0].predictedLabel;
       } else if (cell.type === AppConstants.CELL_F1_SCORE) {
         text = Language.F1_SCORE_Y_LABEL;
         text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += cell.data.linecell[0][0].classLabel;
+        text += cell.data.linecell[0][0].predictedLabel;
       } else if (cell.type === AppConstants.CELL_OVERALL_ACCURACY_SCORE) {
         text = Language.OVERALL_ACCURACY;
       } else if (cell.type === AppConstants.CELL_CLASS_SIZE) {
