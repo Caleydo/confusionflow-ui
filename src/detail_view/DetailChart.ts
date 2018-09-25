@@ -52,6 +52,11 @@ export class DetailChart {
       this.render();
     });
 
+    events.on(AppConstants.EVENT_MATRIX_CELL_HOVERED, () => {
+      this.clear();
+      this.render();
+    });
+
     events.on(AppConstants.EVENT_CLEAR_DETAIL_CHART, () => {
       this.clear();
     });
@@ -66,7 +71,7 @@ export class DetailChart {
       text = `${scaleType} ${Language.CONFUSION_Y_LABEL} ${Language.FOR_CLASS} ${cell.groundTruthLabel} with ${cell.predictedLabel}`;
 
     } else if (cell instanceof PanelCell) {
-      const selectedClassLabel = cell.data.linecell[0][0].classLabel;
+      const selectedClassLabel = cell.data.linecell[0][0].predictedLabel;
       switch (cell.type) {
         case AppConstants.CELL_FP:
           const fpScaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.FP_NUM : Language.FP_RATES;
@@ -77,7 +82,7 @@ export class DetailChart {
           const fnScaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.FN_NUM : Language.FN_RATES;
           // hack for getting the ground-truth class label:
           // - as the diagonal cells are empty for each ground-truth row we simply check for the empty array and return the class label
-          const classlabelIndex = cell.data.linecell[0].map((d) => (d.values.length === 0) ? d.classLabel : null).filter((x) => x);
+          const classlabelIndex = cell.data.linecell[0].map((d) => (d.values.length === 0) ? d.predictedLabel : null).filter((x) => x);
           text = `${fnScaleType} ${Language.FOR_ALLCLASS} ${Language.GIVEN} ${classlabelIndex[0]}`;
           break;
 

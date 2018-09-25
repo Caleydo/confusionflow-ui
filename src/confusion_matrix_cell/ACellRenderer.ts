@@ -97,14 +97,24 @@ export class LineChartRenderer extends ACellRenderer {
         return y(d);
       });
 
+    const standardColoring = (d) => {
+      return d.color;
+    };
+
+    const highLightColoring = (d) => {
+      return (DataStoreApplicationProperties.checkCellHighlight(d.groundTruthLabel, d.predictedLabel)) ? d.color : AppConstants.COLOR_GRAY;
+    };
+
+    const coloring = DataStoreApplicationProperties.isHighlighted ? highLightColoring : standardColoring;
+
     $node.select('g').selectAll('path')
       .data(data)
       .enter().append('path')
       .classed('instance-line', true)
-      .attr('stroke', (d) => d.color)
+      .attr('stroke', coloring)
       .attr('stroke-opacity', '0.6')
       .append('title')
-      .text((d) => d.classLabel);
+      .text((d) => d.predictedLabel);
 
     $node.select('g').selectAll('.instance-line').attr('d', (d) => line(DataStoreApplicationProperties.switchToAbsolute ? d.values : d.valuesInPercent));
   }

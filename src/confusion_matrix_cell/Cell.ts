@@ -1,6 +1,8 @@
 import { Line, MatrixHeatCellContent } from './CellContent';
 import { DataStoreCellSelection, DataStoreApplicationProperties } from '../DataStore';
 import { ACellRenderer } from './ACellRenderer';
+import { AppConstants } from '../AppConstants';
+import * as events from 'phovea_core/src/event';
 
 interface ICell {
   readonly $node: d3.Selection<any>;
@@ -22,7 +24,7 @@ export interface ILineChartable {
  * Represents a cell in the confusin matrix
  */
 export abstract class ACell implements ICell {
-  private _$node: d3.Selection<any>;
+  protected _$node: d3.Selection<any>;
   private _width: number;
   private _height: number;
   public renderer: ACellRenderer;
@@ -50,13 +52,7 @@ export abstract class ACell implements ICell {
     this.attachListener();
   }
 
-  protected attachListener() {
-    this._$node.on('click', () => {
-      if (this instanceof MatrixCell || this instanceof PanelCell) {
-        DataStoreCellSelection.cellSelected(this);
-      }
-    });
-  }
+  protected abstract attachListener();
 
   public render() {
     this.renderer.renderNext(this);
@@ -73,12 +69,49 @@ export class MatrixCell extends ACell implements ILineChartable {
   get weightFactor() {
     return DataStoreApplicationProperties.weightFactor;
   }
+
+  protected attachListener() {
+    this._$node.on('mouseover', () => {
+      const cell = DataStoreCellSelection.getCell();
+
+      if ((cell instanceof PanelCell) === false) {
+        return;
+      }
+
+      let triggerHighlight = false;
+
+      switch ((cell as PanelCell).type) {
+        case AppConstants.CELL_FN:
+          triggerHighlight = (cell.data.linecell[0][0].groundTruthLabel === this.groundTruthLabel);
+          break;
+        case AppConstants.CELL_FP:
+          triggerHighlight = (cell.data.linecell[0][0].predictedLabel === this.predictedLabel);
+          break;
+      }
+
+      if (triggerHighlight) {
+        DataStoreApplicationProperties.setCellHighlight(this.groundTruthLabel, this.predictedLabel);
+      }
+    });
+
+    this._$node.on('mouseout', () => {
+      DataStoreApplicationProperties.clearCellHighlight();
+    });
+
+    this._$node.on('click', () => {
+      DataStoreCellSelection.cellSelected(this);
+    });
+  }
 }
 
 export class LabelCell extends ACell {
   constructor(public labelData: { label: string }) {
     super();
   }
+
+  protected attachListener() {
+    // not used
+  };
 }
 
 export class PanelCell extends ACell implements ILineChartable {
@@ -94,6 +127,12 @@ export class PanelCell extends ACell implements ILineChartable {
   get weightFactor() {
     return DataStoreApplicationProperties.weightFactor;
   }
+
+  protected attachListener() {
+    this._$node.on('click', () => {
+      DataStoreCellSelection.cellSelected(this);
+    });
+  }
 }
 
 export class MetricsPanelCell extends PanelCell {
@@ -107,11 +146,19 @@ export class MetricsPanelCell extends PanelCell {
   }
 }
 
-export class DetailChartCell extends ACell {
+export class DetailChartCell extends ACell implements ILineChartable {
   public data: { linecell: Line[][], heatcell: MatrixHeatCellContent };
 
   constructor(public child: MatrixCell | PanelCell) {
     super();
     this.data = child.data;
   }
+
+  get weightFactor() {
+    return this.child.weightFactor;
+  }
+
+  protected attachListener() {
+    // not used
+  };
 }
