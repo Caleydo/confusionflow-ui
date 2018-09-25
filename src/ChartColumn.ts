@@ -86,6 +86,6 @@ export class FNChartColumn extends ChartColumn {
     while (data.length > 0) {
       arrays.push(data.splice(0, size));
     }
-    return arrays.map((d: ICellData[], index) => this.createCell(AppConstants.CELL_FP, d, index, singleEpochIndex));
+    return arrays.map((d: ICellData[], index) => this.createCell(AppConstants.CELL_FN, d, index, singleEpochIndex));
   }
 }
