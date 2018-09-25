@@ -736,10 +736,10 @@ function getYLabelText() {
   const cell = DataStoreCellSelection.getCell();
   if (cell instanceof MatrixCell) {
     const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
-    text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
+    text = `${scaleType} ${Language.CONFUSION_Y_LABEL}`;
   } else if (cell instanceof PanelCell) {
     if (cell.type === AppConstants.CELL_FP) {
-      text =  DataStoreApplicationProperties.switchToAbsolute ? Language.FP_NUM : Language.FP_RATE;
+      text = DataStoreApplicationProperties.switchToAbsolute ? Language.FP_NUM : Language.FP_RATE;
     } else if (cell.type === AppConstants.CELL_FN) {
       text = DataStoreApplicationProperties.switchToAbsolute ? Language.FN_NUM : Language.FN_RATE;
     } else if (cell.type === AppConstants.CELL_PRECISION) {
