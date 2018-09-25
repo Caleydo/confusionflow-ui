@@ -127,8 +127,10 @@ export class PanelCell extends ACell implements ILineChartable {
   }
 
   protected attachListener() {
-    // not used
-  };
+    this._$node.on('click', () => {
+      DataStoreCellSelection.cellSelected(this);
+    });
+  }
 }
 
 export class MetricsPanelCell extends PanelCell {
@@ -139,12 +141,6 @@ export class MetricsPanelCell extends PanelCell {
 
   get weightFactor() {
     return 1.0; // return constant weightFactor to avoid scaling of the line chart renderer
-  }
-
-  protected attachListener() {
-    this._$node.on('click', () => {
-      DataStoreCellSelection.cellSelected(this);
-    });
   }
 }
 
