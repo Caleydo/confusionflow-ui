@@ -73,26 +73,27 @@ export class MatrixCell extends ACell implements ILineChartable {
   protected attachListener() {
     this._$node.on('mouseover', () => {
       const cell = DataStoreCellSelection.getCell();
-      if (cell instanceof PanelCell) {
-        if (cell.type === 'cellFN') {
-          const panelClassLabel = cell.data.linecell[0][0].groundTruthLabel;
-          if (panelClassLabel === this.groundTruthLabel) {
-            DataStoreApplicationProperties.highlightedPredictedClass = this.predictedLabel;
-            DataStoreApplicationProperties.highlightedGroundTruthClass = this.groundTruthLabel;
-            console.log(DataStoreApplicationProperties.highlightedGroundTruthClass, DataStoreApplicationProperties.highlightedPredictedClass);
-            DataStoreApplicationProperties.toggleHighLighting();
-            events.fire(AppConstants.EVENT_MATRIX_CELL_HOVERED);
-          }
-        } else if (cell.type === 'cellFP') {
-          const panelClassLabel = cell.data.linecell[0][0].predictedLabel;
-          if (panelClassLabel === this.predictedLabel) {
-            DataStoreApplicationProperties.highlightedPredictedClass = this.predictedLabel;
-            DataStoreApplicationProperties.highlightedGroundTruthClass = this.groundTruthLabel;
-            console.log(DataStoreApplicationProperties.highlightedGroundTruthClass, DataStoreApplicationProperties.highlightedPredictedClass);
-            DataStoreApplicationProperties.toggleHighLighting();
-            events.fire(AppConstants.EVENT_MATRIX_CELL_HOVERED);
-          }
-        }
+
+      if ((cell instanceof PanelCell) === false) {
+        return;
+      }
+
+      let triggerHighlight = false;
+
+      switch ((cell as PanelCell).type) {
+        case AppConstants.CELL_FN:
+          triggerHighlight = (cell.data.linecell[0][0].groundTruthLabel === this.groundTruthLabel);
+          break;
+        case AppConstants.CELL_FP:
+          triggerHighlight = (cell.data.linecell[0][0].predictedLabel === this.predictedLabel);
+          break;
+      }
+
+      if (triggerHighlight) {
+        DataStoreApplicationProperties.highlightedPredictedClass = this.predictedLabel;
+        DataStoreApplicationProperties.highlightedGroundTruthClass = this.groundTruthLabel;
+        DataStoreApplicationProperties.toggleHighLighting();
+        events.fire(AppConstants.EVENT_MATRIX_CELL_HOVERED);
       }
     });
 
