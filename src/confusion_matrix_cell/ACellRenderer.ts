@@ -1,6 +1,6 @@
 import * as events from 'phovea_core/src/event';
 import { Line, MatrixHeatCellContent } from './CellContent';
-import { ACell, DetailChartCell, LabelCell, MatrixCell, PanelCell, MetricsPanelCell } from './Cell';
+import { ACell, DetailChartCell, LabelCell, MatrixCell, PanelCell, ILineChartable } from './Cell';
 import { adaptTextColorToBgColor, extractEpochId } from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
@@ -71,7 +71,7 @@ export abstract class ACellRenderer {
 }
 
 export class LineChartRenderer extends ACellRenderer {
-  protected cell: MatrixCell | PanelCell;
+  protected cell: ACell & ILineChartable;
 
   private update = () => {
     const data: Line[] = [].concat.apply([], this.cell.data.linecell);
@@ -83,10 +83,8 @@ export class LineChartRenderer extends ACellRenderer {
   }
 
   protected renderLine(data: Line[], $node: d3.Selection<any>, width: number, height: number) {
-    const weightFactor = (this.cell instanceof MetricsPanelCell) ? 1.00 : DataStoreApplicationProperties.weightFactor;
-
-    const linearScale = d3.scale.linear().domain([0, weightFactor * getYMax(this.cell, data)]).rangeRound([height, 0]);
-    const logScale = d3.scale.pow().exponent(weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([height, 0]);
+    const linearScale = d3.scale.linear().domain([0, this.cell.weightFactor * getYMax(this.cell, data)]).rangeRound([height, 0]);
+    const logScale = d3.scale.pow().exponent(this.cell.weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([height, 0]);
 
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, width]);
     const y = DataStoreApplicationProperties.yScalingIsLinear ? linearScale : logScale;

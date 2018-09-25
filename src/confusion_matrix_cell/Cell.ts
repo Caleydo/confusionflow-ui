@@ -1,11 +1,27 @@
 import { Line, MatrixHeatCellContent } from './CellContent';
-import { DataStoreCellSelection } from '../DataStore';
+import { DataStoreCellSelection, DataStoreApplicationProperties } from '../DataStore';
 import { ACellRenderer } from './ACellRenderer';
+
+interface ICell {
+  readonly $node: d3.Selection<any>;
+  readonly height: number;
+  readonly width: number;
+  init($node: d3.Selection<any>, width: number, height: number);
+  render();
+}
+
+/**
+ * Indicates cells that can be rendered with a LineChartRenderer
+ */
+export interface ILineChartable {
+  readonly weightFactor: number;
+  data: { linecell: Line[][], heatcell: MatrixHeatCellContent };
+}
 
 /**
  * Represents a cell in the confusin matrix
  */
-export abstract class ACell {
+export abstract class ACell implements ICell {
   private _$node: d3.Selection<any>;
   private _width: number;
   private _height: number;
@@ -47,11 +63,15 @@ export abstract class ACell {
   }
 }
 
-export class MatrixCell extends ACell {
+export class MatrixCell extends ACell implements ILineChartable {
   constructor(public data: { linecell: Line[][], heatcell: MatrixHeatCellContent },
     public predictedLabel: string, public groundTruthLabel: string,
     public predictedIndex: number, public groundTruthIndex: number) {
     super();
+  }
+
+  get weightFactor() {
+    return DataStoreApplicationProperties.weightFactor;
   }
 }
 
@@ -61,7 +81,7 @@ export class LabelCell extends ACell {
   }
 }
 
-export class PanelCell extends ACell {
+export class PanelCell extends ACell implements ILineChartable {
   constructor(public data: { linecell: Line[][], heatcell: MatrixHeatCellContent },
     public type: string, public panelColumnIndex: number, public panelRowIndex: number) {
     super();
@@ -69,6 +89,10 @@ export class PanelCell extends ACell {
 
   hasType(types: string[]) {
     return types.includes(this.type);
+  }
+
+  get weightFactor() {
+    return DataStoreApplicationProperties.weightFactor;
   }
 }
 
@@ -78,8 +102,8 @@ export class MetricsPanelCell extends PanelCell {
     super(data, type, panelColumnIndex, panelRowIndex);
   }
 
-  hasType(types: string[]) {
-    return types.includes(this.type);
+  get weightFactor() {
+    return 1.0; // return constant weightFactor to avoid scaling of the line chart renderer
   }
 }
 
