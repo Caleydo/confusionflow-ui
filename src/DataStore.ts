@@ -262,27 +262,43 @@ export class DataStoreApplicationProperties {
     this._confMatrixCellSize = value;
   }
 
-  static get highlightedPredictedClass() {
-    return this._highlightedPredictedClass;
-  }
-
-  static set highlightedPredictedClass(value: string) {
-    this._highlightedPredictedClass = value;
-  }
-
-  static get highlightedGroundTruthClass() {
-    return this._highlightedGroundTruthClass;
-  }
-
-  static set highlightedGroundTruthClass(value: string) {
-    this._highlightedGroundTruthClass = value;
-  }
-
-  static toggleHighLighting() {
-    this._isHighlighted = !this._isHighlighted;
-  }
-
   static get isHighlighted() {
     return this._isHighlighted;
+  }
+
+  /**
+   * Set combination of ground truth and predicted class as highlighted and fire `EVENT_MATRIX_CELL_HOVERED` event
+   * @param groundTruthClass ground truth class
+   * @param predictedClass predicted class
+   */
+  static setCellHighlight(groundTruthClass: string, predictedClass: string) {
+    this._highlightedGroundTruthClass = groundTruthClass;
+    this._highlightedPredictedClass = predictedClass;
+    this._isHighlighted = true;
+    events.fire(AppConstants.EVENT_MATRIX_CELL_HOVERED);
+  }
+
+  /**
+   * Clear the highlighted cell and fire `EVENT_MATRIX_CELL_HOVERED` event
+   */
+  static clearCellHighlight() {
+    if (this.isHighlighted === false) {
+      return; // no cell is highlighted == do nothing
+    }
+
+    this._highlightedGroundTruthClass = '';
+    this._highlightedPredictedClass = '';
+    this._isHighlighted = false;
+    events.fire(AppConstants.EVENT_MATRIX_CELL_HOVERED);
+  }
+
+  /**
+   * Check if the selected ground truth AND the predicted class are equal to the given parameters.
+   *
+   * @param groundTruthClass ground truth class
+   * @param predictedClass predicted class
+   */
+  static checkCellHighlight(groundTruthClass: string, predictedClass: string): boolean {
+    return (this._highlightedGroundTruthClass === groundTruthClass && this._highlightedPredictedClass === predictedClass);
   }
 }

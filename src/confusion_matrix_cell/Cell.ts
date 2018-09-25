@@ -90,11 +90,12 @@ export class MatrixCell extends ACell implements ILineChartable {
       }
 
       if (triggerHighlight) {
-        DataStoreApplicationProperties.highlightedPredictedClass = this.predictedLabel;
-        DataStoreApplicationProperties.highlightedGroundTruthClass = this.groundTruthLabel;
-        DataStoreApplicationProperties.toggleHighLighting();
-        events.fire(AppConstants.EVENT_MATRIX_CELL_HOVERED);
+        DataStoreApplicationProperties.setCellHighlight(this.groundTruthLabel, this.predictedLabel);
       }
+    });
+
+    this._$node.on('mouseout', () => {
+      DataStoreApplicationProperties.clearCellHighlight();
     });
 
     this._$node.on('click', () => {

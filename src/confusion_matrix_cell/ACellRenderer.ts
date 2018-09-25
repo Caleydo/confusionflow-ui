@@ -102,7 +102,7 @@ export class LineChartRenderer extends ACellRenderer {
     };
 
     const highLightColoring = (d) => {
-      return (DataStoreApplicationProperties.highlightedPredictedClass === d.predictedLabel && DataStoreApplicationProperties.highlightedGroundTruthClass === d.groundTruthLabel) ? d.color : AppConstants.COLOR_GRAY;
+      return (DataStoreApplicationProperties.checkCellHighlight(d.groundTruthLabel, d.predictedLabel)) ? d.color : AppConstants.COLOR_GRAY;
     };
 
     const coloring = DataStoreApplicationProperties.isHighlighted ? highLightColoring : standardColoring;
@@ -117,10 +117,6 @@ export class LineChartRenderer extends ACellRenderer {
       .text((d) => d.predictedLabel);
 
     $node.select('g').selectAll('.instance-line').attr('d', (d) => line(DataStoreApplicationProperties.switchToAbsolute ? d.values : d.valuesInPercent));
-
-    if (DataStoreApplicationProperties.isHighlighted) {
-      DataStoreApplicationProperties.toggleHighLighting();
-    }
   }
 
   public addWeightFactorChangedListener() {
