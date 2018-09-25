@@ -1,6 +1,6 @@
 import * as events from 'phovea_core/src/event';
 import { Line, MatrixHeatCellContent } from './CellContent';
-import { ACell, DetailChartCell, LabelCell, MatrixCell, PanelCell } from './Cell';
+import { ACell, DetailChartCell, LabelCell, MatrixCell, PanelCell, ILineChartable } from './Cell';
 import { adaptTextColorToBgColor, extractEpochId } from '../utils';
 import * as d3 from 'd3';
 import * as d3_shape from 'd3-shape';
@@ -71,7 +71,7 @@ export abstract class ACellRenderer {
 }
 
 export class LineChartRenderer extends ACellRenderer {
-  protected cell: MatrixCell | PanelCell;
+  protected cell: ACell & ILineChartable;
 
   private update = () => {
     const data: Line[] = [].concat.apply([], this.cell.data.linecell);
@@ -83,8 +83,8 @@ export class LineChartRenderer extends ACellRenderer {
   }
 
   protected renderLine(data: Line[], $node: d3.Selection<any>, width: number, height: number) {
-    const linearScale = d3.scale.linear().domain([0, DataStoreApplicationProperties.weightFactor * getYMax(this.cell, data)]).rangeRound([height, 0]);
-    const logScale = d3.scale.pow().exponent(DataStoreApplicationProperties.weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([height, 0]);
+    const linearScale = d3.scale.linear().domain([0, this.cell.weightFactor * getYMax(this.cell, data)]).rangeRound([height, 0]);
+    const logScale = d3.scale.pow().exponent(this.cell.weightFactor).domain([0, getYMax(this.cell, data)]).rangeRound([height, 0]);
 
     const x = d3.scale.linear().domain([0, getLargestLine(data).values.length - 1]).rangeRound([0, width]);
     const y = DataStoreApplicationProperties.yScalingIsLinear ? linearScale : logScale;
@@ -750,12 +750,12 @@ function getYLabelText() {
   const cell = DataStoreCellSelection.getCell();
   if (cell instanceof MatrixCell) {
     const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
-    text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
+    text = `${scaleType} ${Language.CONFUSION_Y_LABEL}`;
   } else if (cell instanceof PanelCell) {
     if (cell.type === AppConstants.CELL_FP) {
-      text = Language.FP_RATE;
+      text = DataStoreApplicationProperties.switchToAbsolute ? Language.FP_NUM : Language.FP_RATE;
     } else if (cell.type === AppConstants.CELL_FN) {
-      text = Language.FN_RATE;
+      text = DataStoreApplicationProperties.switchToAbsolute ? Language.FN_NUM : Language.FN_RATE;
     } else if (cell.type === AppConstants.CELL_PRECISION) {
       text = Language.PRECISION;
     } else if (cell.type === AppConstants.CELL_RECALL) {

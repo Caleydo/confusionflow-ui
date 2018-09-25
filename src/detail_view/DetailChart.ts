@@ -7,7 +7,8 @@ import {
   ACellRenderer, applyRendererChain,
   AxisRenderer, IMatrixRendererChain, LineChartRenderer, removeListeners,
   VerticalLineRenderer,
-  ERenderer
+  ERenderer,
+  MatrixLineCellRenderer
 } from '../confusion_matrix_cell/ACellRenderer';
 import * as events from 'phovea_core/src/event';
 
@@ -67,36 +68,43 @@ export class DetailChart {
     const cell = DataStoreCellSelection.getCell();
     if (cell instanceof MatrixCell) {
       const scaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.NUMBER : Language.PERCENT;
-      text = scaleType + ' ' + Language.CONFUSION_Y_LABEL;
-      text = text + ' ' + Language.FOR_CLASS + ' ';
-      text += cell.groundTruthLabel;
-      text += ' with ';
-      text += cell.predictedLabel;
+      text = `${scaleType} ${Language.CONFUSION_Y_LABEL} ${Language.FOR_CLASS} ${cell.groundTruthLabel} with ${cell.predictedLabel}`;
+
     } else if (cell instanceof PanelCell) {
-      if (cell.type === AppConstants.CELL_FP) {
-        text = Language.FP_RATE;
-        text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += cell.data.linecell[0][0].predictedLabel;
-      } else if (cell.type === AppConstants.CELL_FN) {
-        text = Language.FN_RATE;
-        text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += cell.data.linecell[0][0].predictedLabel;
-      } else if (cell.type === AppConstants.CELL_PRECISION) {
-        text = Language.PRECISION_Y_LABEL;
-        text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += cell.data.linecell[0][0].predictedLabel;
-      } else if (cell.type === AppConstants.CELL_RECALL) {
-        text = Language.RECALL_Y_LABEL;
-        text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += cell.data.linecell[0][0].predictedLabel;
-      } else if (cell.type === AppConstants.CELL_F1_SCORE) {
-        text = Language.F1_SCORE_Y_LABEL;
-        text = text + ' ' + Language.FOR_CLASS + ' ';
-        text += cell.data.linecell[0][0].predictedLabel;
-      } else if (cell.type === AppConstants.CELL_OVERALL_ACCURACY_SCORE) {
-        text = Language.OVERALL_ACCURACY;
-      } else if (cell.type === AppConstants.CELL_CLASS_SIZE) {
-        text = Language.CLASS_SIZE;
+      const selectedClassLabel = cell.data.linecell[0][0].predictedLabel;
+      switch (cell.type) {
+        case AppConstants.CELL_FP:
+          const fpScaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.FP_NUM : Language.FP_RATES;
+          text = `${fpScaleType} ${Language.FOR_ALLCLASS} ${Language.PREDICTED_AS} ${selectedClassLabel}`;
+          break;
+
+        case AppConstants.CELL_FN:
+          const fnScaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.FN_NUM : Language.FN_RATES;
+          // hack for getting the ground-truth class label:
+          // - as the diagonal cells are empty for each ground-truth row we simply check for the empty array and return the class label
+          const classlabelIndex = cell.data.linecell[0].map((d) => (d.values.length === 0) ? d.classLabel : null).filter((x) => x);
+          text = `${fnScaleType} ${Language.FOR_ALLCLASS} ${Language.GIVEN} ${classlabelIndex[0]}`;
+          break;
+
+        case AppConstants.CELL_PRECISION:
+          text = `${Language.PRECISION_Y_LABEL} ${Language.FOR_CLASS} ${selectedClassLabel}`;
+          break;
+
+        case AppConstants.CELL_RECALL:
+          text = `${Language.RECALL_Y_LABEL} ${Language.FOR_CLASS} ${selectedClassLabel}`;
+          break;
+
+        case AppConstants.CELL_F1_SCORE:
+          text = `${Language.F1_SCORE_Y_LABEL} ${Language.FOR_CLASS} ${selectedClassLabel}`;
+          break;
+
+        case AppConstants.CELL_OVERALL_ACCURACY_SCORE:
+          text = Language.OVERALL_ACCURACY;
+          break;
+
+        case AppConstants.CELL_CLASS_SIZE:
+          text = Language.CLASS_SIZE;
+          break;
       }
     }
     this.$header.text(text);

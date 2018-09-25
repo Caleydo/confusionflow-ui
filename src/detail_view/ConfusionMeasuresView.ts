@@ -7,7 +7,7 @@ import { IAppView } from '../app';
 import { AppConstants } from '../AppConstants';
 import * as confMeasures from '../ConfusionMeasures';
 import { applyRendererChain, IMatrixRendererChain } from '../confusion_matrix_cell/ACellRenderer';
-import { ACell, LabelCell, PanelCell } from '../confusion_matrix_cell/Cell';
+import { ACell, LabelCell, PanelCell, MetricsPanelCell } from '../confusion_matrix_cell/Cell';
 import { DataStoreApplicationProperties, DataStoreCellSelection, ERenderMode } from '../DataStore';
 import { Matrix, max } from '../DataStructures';
 import { Language } from '../language';
@@ -130,7 +130,7 @@ export default class ConfusionMeasuresView implements IAppView {
           colorValues: null
         }
       };
-      return new PanelCell(res, AppConstants.CELL_F1_SCORE, columnIndex, index);
+      return new MetricsPanelCell(res, AppConstants.CELL_F1_SCORE, columnIndex, index);
     });
   }
 
@@ -157,7 +157,7 @@ export default class ConfusionMeasuresView implements IAppView {
           colorValues: null
         }
       };
-      return new PanelCell(res, AppConstants.CELL_RECALL, columnIndex, index);
+      return new MetricsPanelCell(res, AppConstants.CELL_RECALL, columnIndex, index);
     });
   }
 
@@ -184,7 +184,7 @@ export default class ConfusionMeasuresView implements IAppView {
           colorValues: null
         }
       };
-      return new PanelCell(res, AppConstants.CELL_PRECISION, columnIndex, index);
+      return new MetricsPanelCell(res, AppConstants.CELL_PRECISION, columnIndex, index);
     });
   }
 
@@ -202,7 +202,7 @@ export default class ConfusionMeasuresView implements IAppView {
           colorValues: colors
         }
       };
-      return new PanelCell(res, AppConstants.CELL_CLASS_SIZE, columnIndex, index);
+      return new MetricsPanelCell(res, AppConstants.CELL_CLASS_SIZE, columnIndex, index);
     });
   }
 
