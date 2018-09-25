@@ -335,25 +335,17 @@ export class ConfusionMatrix implements IAppView {
   }
 
   private removeConfusionMatrixCells() {
-    this.detachListeners();
-    this.$confusionMatrix
-      .selectAll('div')
-      .remove();
-  }
-
-  private detachListeners() {
-    const remove = (element: d3.Selection<any>) => {
-      return element.selectAll('div.cell')
-        .each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener(), (r: ACellRenderer) => r.removeYAxisScaleChangedListener()]));
-    };
-    remove(this.$confusionMatrix);
+    removeListenersFromCells(this.$confusionMatrix);
+    this.$confusionMatrix.selectAll('div').remove();
   }
 
   clear() {
     this.removeConfusionMatrixCells(); // TODO Try to avoid removing all cells and use D3 enter-update instead
-
+    removeListenersFromCells(this.fpColumn.$node);
+    removeListenersFromCells(this.fnColumn.$node);
     this.fpColumn.$node.selectAll('div').remove();
     this.fnColumn.$node.selectAll('div').remove();
+
     this.cellsBottomRight.select('div').remove();
   }
 
@@ -483,4 +475,9 @@ export class ConfusionMatrix implements IAppView {
  */
 export function create(parent: Element, options: any) {
   return new ConfusionMatrix(parent);
+}
+
+function removeListenersFromCells(element: d3.Selection<any>) {
+  return element.selectAll('div.cell')
+    .each((d: ACell) => removeListeners(d.renderer, [(r: ACellRenderer) => r.removeWeightFactorChangedListener(), (r: ACellRenderer) => r.removeYAxisScaleChangedListener()]));
 }
