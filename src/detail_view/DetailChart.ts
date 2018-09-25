@@ -82,7 +82,7 @@ export class DetailChart {
           const fnScaleType = DataStoreApplicationProperties.switchToAbsolute ? Language.FN_NUM : Language.FN_RATES;
           // hack for getting the ground-truth class label:
           // - as the diagonal cells are empty for each ground-truth row we simply check for the empty array and return the class label
-          const classlabelIndex = cell.data.linecell[0].map((d) => (d.values.length === 0) ? d.classLabel : null).filter((x) => x);
+          const classlabelIndex = cell.data.linecell[0].map((d) => (d.values.length === 0) ? d.predictedLabel : null).filter((x) => x);
           text = `${fnScaleType} ${Language.FOR_ALLCLASS} ${Language.GIVEN} ${classlabelIndex[0]}`;
           break;
 

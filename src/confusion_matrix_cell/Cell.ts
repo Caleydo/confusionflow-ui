@@ -125,6 +125,10 @@ export class PanelCell extends ACell implements ILineChartable {
   get weightFactor() {
     return DataStoreApplicationProperties.weightFactor;
   }
+
+  protected attachListener() {
+    // not used
+  };
 }
 
 export class MetricsPanelCell extends PanelCell {
@@ -144,12 +148,16 @@ export class MetricsPanelCell extends PanelCell {
   }
 }
 
-export class DetailChartCell extends ACell {
+export class DetailChartCell extends ACell implements ILineChartable {
   public data: { linecell: Line[][], heatcell: MatrixHeatCellContent };
 
   constructor(public child: MatrixCell | PanelCell) {
     super();
     this.data = child.data;
+  }
+
+  get weightFactor() {
+    return this.child.weightFactor;
   }
 
   protected attachListener() {
