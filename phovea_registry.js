@@ -4,14 +4,15 @@
  * Licensed under the new BSD license, available at http://caleydo.org/license
  **************************************************************************** */
 
-import {register} from 'phovea_core/src/plugin';
+import {
+  register
+} from 'phovea_core/src/plugin';
 
 /**
  * build a registry by registering all phovea modules
  */
 //other modules
 import 'phovea_core/phovea_registry.js';
-import 'phovea_vis/phovea_registry.js';
 import 'phovea_ui/phovea_registry.js';
 //self
-register('malevo',require('./phovea.js'));
+register('confusionflow-ui', require('./phovea.js'));

@@ -64,3 +64,17 @@ input[type=range][orient=vertical] {
     font-weight: 500;
   }
 }
+
+.toolbar-scaling-cell .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  padding: 5px 0px;
+
+  span {
+    font-size: 14px;
+    font-weight: 400;
+  }
+}

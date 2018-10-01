@@ -1,7 +1,6 @@
-import {ILoadedMalevoDataset} from '../MalevoDataset';
-import {AppConstants} from '../AppConstants';
-import * as d3 from 'd3';
-import {zip} from '../utils';
+import { ILoadedMalevoDataset } from '../MalevoDataset';
+import { AppConstants } from '../AppConstants';
+import { zip } from '../utils';
 
 /**
  * Created by Martin on 19.03.2018.
@@ -22,7 +21,8 @@ export class Line {
   values: number[];
   valuesInPercent: number[];
   max: number;
-  classLabel: string;
+  predictedLabel: string;
+  groundTruthLabel: string;
   color: string;
 }
 
@@ -55,15 +55,17 @@ export class SingleEpochCalculator extends ACellContentCalculator {
 
     return res.map((x, i) => {
       if (this.removeMainDiagonal && i % (AppConstants.CONF_MATRIX_SIZE + 1) === 0) {
-        return {
+        const matrixHeatCellContent: MatrixHeatCellContent = {
           maxVal: 0, counts: [], classLabels: [],
           indexInMultiSelection: [], colorValues: []
         };
+        return matrixHeatCellContent;
       } else {
-        return {
+        const matrixHeatCellContent: MatrixHeatCellContent = {
           maxVal, counts: x, classLabels: x.map((y) => String(y)),
           colorValues: x.map((_, i) => datasets[i].datasetColor), indexInMultiSelection: datasets.map((x) => x.multiEpochData.findIndex((y) => y.id === x.singleEpochData.id))
         };
+        return matrixHeatCellContent;
       }
     });
   }
@@ -97,13 +99,16 @@ export class MultiEpochCalculator extends ACellContentCalculator {
 
     const multiEpochData = [];
     zipped.map((x, i) => {
-      const label = datasets[0].labels[i % datasets[0].labels.length];
+      const predictedLabel = datasets[0].labels[i % datasets[0].labels.length];
+      const groundTruthLabel = datasets[0].labels[Math.floor(i / datasets[0].labels.length)];
       return multiEpochData.push(x.map((y, dsIndex) => {
         const classSize = datasets[dsIndex].classSizes[i % AppConstants.CONF_MATRIX_SIZE];
         if (this.removeMainDiagonal && (i % (AppConstants.CONF_MATRIX_SIZE + 1)) === 0) {
-          return {values: [], valuesInPercent: [], max: 0, classLabel: label, color: datasets[dsIndex].datasetColor};
+          const line: Line = { values: [], valuesInPercent: [], max: 0, predictedLabel, groundTruthLabel, color: datasets[dsIndex].datasetColor };
+          return line;
         } else {
-          return {values: y, valuesInPercent: y.map((z) => z / classSize),  max: maxVal, classLabel: label, color: datasets[dsIndex].datasetColor};
+          const line: Line = { values: y, valuesInPercent: y.map((z) => z / classSize), max: maxVal, predictedLabel, groundTruthLabel, color: datasets[dsIndex].datasetColor };
+          return line;
         }
       }));
     });
