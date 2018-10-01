@@ -7,8 +7,8 @@ Installation
 ------------
 
 ```
-git clone https://github.com/Caleydo/malevo.git
-cd malevo
+git clone https://github.com/Caleydo/confusionflow-ui.git
+cd confusionflow-ui
 npm install
 ```
 
@@ -42,9 +42,9 @@ This repository is part of **[Phovea](http://phovea.caleydo.org/)**, a platform 
 
 [phovea-image]: https://img.shields.io/badge/Phovea-Application-1BA64E.svg
 [phovea-url]: https://phovea.caleydo.org
-[npm-image]: https://badge.fury.io/js/malevo.svg
-[npm-url]: https://npmjs.org/package/malevo
-[circleci-image]: https://circleci.com/gh/Caleydo/malevo/tree/master.svg?style=svg
-[circleci-url]: https://circleci.com/gh/Caleydo/malevo/tree/master
-[daviddm-image]: https://david-dm.org/Caleydo/malevo/status.svg
-[daviddm-url]: https://david-dm.org/Caleydo/malevo
+[npm-image]: https://badge.fury.io/js/confusionflow-ui.svg
+[npm-url]: https://npmjs.org/package/confusionflow-ui
+[circleci-image]: https://circleci.com/gh/Caleydo/confusionflow-ui/tree/master.svg?style=svg
+[circleci-url]: https://circleci.com/gh/Caleydo/confusionflow-ui/tree/master
+[daviddm-image]: https://david-dm.org/Caleydo/confusionflow-ui/status.svg
+[daviddm-url]: https://david-dm.org/Caleydo/confusionflow-ui

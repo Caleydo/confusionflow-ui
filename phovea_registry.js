@@ -15,4 +15,4 @@ import {
 import 'phovea_core/phovea_registry.js';
 import 'phovea_ui/phovea_registry.js';
 //self
-register('malevo', require('./phovea.js'));
+register('confusionflow-ui', require('./phovea.js'));

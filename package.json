@@ -10,17 +10,17 @@
   },
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/Caleydo/malevo/issues"
+    "url": "https://github.com/Caleydo/confusionflow-ui/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Caleydo/malevo.git"
+    "url": "https://github.com/Caleydo/confusionflow-ui.git"
   },
   "private": true,
   "scripts": {
     "predist": "npm run build && npm run docs",
     "predocker": "npm run build",
-    "docker": "docker build -t malevo -f deploy/Dockerfile .",
+    "docker": "docker build -t confusionflow-ui -f deploy/Dockerfile .",
     "compile": "tsc",
     "lint": "tslint -c tslint.json src/**.ts tests/**.ts",
     "docs": "typedoc --options typedoc.json src/**.ts",
@@ -37,7 +37,7 @@
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
-    "dist": "mkdirp dist && cd build && tar cvzf ../dist/malevo.tar.gz *"
+    "dist": "mkdirp dist && cd build && tar cvzf ../dist/confusionflow-ui.tar.gz *"
   },
   "files": [
     "src",
