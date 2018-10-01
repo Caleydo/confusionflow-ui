@@ -1,12 +1,12 @@
 {
   "name": "confusionflow",
-  "description": "Visualizing the evolution of confusion matrices",
-  "homepage": "https://phovea.caleydo.org",
+  "description": "Visualize learning dynamics in multi-class image classifiers (e.g., convolutional neural networks)",
+  "homepage": "https://confusionflow.org",
   "version": "1.0.0-SNAPSHOT",
   "author": {
-    "name": "The Caleydo Team",
-    "email": "contact@caleydo.org",
-    "url": "http://caleydo.org"
+    "name": "The ConfusionFlow Team",
+    "email": "gfrogat@gmail.com",
+    "url": "https://confusionflow.org"
   },
   "license": "BSD-3-Clause",
   "bugs": {
