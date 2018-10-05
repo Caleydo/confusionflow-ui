@@ -7,7 +7,7 @@ export function ClassSize(matrix: NumberMatrix, index: number): number {
   if(index >= matrix.order()) {
     throw new Error('Invalid index');
   }
-  return TP(matrix, index) + FP(matrix, index);
+  return TP(matrix, index) + FN(matrix, index);
 }
 
 export function TP(matrix: NumberMatrix, index: number): number {
@@ -21,6 +21,7 @@ export function FP(matrix: NumberMatrix, index: number): number {
   if(index >= matrix.order()) {
     throw new Error('Invalid index');
   }
+  matrix = <SquareMatrix<number>> matrix.transpose();
   return matrix.values[index].reduce((acc, val) => acc + val, 0) - matrix.values[index][index];
 }
 
@@ -28,7 +29,6 @@ export function FN(matrix: NumberMatrix, index: number): number {
   if(index >= matrix.order()) {
     throw new Error('Invalid index');
   }
-  matrix = <SquareMatrix<number>> matrix.transpose();
   return matrix.values[index].reduce((acc, val) => acc + val, 0) - matrix.values[index][index];
 }
 
@@ -93,6 +93,7 @@ export function calcForMultipleClasses(matrix: NumberMatrix, funct: (matrix: Num
  * @returns {Matrix<number[]>}
  */
 export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMatrix, index: number) => number): Matrix<number[]> {
+  console.log(matrices);
   const order = matrices[0].order();
 
   if(matrices.length === 0) {
