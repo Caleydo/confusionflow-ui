@@ -83,7 +83,7 @@
     "tslint": "4.4.2",
     "typedoc": "0.7.2",
     "typescript": "3.0.3",
-    "url-loader": "0.5.7",
+    "url-loader": "1.1.1",
     "webpack": "2.2.1",
     "webpack-dev-server": "2.4.2"
   },
