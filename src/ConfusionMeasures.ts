@@ -93,7 +93,6 @@ export function calcForMultipleClasses(matrix: NumberMatrix, funct: (matrix: Num
  * @returns {Matrix<number[]>}
  */
 export function calcEvolution(matrices: NumberMatrix[], funct: (matrix: NumberMatrix, index: number) => number): Matrix<number[]> {
-  console.log(matrices);
   const order = matrices[0].order();
 
   if(matrices.length === 0) {
