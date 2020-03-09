@@ -95,8 +95,8 @@
     "d3-shape": "1.2.0",
     "es6-promise": "^4.2.4",
     "jquery": "3.1.1",
-    "phovea_core": "github:phovea/phovea_core#2a7f79bde1291b8075e84fc89c5964e05e4a3183",
-    "phovea_ui": "github:phovea/phovea_ui#2ba50424b321327a55dc0916a2105ae0691f0917",
+    "phovea_core": "github:phovea/phovea_core#develop",
+    "phovea_ui": "github:phovea/phovea_ui#develop",
     "portable-fetch": "^3.0.0",
     "select2": "~4.0.5"
   },
