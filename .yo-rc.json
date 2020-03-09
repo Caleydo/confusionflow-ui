@@ -65,6 +65,12 @@
     "name": "confusionflow",
     "author": "The Caleydo Team",
     "today": "Thu, 30 Aug 2018 08:24:39 GMT",
-    "githubAccount": "Caleydo"
+    "githubAccount": "ConfusionFlow",
+    "promptValues": {
+      "authorName": "The ConfusionFlow Team",
+      "authorEmail": "gfrogat@gmail.com",
+      "authorUrl": "https://confusionflow.org",
+      "githubAccount": "Caleydo"
+    }
   }
 }

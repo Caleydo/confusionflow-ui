@@ -19,27 +19,6 @@ const datasetApi = new DatasetApi(API_CONFIGURATION);
 const foldLogApi = new FoldlogApi(API_CONFIGURATION);
 const runApi = new RunApi(API_CONFIGURATION);
 
-export class SwaggerDataProvider implements IDataProvider {
-
-  async load(): Promise<IMalevoDatasetCollection> {
-    const datasets: Dataset[] = await datasetApi.getDatasets();
-
-    const runs: Run[] = await runApi.getRuns();
-    const dsc = {};
-
-    runs.forEach((run: Run) => {
-      const dataset: Dataset = datasets.filter((d) => d.folds.some((f) => f.foldId === run.trainfoldId))[0];
-      // list each fold as malevo dataset
-      run.foldlogs.forEach((foldLog, i) => {
-        const ds = new LazyMalevoDatasetProxy(foldLog, dataset);
-        dsc[ds.name] = ds;
-      });
-    });
-
-    return dsc;
-  }
-}
-
 /**
  * Proxy for MalevoDataset that retrieves the fold log data from Swagger.
  * Here we cache the loaded fold log data to avoid multiple API requests for the same run
@@ -163,6 +142,26 @@ export class LazyMalevoDatasetProxy extends MalevoDataset {
 
 }
 
+export class SwaggerDataProvider implements IDataProvider {
+
+  async load(): Promise<IMalevoDatasetCollection> {
+    const datasets: Dataset[] = await datasetApi.getDatasets();
+
+    const runs: Run[] = await runApi.getRuns();
+    const dsc = {};
+
+    runs.forEach((run: Run) => {
+      const dataset: Dataset = datasets.filter((d) => d.folds.some((f) => f.foldId === run.trainfoldId))[0];
+      // list each fold as malevo dataset
+      run.foldlogs.forEach((foldLog, i) => {
+        const ds = new LazyMalevoDatasetProxy(foldLog, dataset);
+        dsc[ds.name] = ds;
+      });
+    });
+
+    return dsc;
+  }
+}
 
 /**
  * Converts an input 1D array to an 2D array, by wrapping it after a specific number of items
