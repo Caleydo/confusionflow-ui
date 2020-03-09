@@ -2,7 +2,7 @@
   "name": "confusionflow",
   "description": "Visualize learning dynamics in multi-class image classifiers (e.g., convolutional neural networks)",
   "homepage": "https://confusionflow.org",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "author": {
     "name": "The ConfusionFlow Team",
     "email": "gfrogat@gmail.com",
