@@ -8,7 +8,7 @@ import {AppConstants} from '../AppConstants';
 import {extractEpochId} from '../utils';
 import {dataStoreRuns, DataStoreSelectedRun, TimelineParameters, DataStoreCellSelection} from '../DataStore';
 import * as events from 'phovea_core/src/event';
-import {MatrixCell, PanelCell} from "../confusion_matrix_cell/Cell";
+import {MatrixCell, PanelCell} from '../confusion_matrix_cell/Cell';
 
 class SingleEpochSelector {
   public $node: d3.Selection<any>;
@@ -36,6 +36,12 @@ class SingleEpochSelector {
   }
 }
 
+class DataPoint {
+  constructor(public exists: boolean, public position: number, public epoch: IMalevoEpochInfo) {
+
+  }
+}
+
 export class TimelineData {
   constructor(epochs: IMalevoEpochInfo[]) {
     this.build(epochs);
@@ -49,12 +55,6 @@ export class TimelineData {
       const dp = new DataPoint(isValid, i, epochs[i]);
       this.datapoints.push(dp);
     }
-  }
-}
-
-class DataPoint {
-  constructor(public exists: boolean, public position: number, public epoch: IMalevoEpochInfo) {
-
   }
 }
 

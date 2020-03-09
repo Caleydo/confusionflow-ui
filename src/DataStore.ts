@@ -8,6 +8,20 @@ import { MatrixCell, PanelCell } from './confusion_matrix_cell/Cell';
 import { ILoadedMalevoDataset, IMalevoEpochInfo, MalevoDataset } from './MalevoDataset';
 import { ERenderer } from './confusion_matrix_cell/ACellRenderer';
 
+/**
+ * Stores the state of the timeline
+ */
+export class TimelineParameters {
+  static minIndex = -1;
+  static maxIndex = -1;
+  static singleIndex = -1;
+
+  static setRange(minIndex: number, maxIndex: number) {
+    TimelineParameters.minIndex = minIndex;
+    TimelineParameters.maxIndex = maxIndex;
+  }
+}
+
 export const dataStoreRuns: Map<string, DataStoreSelectedRun> = new Map<string, DataStoreSelectedRun>();
 
 export class DataStoreLoadedRuns {
@@ -80,6 +94,7 @@ export class DataStoreSelectedRun {
     DataStoreSelectedRun.setSelectionIndex(dataStoreRuns.get(ds.name).selectionIndex, null);
     dataStoreRuns.delete(ds.name);
     if (dataStoreRuns.size === 0) {
+      // tslint:disable-next-line: no-use-before-declare
       DataStoreCellSelection.deselect();
     }
     events.fire(AppConstants.EVENT_DATA_SET_REMOVED, ds);
@@ -94,20 +109,6 @@ export class DataStoreSelectedRun {
       timeline.multiSelected = timeline.selectedDataset.epochInfos.slice(TimelineParameters.minIndex, TimelineParameters.maxIndex + 1);
       timeline.singleSelected = timeline.selectedDataset.epochInfos[TimelineParameters.singleIndex];
     });
-  }
-}
-
-/**
- * Stores the state of the timeline
- */
-export class TimelineParameters {
-  static minIndex = -1;
-  static maxIndex = -1;
-  static singleIndex = -1;
-
-  static setRange(minIndex: number, maxIndex: number) {
-    TimelineParameters.minIndex = minIndex;
-    TimelineParameters.maxIndex = maxIndex;
   }
 }
 
