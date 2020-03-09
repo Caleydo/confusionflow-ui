@@ -1,15 +1,15 @@
 /**
  * Created by Martin on 27.01.2018.
  */
-import * as d3 from "d3";
-import { ICellData } from "./ConfusionMatrix";
-import { PanelCell, ACell } from "./confusion_matrix_cell/Cell";
+import * as d3 from 'd3';
+import { ICellData } from './ConfusionMatrix';
+import { PanelCell, ACell } from './confusion_matrix_cell/Cell';
 import {
   IMatrixRendererChain,
   applyRendererChain
-} from "./confusion_matrix_cell/ACellRenderer";
-import { AppConstants } from "./AppConstants";
-import { DataStoreApplicationProperties } from "./DataStore";
+} from './confusion_matrix_cell/ACellRenderer';
+import { AppConstants } from './AppConstants';
+import { DataStoreApplicationProperties } from './DataStore';
 
 export enum EChartOrientation {
   COLUMN,
@@ -24,7 +24,7 @@ export abstract class ChartColumn {
     public $node: d3.Selection<any>,
     public readonly orientation: EChartOrientation
   ) {
-    $node.classed("chart", true);
+    $node.classed('chart', true);
   }
 
   public render(
@@ -36,11 +36,11 @@ export abstract class ChartColumn {
     const cellSize = DataStoreApplicationProperties.confMatrixCellSize;
 
     this.$node
-      .selectAll("div")
+      .selectAll('div')
       .data(panelCells)
       .enter()
-      .append("div")
-      .classed("cell", true)
+      .append('div')
+      .classed('cell', true)
       .each(function(cell: ACell) {
         cell.init(d3.select(this), cellSize[0], cellSize[1]);
         applyRendererChain(rendererChain, cell, rendererChain.diagonal);
@@ -59,8 +59,8 @@ export abstract class ChartColumn {
     index: number,
     singleEpochIndex: number[]
   ): PanelCell {
-    const confusionMatrixRow = data.map(x => x);
-    const lineCells = confusionMatrixRow.map(x => x.linecell);
+    const confusionMatrixRow = data.map((x) => x);
+    const lineCells = confusionMatrixRow.map((x) => x.linecell);
     const res =
       lineCells[index] !== null
         ? lineCells[0].map((_, i) =>
@@ -97,61 +97,61 @@ export class FPChartColumn extends ChartColumn {
     data: ICellData[],
     singleEpochIndex: number[]
   ): PanelCell[] {
-    const res_tmp = [];
+    const resTmp = [];
     for (let i = 0; i < AppConstants.CONF_MATRIX_SIZE; i++) {
-      res_tmp.push(
+      resTmp.push(
         data.filter((_, j) => j % AppConstants.CONF_MATRIX_SIZE === i)
       );
     }
 
     // Don't overwrite origina data
-    const res = JSON.parse(JSON.stringify(res_tmp));
+    const res = JSON.parse(JSON.stringify(resTmp));
 
     for (let i = 0; i < AppConstants.CONF_MATRIX_SIZE; i++) {
       // Get number of runs
-      let num_runs = 0;
+      let numRuns = 0;
       res[i]
-        .map(d => d["linecell"].length)
-        .map(d => {
-          num_runs = Math.max(d, num_runs);
+        .map((d) => d['linecell'].length)
+        .map((d) => {
+          numRuns = Math.max(d, numRuns);
         });
 
-      let runs_values = Array.from(
-        new Array(num_runs),
+      const runsValues = Array.from(
+        new Array(numRuns),
         (x, i) => i
-      ).map(d => []);
-      let runs_percentage = Array.from(
-        new Array(num_runs),
+      ).map((d) => []);
+      const runsPercentage = Array.from(
+        new Array(numRuns),
         (x, i) => i
-      ).map(d => []);
+      ).map((d) => []);
 
-      let max_value = 0;
+      let maxValue = 0;
 
-      res[i].map(d => {
-        d["linecell"].map((x, j) => {
-          if (runs_values[j].length == 0) {
-            runs_values[j] = x["values"];
-            runs_percentage[j] = x["valuesInPercent"];
+      res[i].map((d) => {
+        d['linecell'].map((x, j) => {
+          if (runsValues[j].length === 0) {
+            runsValues[j] = x['values'];
+            runsPercentage[j] = x['valuesInPercent'];
           } else {
-            if (x["values"].length != 0) {
-              runs_values[j] = runs_values[j].map(
-                (val, val_idx) => val + x["values"][val_idx]
+            if (x['values'].length !== 0) {
+              runsValues[j] = runsValues[j].map(
+                (val, valIndex) => val + x['values'][valIndex]
               );
-              runs_percentage[j] = runs_percentage[j].map(
-                (val, val_idx) => val + x["valuesInPercent"][val_idx]
+              runsPercentage[j] = runsPercentage[j].map(
+                (val, valIndex) => val + x['valuesInPercent'][valIndex]
               );
             }
           }
-          x["values"] = [];
-          x["valuesInPercent"] = [];
-          max_value = Math.max(max_value, x["max"]);
+          x['values'] = [];
+          x['valuesInPercent'] = [];
+          maxValue = Math.max(maxValue, x['max']);
         });
       });
 
-      res[i][i]["linecell"].map((x, j) => {
-        x["values"] = runs_values[j];
-        x["valuesInPercent"] = runs_percentage[j];
-        x["max"] = max_value;
+      res[i][i]['linecell'].map((x, j) => {
+        x['values'] = runsValues[j];
+        x['valuesInPercent'] = runsPercentage[j];
+        x['max'] = maxValue;
       });
     }
 
@@ -174,59 +174,59 @@ export class FNChartColumn extends ChartColumn {
     singleEpochIndex: number[]
   ): PanelCell[] {
     data = data.slice(0);
-    const arrays_tmp = [],
+    const arraysTmp = [],
       size = AppConstants.CONF_MATRIX_SIZE;
     while (data.length > 0) {
-      arrays_tmp.push(data.splice(0, size));
+      arraysTmp.push(data.splice(0, size));
     }
 
-    const arrays = JSON.parse(JSON.stringify(arrays_tmp));
+    const arrays = JSON.parse(JSON.stringify(arraysTmp));
 
     for (let i = 0; i < AppConstants.CONF_MATRIX_SIZE; i++) {
       // Get number of runs
-      let num_runs = 0;
+      let numRuns = 0;
       arrays[i]
-        .map(d => d["linecell"].length)
-        .map(d => {
-          num_runs = Math.max(d, num_runs);
+        .map((d) => d['linecell'].length)
+        .map((d) => {
+          numRuns = Math.max(d, numRuns);
         });
 
-      let runs_values = Array.from(
-        new Array(num_runs),
+      const runsValues = Array.from(
+        new Array(numRuns),
         (x, i) => i
-      ).map(d => []);
-      let runs_percentage = Array.from(
-        new Array(num_runs),
+      ).map((d) => []);
+      const runsPercentage = Array.from(
+        new Array(numRuns),
         (x, i) => i
-      ).map(d => []);
+      ).map((d) => []);
 
-      let max_value = 0;
+      let maxValue = 0;
 
-      arrays[i].map(d => {
-        d["linecell"].map((x, j) => {
-          if (runs_values[j].length == 0) {
-            runs_values[j] = x["values"];
-            runs_percentage[j] = x["valuesInPercent"];
+      arrays[i].map((d) => {
+        d['linecell'].map((x, j) => {
+          if (runsValues[j].length === 0) {
+            runsValues[j] = x['values'];
+            runsPercentage[j] = x['valuesInPercent'];
           } else {
-            if (x["values"].length != 0) {
-              runs_values[j] = runs_values[j].map(
-                (val, val_idx) => val + x["values"][val_idx]
+            if (x['values'].length !== 0) {
+              runsValues[j] = runsValues[j].map(
+                (val, valIndex) => val + x['values'][valIndex]
               );
-              runs_percentage[j] = runs_percentage[j].map(
-                (val, val_idx) => val + x["valuesInPercent"][val_idx]
+              runsPercentage[j] = runsPercentage[j].map(
+                (val, valIndex) => val + x['valuesInPercent'][valIndex]
               );
             }
           }
-          x["values"] = [];
-          x["valuesInPercent"] = [];
-          max_value = Math.max(max_value, x["max"]);
+          x['values'] = [];
+          x['valuesInPercent'] = [];
+          maxValue = Math.max(maxValue, x['max']);
         });
       });
 
-      arrays[i][i]["linecell"].map((x, j) => {
-        x["values"] = runs_values[j];
-        x["valuesInPercent"] = runs_percentage[j];
-        x["max"] = max_value;
+      arrays[i][i]['linecell'].map((x, j) => {
+        x['values'] = runsValues[j];
+        x['valuesInPercent'] = runsPercentage[j];
+        x['max'] = maxValue;
       });
     }
 

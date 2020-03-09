@@ -59,6 +59,27 @@ export abstract class ACell implements ICell {
   }
 }
 
+export class PanelCell extends ACell implements ILineChartable {
+  constructor(public data: { linecell: Line[][], heatcell: MatrixHeatCellContent },
+    public type: string, public panelColumnIndex: number, public panelRowIndex: number) {
+    super();
+  }
+
+  hasType(types: string[]) {
+    return types.includes(this.type);
+  }
+
+  get weightFactor() {
+    return DataStoreApplicationProperties.weightFactor;
+  }
+
+  protected attachListener() {
+    this._$node.on('click', () => {
+      DataStoreCellSelection.cellSelected(this);
+    });
+  }
+}
+
 export class MatrixCell extends ACell implements ILineChartable {
   constructor(public data: { linecell: Line[][], heatcell: MatrixHeatCellContent },
     public predictedLabel: string, public groundTruthLabel: string,
@@ -111,27 +132,6 @@ export class LabelCell extends ACell {
 
   protected attachListener() {
     // not used
-  };
-}
-
-export class PanelCell extends ACell implements ILineChartable {
-  constructor(public data: { linecell: Line[][], heatcell: MatrixHeatCellContent },
-    public type: string, public panelColumnIndex: number, public panelRowIndex: number) {
-    super();
-  }
-
-  hasType(types: string[]) {
-    return types.includes(this.type);
-  }
-
-  get weightFactor() {
-    return DataStoreApplicationProperties.weightFactor;
-  }
-
-  protected attachListener() {
-    this._$node.on('click', () => {
-      DataStoreCellSelection.cellSelected(this);
-    });
   }
 }
 
@@ -160,5 +160,5 @@ export class DetailChartCell extends ACell implements ILineChartable {
 
   protected attachListener() {
     // not used
-  };
+  }
 }

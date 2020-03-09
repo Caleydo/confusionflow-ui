@@ -1,5 +1,5 @@
-/// <reference path="./custom.d.ts" />
 // tslint:disable
+/// <reference path="./custom.d.ts" />
 /**
  * ConfusionFlow
  * This is the initial API proposal for the ConfusionFlow REST API
@@ -40,7 +40,7 @@ export interface FetchAPI {
 }
 
 /**
- *  
+ *
  * @export
  * @interface FetchArgs
  */
@@ -50,7 +50,7 @@ export interface FetchArgs {
 }
 
 /**
- * 
+ *
  * @export
  * @class BaseAPI
  */
@@ -66,7 +66,7 @@ export class BaseAPI {
 };
 
 /**
- * 
+ *
  * @export
  * @class RequiredError
  * @extends {Error}
@@ -79,19 +79,19 @@ export class RequiredError extends Error {
 }
 
 /**
- * 
+ *
  * @export
  * @interface ClassCount
  */
 export interface ClassCount {
     /**
-     * 
+     *
      * @type {string}
      * @memberof ClassCount
      */
     classname?: string;
     /**
-     * 
+     *
      * @type {number}
      * @memberof ClassCount
      */
@@ -99,43 +99,43 @@ export interface ClassCount {
 }
 
 /**
- * 
+ *
  * @export
  * @interface Dataset
  */
 export interface Dataset {
     /**
-     * 
+     *
      * @type {string}
      * @memberof Dataset
      */
     datasetId?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof Dataset
      */
     description?: string;
     /**
-     * 
+     *
      * @type {number}
      * @memberof Dataset
      */
     numclass?: number;
     /**
-     * 
+     *
      * @type {number}
      * @memberof Dataset
      */
     numfolds?: number;
     /**
-     * 
+     *
      * @type {Array&lt;string&gt;}
      * @memberof Dataset
      */
     classes?: Array<string>;
     /**
-     * 
+     *
      * @type {Array&lt;Fold&gt;}
      * @memberof Dataset
      */
@@ -143,19 +143,19 @@ export interface Dataset {
 }
 
 /**
- * 
+ *
  * @export
  * @interface EpochData
  */
 export interface EpochData {
     /**
-     * 
+     *
      * @type {number}
      * @memberof EpochData
      */
     epochId?: number;
     /**
-     * 
+     *
      * @type {Array&lt;number&gt;}
      * @memberof EpochData
      */
@@ -163,19 +163,19 @@ export interface EpochData {
 }
 
 /**
- * 
+ *
  * @export
  * @interface Fold
  */
 export interface Fold {
     /**
-     * 
+     *
      * @type {string}
      * @memberof Fold
      */
     foldId?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof Fold
      */
@@ -187,13 +187,13 @@ export interface Fold {
      */
     dataset?: string;
     /**
-     * 
+     *
      * @type {number}
      * @memberof Fold
      */
     numinstances?: number;
     /**
-     * 
+     *
      * @type {Array&lt;ClassCount&gt;}
      * @memberof Fold
      */
@@ -201,19 +201,19 @@ export interface Fold {
 }
 
 /**
- * 
+ *
  * @export
  * @interface FoldLog
  */
 export interface FoldLog {
     /**
-     * 
+     *
      * @type {string}
      * @memberof FoldLog
      */
     foldlogId?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof FoldLog
      */
@@ -231,7 +231,7 @@ export interface FoldLog {
      */
     foldId?: string;
     /**
-     * 
+     *
      * @type {number}
      * @memberof FoldLog
      */
@@ -239,25 +239,25 @@ export interface FoldLog {
 }
 
 /**
- * 
+ *
  * @export
  * @interface FoldLogData
  */
 export interface FoldLogData {
     /**
-     * 
+     *
      * @type {string}
      * @memberof FoldLogData
      */
     foldlogId?: string;
     /**
-     * 
+     *
      * @type {number}
      * @memberof FoldLogData
      */
     numepochs?: number;
     /**
-     * 
+     *
      * @type {Array&lt;EpochData&gt;}
      * @memberof FoldLogData
      */
@@ -265,37 +265,37 @@ export interface FoldLogData {
 }
 
 /**
- * 
+ *
  * @export
  * @interface HyperParam
  */
 export interface HyperParam {
     /**
-     * 
+     *
      * @type {string}
      * @memberof HyperParam
      */
     arch?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof HyperParam
      */
     optim?: string;
     /**
-     * 
+     *
      * @type {number}
      * @memberof HyperParam
      */
     bs?: number;
     /**
-     * 
+     *
      * @type {Array&lt;number&gt;}
      * @memberof HyperParam
      */
     lr?: Array<number>;
     /**
-     * 
+     *
      * @type {Array&lt;number&gt;}
      * @memberof HyperParam
      */
@@ -303,13 +303,13 @@ export interface HyperParam {
 }
 
 /**
- * 
+ *
  * @export
  * @interface Run
  */
 export interface Run {
     /**
-     * 
+     *
      * @type {string}
      * @memberof Run
      */
@@ -321,13 +321,13 @@ export interface Run {
      */
     trainfoldId?: string;
     /**
-     * 
+     *
      * @type {HyperParam}
      * @memberof Run
      */
     hyperparam?: HyperParam;
     /**
-     * 
+     *
      * @type {Array&lt;FoldLog&gt;}
      * @memberof Run
      */
@@ -335,19 +335,19 @@ export interface Run {
 }
 
 /**
- * 
+ *
  * @export
  * @interface View
  */
 export interface View {
     /**
-     * 
+     *
      * @type {string}
      * @memberof View
      */
     viewId?: string;
     /**
-     * 
+     *
      * @type {Array&lt;string&gt;}
      * @memberof View
      */
@@ -391,7 +391,7 @@ export const DatasetApiFetchParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 
+         *
          * @summary Show all available datasets
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -442,7 +442,7 @@ export const DatasetApiFp = function(configuration?: Configuration) {
             };
         },
         /**
-         * 
+         *
          * @summary Show all available datasets
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -479,7 +479,7 @@ export const DatasetApiFactory = function (configuration?: Configuration, fetch?
             return DatasetApiFp(configuration).getDatasetById(datasetId, options)(fetch, basePath);
         },
         /**
-         * 
+         *
          * @summary Show all available datasets
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -510,7 +510,7 @@ export class DatasetApi extends BaseAPI {
     }
 
     /**
-     * 
+     *
      * @summary Show all available datasets
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -734,7 +734,7 @@ export const RunApiFetchParamCreator = function (configuration?: Configuration) 
             };
         },
         /**
-         * 
+         *
          * @summary Show all available runs
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -785,7 +785,7 @@ export const RunApiFp = function(configuration?: Configuration) {
             };
         },
         /**
-         * 
+         *
          * @summary Show all available runs
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -822,7 +822,7 @@ export const RunApiFactory = function (configuration?: Configuration, fetch?: Fe
             return RunApiFp(configuration).getRunById(runId, options)(fetch, basePath);
         },
         /**
-         * 
+         *
          * @summary Show all available runs
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -853,7 +853,7 @@ export class RunApi extends BaseAPI {
     }
 
     /**
-     * 
+     *
      * @summary Show all available runs
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -901,7 +901,7 @@ export const ViewApiFetchParamCreator = function (configuration?: Configuration)
             };
         },
         /**
-         * 
+         *
          * @summary Show all available views
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -952,7 +952,7 @@ export const ViewApiFp = function(configuration?: Configuration) {
             };
         },
         /**
-         * 
+         *
          * @summary Show all available views
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -989,7 +989,7 @@ export const ViewApiFactory = function (configuration?: Configuration, fetch?: F
             return ViewApiFp(configuration).getViewById(viewId, options)(fetch, basePath);
         },
         /**
-         * 
+         *
          * @summary Show all available views
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -1020,7 +1020,7 @@ export class ViewApi extends BaseAPI {
     }
 
     /**
-     * 
+     *
      * @summary Show all available views
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
