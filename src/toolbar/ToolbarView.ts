@@ -1,11 +1,6 @@
 import * as d3 from 'd3';
 import { IAppView } from '../app';
-import { ConfusionMatrix } from '../ConfusionMatrix';
-import { AppConstants } from '../AppConstants';
-import * as events from 'phovea_core/src/event';
-import * as plugins from 'phovea_core/src/plugin';
 import { DataStoreApplicationProperties } from '../DataStore';
-import { simulateClick } from '../utils';
 import { ERenderer } from '../confusion_matrix_cell/ACellRenderer';
 
 export class ToolbarView implements IAppView {
